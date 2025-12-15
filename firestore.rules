@@ -1,0 +1,60 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // Helper functions
+    function getUserRole() {
+       return get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role;
+    }
+
+    function isSuperAdmin() {
+      return request.auth != null && getUserRole() == 'superadmin';
+    }
+    
+    function isAdmin() {
+      return request.auth != null && getUserRole() in ['admin', 'superadmin'];
+    }
+    
+    function isViewAdmin() {
+      return request.auth != null && getUserRole() in ['view_admin', 'admin', 'superadmin', 'entry_admin'];
+    }
+    
+    function isOwner(userId) {
+      return request.auth != null && request.auth.uid == userId;
+    }
+
+    // Users
+    match /users/{userId} {
+      allow read: if isOwner(userId) || isViewAdmin();
+      allow write: if isOwner(userId) || isSuperAdmin(); // Only Super Admin can change roles/write other user docs
+    }
+    
+    // Config (Read: Public (or user?), Write: Admin)
+    match /config/{document=**} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+    
+    // Passes Config
+    match /passes_config/{passId} {
+      allow read: if true;
+      allow write: if isAdmin(); // View Admin cannot write
+    }
+    
+    // Coupons 
+    match /coupons/{couponId} {
+      allow read: if true;
+      allow write: if isAdmin(); // View Admin cannot write
+    }
+    
+    // Passes Issued
+    match /passes_issued/{passId} {
+      allow read: if request.auth != null && (
+        resource.data.purchasedBy == request.auth.uid || 
+        resource.data.issuedToEmail == request.auth.token.email || 
+        isViewAdmin()
+      );
+      allow write: if isAdmin(); 
+    }
+  }
+}

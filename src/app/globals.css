@@ -1,0 +1,35 @@
+@import "tailwindcss";
+
+:root {
+  --background: #1A1A1A;
+  /* Pramana Black */
+  --foreground: #F5F5DC;
+  /* Pramana Cream */
+
+  /* Brand Palette */
+  --pramana-gold: #B8860B;
+  --pramana-black: #1A1A1A;
+  --pramana-cream: #F5F5DC;
+  --pramana-maroon: #800020;
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+
+  --color-pramana-gold: var(--pramana-gold);
+  --color-pramana-black: var(--pramana-black);
+  --color-pramana-cream: var(--pramana-cream);
+  --color-pramana-maroon: var(--pramana-maroon);
+
+  --font-cinzel: "Cinzel", serif;
+  --font-playfair: "Playfair Display", serif;
+  --font-garamond: "EB Garamond", serif;
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: var(--font-playfair), serif;
+  /* Default to Playfair */
+}
