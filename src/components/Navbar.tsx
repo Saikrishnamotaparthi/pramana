@@ -19,7 +19,7 @@ export default function Navbar() {
                         PRAMANA26
                     </Link>
                     <div className="hidden md:flex gap-8">
-                        {user && (
+                        {user && user.role === 'user' && (
                             <Link href="/dashboard" className="text-sm font-medium text-pramana-cream/80 hover:text-pramana-gold transition">
                                 Dashboard
                             </Link>

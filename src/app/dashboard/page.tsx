@@ -44,6 +44,12 @@ export default function DashboardPage() {
 
     useEffect(() => {
         if (!loading && user) {
+            // Redirect Admins to Admin Portal
+            if (user.role === 'admin' || user.role === 'superadmin' || user.role === 'view_admin') {
+                router.replace("/admin");
+                return;
+            }
+
             const fetchData = async () => {
                 setFetching(true);
                 try {
