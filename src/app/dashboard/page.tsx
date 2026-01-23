@@ -218,8 +218,9 @@ export default function DashboardPage() {
                         {myPasses.length === 0 && (
                             <div className="glass-panel p-6 rounded-2xl mb-8 border-yellow-500/20 bg-yellow-900/5">
                                 <p className="text-sm text-yellow-200/80 text-center font-mono leading-relaxed">
-                                    <span className="text-yellow-500 font-bold">NOTICE:</span> If you have recently paid for a pass, your digital ticket will appear here shortly after verification.
-                                    You should receive a payment confirmation email from G-EVENTS. For support, please contact <a href="mailto:ff@gitam.edu" className="underline hover:text-white">ff@gitam.edu</a>.
+                                    <span className="text-yellow-500 font-bold">NOTICE:</span> If you have recently purchased a pass on G-EVENTS, your digital ticket will be displayed here shortly after verification.<br />
+                                    Once the payment is completed, you will receive a payment confirmation email from G-EVENTS.<br />
+                                    For any assistance, please contact us at <a href="mailto:pramana.hyd@gitam.edu" className="underline hover:text-white">pramana.hyd@gitam.edu</a>.
                                 </p>
                             </div>
                         )}

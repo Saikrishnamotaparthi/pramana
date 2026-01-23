@@ -16,10 +16,16 @@ function LoginContent() {
             if (!user.isRegistered && redirectUrl !== '/register') {
                 router.push('/register');
             } else {
-                router.push(redirectUrl);
+                // Check if user is admin/superadmin and NO specific redirect was given (i.e. it is default /dashboard)
+                // OR if they are explicitly trying to go to dashboard (which admins might not want as default)
+                if ((user.role === 'admin' || user.role === 'superadmin') && (redirectUrl === '/dashboard' || !searchParams.get('redirect'))) {
+                    router.push('/admin');
+                } else {
+                    router.push(redirectUrl);
+                }
             }
         }
-    }, [user, loading, router, redirectUrl]);
+    }, [user, loading, router, redirectUrl, searchParams]);
 
     const handleLogin = async () => {
         try {
