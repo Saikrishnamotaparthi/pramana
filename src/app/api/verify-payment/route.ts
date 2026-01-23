@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import crypto from "crypto";
 import { adminDb } from "@/lib/firebase-admin"; // Use Admin SDK
-import { sendPassEmail } from "@/lib/email";
+// import { sendPassEmail } from "@/lib/email";
 import { FieldValue } from "firebase-admin/firestore";
 
 // Mock verification function if keys missing
@@ -62,11 +62,12 @@ export async function POST(req: Request) {
 
             // Send Email (Async, don't block too long but we want to ensure it works?)
             // Ideally use a queue. For now await.
-            try {
-                await sendPassEmail(email, email.split('@')[0], passData.name, memberQr, bookingId);
-            } catch (emailErr) {
-                console.error("Failed to send email to", email, emailErr);
-            }
+            // Email sending removed
+            // try {
+            //     await sendPassEmail(email, email.split('@')[0], passData.name, memberQr, bookingId);
+            // } catch (emailErr) {
+            //     console.error("Failed to send email to", email, emailErr);
+            // }
 
             issuedPasses.push(passRecord);
         }

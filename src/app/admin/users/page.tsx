@@ -222,153 +222,155 @@ export default function UserManagement() {
     };
 
     return (
-        <div className="flex min-h-screen bg-pramana-black text-pramana-cream font-playfair selection:bg-pramana-gold selection:text-black">
+        <div className="flex min-h-screen bg-pramana-black text-pramana-cream font-playfair">
             <AdminSidebar />
-            <main className="flex-1 p-8 overflow-y-auto max-h-screen bg-[radial-gradient(ellipse_at_top_right,_var(--tw-gradient-stops))] from-gray-900 via-black to-black">
-                <header className="flex justify-between items-center mb-8">
-                    <div>
-                        <h1 className="text-3xl font-cinzel font-bold text-pramana-gold">User Management</h1>
-                        <p className="text-pramana-cream/60 mt-1">View and manage registered users.</p>
-                    </div>
-                    <button onClick={handleExport} className="bg-green-600/80 hover:bg-green-600 text-white px-4 py-2 rounded-lg font-bold shadow hover:shadow-green-900/50 transition">
-                        Export CSV
-                    </button>
-                </header>
-
-                <div className="bg-white/5 p-6 rounded-2xl border border-white/10 flex flex-col gap-6 backdrop-blur-sm">
-                    <div className="flex flex-col md:flex-row gap-4">
-                        <input
-                            placeholder="Search by email or name..."
-                            className="flex-1 bg-white/5 border border-white/10 p-3 rounded-lg text-pramana-cream placeholder-white/20 focus:outline-none focus:border-pramana-gold transition"
-                            value={filter}
-                            onChange={e => setFilter(e.target.value)}
-                        />
-                        <div className="flex gap-2">
-                            <select
-                                className="bg-white/5 border border-white/10 p-3 rounded-lg text-pramana-cream focus:outline-none focus:border-pramana-gold cursor-pointer"
-                                value={categoryFilter}
-                                onChange={e => setCategoryFilter(e.target.value as any)}
-                            >
-                                <option value="all" className="bg-black text-white">All Categories</option>
-                                <option value="gitam" className="bg-black text-white">Gitam Only</option>
-                                <option value="non-gitam" className="bg-black text-white">Non-Gitam Only</option>
-                            </select>
-                            <select
-                                className="bg-white/5 border border-white/10 p-3 rounded-lg text-pramana-cream focus:outline-none focus:border-pramana-gold cursor-pointer"
-                                value={paymentFilter}
-                                onChange={e => setPaymentFilter(e.target.value as any)}
-                            >
-                                <option value="all" className="bg-black text-white">All Status</option>
-                                <option value="paid" className="bg-black text-white">Paid</option>
-                                <option value="unpaid" className="bg-black text-white">Unpaid</option>
-                            </select>
+            <main className="admin-page-container">
+                <div className="admin-content-wrapper">
+                    <header className="flex justify-between items-center mb-10 animate-stagger-1">
+                        <div>
+                            <h1 className="text-4xl font-cinzel font-bold text-transparent bg-clip-text bg-gradient-to-r from-pramana-gold to-white neon-text-gold">User Management</h1>
+                            <p className="text-pramana-cream/60 mt-2 font-light">View and manage registered users.</p>
                         </div>
-                    </div>
+                        <button onClick={handleExport} className="glass-panel text-green-400 border-green-500/30 px-6 py-2 rounded-full font-bold shadow-lg shadow-green-900/20 hover:bg-green-500/10 transition flex items-center gap-2">
+                            <span>📊</span> Export CSV
+                        </button>
+                    </header>
 
-                    <div className="overflow-x-auto rounded-lg border border-white/10">
-                        <table className="min-w-full divide-y divide-white/10">
-                            <thead className="bg-white/5">
-                                <tr>
-                                    <th className="px-6 py-4 text-left text-xs font-bold text-pramana-cream/50 uppercase tracking-wider font-cinzel">User</th>
-                                    <th className="px-6 py-4 text-left text-xs font-bold text-pramana-cream/50 uppercase tracking-wider font-cinzel">Category</th>
-                                    <th className="px-6 py-4 text-left text-xs font-bold text-pramana-cream/50 uppercase tracking-wider font-cinzel">Payment</th>
-                                    <th className="px-6 py-4 text-left text-xs font-bold text-pramana-cream/50 uppercase tracking-wider font-cinzel">Action</th>
-                                </tr>
-                            </thead>
-                            <tbody className="bg-transparent divide-y divide-white/5">
-                                {filteredUsers.map(u => {
-                                    const pass = passesIssued[u.email];
-                                    return (
-                                        <tr key={u.uid} className="hover:bg-white/5 transition border-b border-white/5 last:border-0">
-                                            <td className="px-6 py-4 whitespace-nowrap">
-                                                <div className="flex items-center">
-                                                    <div className="h-10 w-10 rounded-full bg-white/10 flex items-center justify-center text-pramana-gold font-bold text-sm mr-3 font-cinzel border border-white/10">
-                                                        {u.displayName?.[0]?.toUpperCase() || 'U'}
-                                                    </div>
-                                                    <div>
-                                                        <div className="text-sm font-bold text-pramana-cream">{u.displayName || "N/A"}</div>
-                                                        <div className="text-sm text-pramana-cream/60">{u.email}</div>
-                                                        <div className="text-xs text-pramana-cream/40">{u.registrationData?.phone}</div>
-                                                    </div>
-                                                </div>
-                                            </td>
-                                            <td className="px-6 py-4 whitespace-nowrap">
-                                                <span className={`px-2 py-1 text-xs rounded-full font-bold border ${u.isGitamite ? 'bg-blue-500/10 text-blue-400 border-blue-500/20' : 'bg-gray-500/10 text-gray-400 border-gray-500/20'}`}>
-                                                    {u.isGitamite ? 'Gitam' : 'Non-Gitam'}
-                                                </span>
-                                            </td>
-                                            <td className="px-6 py-4 whitespace-nowrap">
-                                                {pass ? (
-                                                    <div>
-                                                        <span className="bg-green-500/10 text-green-400 border border-green-500/20 px-2 py-1 rounded text-xs font-bold">Paid</span>
-                                                        <div className="text-xs text-pramana-cream/50 mt-1">{pass.passName}</div>
-                                                        {pass.paymentMethod === 'admin_manual' && <div className="text-[10px] text-orange-400 font-bold">By Admin</div>}
-                                                    </div>
-                                                ) : (
-                                                    <span className="bg-red-500/10 text-red-400 border border-red-500/20 px-2 py-1 rounded text-xs font-bold">Unpaid</span>
-                                                )}
-                                            </td>
-                                            <td className="px-6 py-4 whitespace-nowrap">
-                                                {!pass && (
-                                                    <button
-                                                        onClick={() => { setSelectedUserForPass(u); setShowIssueModal(true); }}
-                                                        className="bg-blue-600/80 text-white px-3 py-1.5 rounded text-xs font-bold hover:bg-blue-600 shadow-lg shadow-blue-900/20 transition"
-                                                    >
-                                                        Issue Pass
-                                                    </button>
-                                                )}
-                                                {pass && (
-                                                    <span className="text-pramana-cream/30 text-xs italic">Issued</span>
-                                                )}
-                                            </td>
-                                        </tr>
-                                    );
-                                })}
-                                {filteredUsers.length === 0 && (
-                                    <tr>
-                                        <td colSpan={5} className="text-center py-10 text-pramana-cream/30 italic">No users found.</td>
-                                    </tr>
-                                )}
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-
-                {showIssueModal && (
-                    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-                        <div className="bg-white p-6 rounded-2xl w-full max-w-md shadow-xl">
-                            <h3 className="text-xl font-bold mb-4">Issue Pass Manually</h3>
-                            <p className="mb-4 text-sm text-gray-600">
-                                issuing for: <b>{selectedUserForPass?.email}</b>
-                            </p>
-
-                            <div className="mb-4">
-                                <label className="block text-sm font-bold mb-1">Select Pass Type</label>
+                    <div className="bg-white/5 p-6 rounded-2xl border border-white/10 flex flex-col gap-6 backdrop-blur-sm animate-stagger-2">
+                        <div className="flex flex-col md:flex-row gap-4">
+                            <input
+                                placeholder="Search by email or name..."
+                                className="flex-1 bg-white/5 border border-white/10 p-3 rounded-lg text-pramana-cream placeholder-white/20 focus:outline-none focus:border-pramana-gold transition"
+                                value={filter}
+                                onChange={e => setFilter(e.target.value)}
+                            />
+                            <div className="flex gap-2">
                                 <select
-                                    className="w-full border p-2 rounded"
-                                    value={selectedPassId}
-                                    onChange={e => setSelectedPassId(e.target.value)}
+                                    className="bg-white/5 border border-white/10 p-3 rounded-lg text-pramana-cream focus:outline-none focus:border-pramana-gold cursor-pointer"
+                                    value={categoryFilter}
+                                    onChange={e => setCategoryFilter(e.target.value as any)}
                                 >
-                                    <option value="">-- Choose Pass --</option>
-                                    {passConfigs.map(p => (
-                                        <option key={p.id} value={p.id}>{p.name} - ₹{p.price}</option>
-                                    ))}
+                                    <option value="all" className="bg-black text-white">All Categories</option>
+                                    <option value="gitam" className="bg-black text-white">Gitam Only</option>
+                                    <option value="non-gitam" className="bg-black text-white">Non-Gitam Only</option>
+                                </select>
+                                <select
+                                    className="bg-white/5 border border-white/10 p-3 rounded-lg text-pramana-cream focus:outline-none focus:border-pramana-gold cursor-pointer"
+                                    value={paymentFilter}
+                                    onChange={e => setPaymentFilter(e.target.value as any)}
+                                >
+                                    <option value="all" className="bg-black text-white">All Status</option>
+                                    <option value="paid" className="bg-black text-white">Paid</option>
+                                    <option value="unpaid" className="bg-black text-white">Unpaid</option>
                                 </select>
                             </div>
+                        </div>
 
-                            <div className="flex justify-end gap-2">
-                                <button onClick={() => setShowIssueModal(false)} className="px-4 py-2 text-slate-500 font-bold">Cancel</button>
-                                <button
-                                    onClick={handleIssuePass}
-                                    disabled={!selectedPassId || processing}
-                                    className="px-4 py-2 bg-blue-600 text-white rounded font-bold disabled:opacity-50"
-                                >
-                                    {processing ? "Issuing..." : "Confirm & Issue"}
-                                </button>
-                            </div>
+                        <div className="overflow-x-auto rounded-lg border border-white/10">
+                            <table className="min-w-full divide-y divide-white/10">
+                                <thead className="bg-white/5">
+                                    <tr>
+                                        <th className="px-6 py-4 text-left text-xs font-bold text-pramana-cream/50 uppercase tracking-wider font-cinzel">User</th>
+                                        <th className="px-6 py-4 text-left text-xs font-bold text-pramana-cream/50 uppercase tracking-wider font-cinzel">Category</th>
+                                        <th className="px-6 py-4 text-left text-xs font-bold text-pramana-cream/50 uppercase tracking-wider font-cinzel">Payment</th>
+                                        <th className="px-6 py-4 text-left text-xs font-bold text-pramana-cream/50 uppercase tracking-wider font-cinzel">Action</th>
+                                    </tr>
+                                </thead>
+                                <tbody className="bg-transparent divide-y divide-white/5">
+                                    {filteredUsers.map(u => {
+                                        const pass = passesIssued[u.email];
+                                        return (
+                                            <tr key={u.uid} className="hover:bg-white/5 transition border-b border-white/5 last:border-0">
+                                                <td className="px-6 py-4 whitespace-nowrap">
+                                                    <div className="flex items-center">
+                                                        <div className="h-10 w-10 rounded-full bg-white/10 flex items-center justify-center text-pramana-gold font-bold text-sm mr-3 font-cinzel border border-white/10">
+                                                            {u.displayName?.[0]?.toUpperCase() || 'U'}
+                                                        </div>
+                                                        <div>
+                                                            <div className="text-sm font-bold text-pramana-cream">{u.displayName || "N/A"}</div>
+                                                            <div className="text-sm text-pramana-cream/60">{u.email}</div>
+                                                            <div className="text-xs text-pramana-cream/40">{u.registrationData?.phone}</div>
+                                                        </div>
+                                                    </div>
+                                                </td>
+                                                <td className="px-6 py-4 whitespace-nowrap">
+                                                    <span className={`px-2 py-1 text-xs rounded-full font-bold border ${u.isGitamite ? 'bg-blue-500/10 text-blue-400 border-blue-500/20' : 'bg-gray-500/10 text-gray-400 border-gray-500/20'}`}>
+                                                        {u.isGitamite ? 'Gitam' : 'Non-Gitam'}
+                                                    </span>
+                                                </td>
+                                                <td className="px-6 py-4 whitespace-nowrap">
+                                                    {pass ? (
+                                                        <div>
+                                                            <span className="bg-green-500/10 text-green-400 border border-green-500/20 px-2 py-1 rounded text-xs font-bold">Paid</span>
+                                                            <div className="text-xs text-pramana-cream/50 mt-1">{pass.passName}</div>
+                                                            {pass.paymentMethod === 'admin_manual' && <div className="text-[10px] text-orange-400 font-bold">By Admin</div>}
+                                                        </div>
+                                                    ) : (
+                                                        <span className="bg-red-500/10 text-red-400 border border-red-500/20 px-2 py-1 rounded text-xs font-bold">Unpaid</span>
+                                                    )}
+                                                </td>
+                                                <td className="px-6 py-4 whitespace-nowrap">
+                                                    {!pass && (
+                                                        <button
+                                                            onClick={() => { setSelectedUserForPass(u); setShowIssueModal(true); }}
+                                                            className="bg-blue-600/80 text-white px-3 py-1.5 rounded text-xs font-bold hover:bg-blue-600 shadow-lg shadow-blue-900/20 transition"
+                                                        >
+                                                            Issue Pass
+                                                        </button>
+                                                    )}
+                                                    {pass && (
+                                                        <span className="text-pramana-cream/30 text-xs italic">Issued</span>
+                                                    )}
+                                                </td>
+                                            </tr>
+                                        );
+                                    })}
+                                    {filteredUsers.length === 0 && (
+                                        <tr>
+                                            <td colSpan={5} className="text-center py-10 text-pramana-cream/30 italic">No users found.</td>
+                                        </tr>
+                                    )}
+                                </tbody>
+                            </table>
                         </div>
                     </div>
-                )}
+
+                    {showIssueModal && (
+                        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+                            <div className="bg-white p-6 rounded-2xl w-full max-w-md shadow-xl">
+                                <h3 className="text-xl font-bold mb-4">Issue Pass Manually</h3>
+                                <p className="mb-4 text-sm text-gray-600">
+                                    issuing for: <b>{selectedUserForPass?.email}</b>
+                                </p>
+
+                                <div className="mb-4">
+                                    <label className="block text-sm font-bold mb-1">Select Pass Type</label>
+                                    <select
+                                        className="w-full border p-2 rounded"
+                                        value={selectedPassId}
+                                        onChange={e => setSelectedPassId(e.target.value)}
+                                    >
+                                        <option value="">-- Choose Pass --</option>
+                                        {passConfigs.map(p => (
+                                            <option key={p.id} value={p.id}>{p.name} - ₹{p.price}</option>
+                                        ))}
+                                    </select>
+                                </div>
+
+                                <div className="flex justify-end gap-2">
+                                    <button onClick={() => setShowIssueModal(false)} className="px-4 py-2 text-slate-500 font-bold">Cancel</button>
+                                    <button
+                                        onClick={handleIssuePass}
+                                        disabled={!selectedPassId || processing}
+                                        className="px-4 py-2 bg-blue-600 text-white rounded font-bold disabled:opacity-50"
+                                    >
+                                        {processing ? "Issuing..." : "Confirm & Issue"}
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    )}
+                </div>
             </main>
         </div>
     );

@@ -33,3 +33,89 @@ body {
   font-family: var(--font-playfair), serif;
   /* Default to Playfair */
 }
+
+/* Futuristic Utilities */
+@layer utilities {
+  .glass-panel {
+    @apply bg-white/5 backdrop-blur-xl border border-white/10 shadow-2xl;
+  }
+
+  .glass-panel-hover {
+    @apply hover:bg-white/10 hover:border-white/20 hover:shadow-pramana-gold/10 transition-all duration-300;
+  }
+
+  .neon-text-gold {
+    text-shadow: 0 0 10px rgba(184, 134, 11, 0.5), 0 0 20px rgba(184, 134, 11, 0.3);
+  }
+
+  .neon-border-gold {
+    box-shadow: 0 0 10px rgba(184, 134, 11, 0.2), inset 0 0 10px rgba(184, 134, 11, 0.1);
+  }
+
+  .admin-page-container {
+    @apply flex-1 p-8 overflow-y-auto h-screen from-gray-900 via-black to-black;
+    background-image: radial-gradient(ellipse at top right, var(--tw-gradient-stops));
+  }
+
+  .admin-content-wrapper {
+    @apply container mx-auto max-w-7xl space-y-8 pb-20;
+  }
+
+  /* Staggered Animation Utilities */
+  @keyframes slideUp {
+    0% {
+      transform: translateY(20px);
+      opacity: 0;
+    }
+
+    100% {
+      transform: translateY(0);
+      opacity: 1;
+    }
+  }
+
+  .animate-stagger-1 {
+    animation: slideUp 0.5s ease-out forwards;
+    animation-delay: 100ms;
+    opacity: 0;
+  }
+
+  .animate-stagger-2 {
+    animation: slideUp 0.5s ease-out forwards;
+    animation-delay: 200ms;
+    opacity: 0;
+  }
+
+  .animate-stagger-3 {
+    animation: slideUp 0.5s ease-out forwards;
+    animation-delay: 300ms;
+    opacity: 0;
+  }
+
+  .animate-stagger-4 {
+    animation: slideUp 0.5s ease-out forwards;
+    animation-delay: 400ms;
+    opacity: 0;
+  }
+
+  @keyframes scan {
+    0% {
+      transform: translateY(-100%);
+      opacity: 0;
+    }
+
+    50% {
+      opacity: 1;
+    }
+
+    100% {
+      transform: translateY(100%);
+      opacity: 0;
+    }
+  }
+
+  .animate-scan {
+    animation: scan 2s linear infinite;
+  }
+
+}

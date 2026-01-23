@@ -21,6 +21,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
             if (firebaseUser) {
                 // User is signed in
+                document.cookie = "auth_status=true; path=/; max-age=86400; SameSite=Strict";
                 const userRef = doc(db, "users", firebaseUser.uid);
                 const userSnap = await getDoc(userRef);
 
@@ -73,6 +74,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
                 }
             } else {
                 // User is signed out
+                document.cookie = "auth_status=; path=/; max-age=0; SameSite=Strict";
                 setUser(null);
             }
             setLoading(false);
@@ -83,24 +85,38 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
     useEffect(() => {
         if (!loading && user) {
-            if (user.role === 'superadmin' && !pathname.startsWith('/admin')) {
-                // Determine if we should redirect. If they are just landing on home page, maybe let them be?
-                // User requirement: "automatically go to admin page"
-                // Let's force it for now if they are on root or register
-                if (pathname === "/" || pathname === "/register") {
-                    router.push("/admin");
+            // Keep cookie fresh
+            document.cookie = "auth_status=true; path=/; max-age=86400; SameSite=Strict";
+
+            // 1. Unregistered Users -> Restriction
+            if (!user.isRegistered && pathname !== "/register") {
+                router.replace("/register");
+                return;
+            }
+
+            // 2. Registered Users trying to access Register -> Restriction
+            if (user.isRegistered && pathname === "/register") {
+                router.replace("/");
+                return;
+            }
+
+            // 3. Role-Based Access Control
+            if (user.role === 'user') {
+                // Regular Users cannot access Admin or Entry portals
+                if (pathname.startsWith('/admin') || pathname.startsWith('/entry')) {
+                    router.replace("/dashboard");
                 }
             } else if (user.role === 'entry_admin') {
-                // FORCE Redirect for Entry Admin
+                // Entry Admin is locked to Entry Portal
                 if (!pathname.startsWith('/entry')) {
-                    router.push("/entry");
+                    router.replace("/entry");
                 }
-            } else if (!user.isRegistered && pathname !== "/register") {
-                router.push("/register");
-            }
-            // Redirect registered users away from register page?
-            if (user.isRegistered && pathname === "/register") {
-                router.push("/");
+            } else if (user.role === 'superadmin' || user.role === 'admin') {
+                // Admins Logic
+                // If landing on root, guide to admin. Otherwise allow freedom.
+                if (pathname === "/") {
+                    router.replace("/admin");
+                }
             }
         }
     }, [user, loading, pathname, router]);
@@ -108,9 +124,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
     const signInWithGoogle = async () => {
         try {
-            await signInWithPopup(auth, googleProvider);
+            return await signInWithPopup(auth, googleProvider);
         } catch (error) {
             console.error("Error signing in with Google", error);
+            throw error;
         }
     };
 

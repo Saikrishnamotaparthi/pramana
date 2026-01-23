@@ -1,37 +1,62 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Pramana 2026 - Official Website
 
-## Getting Started
+Welcome to the official web portal for **PRAMANA 2026**, the largest student festival at GITAM Deemed to be University, Hyderabad Campus.
 
-First, run the development server:
+This website serves as the central hub for the fest, offering an immersive digital experience that reflects the grandeur and energy of the event.
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+## 🌟 Key Features
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+### 🎬 Cinematic User Experience
+-   **Premium Design**: A "Black & Gold" luxury aesthetic with glassmorphism effects and custom typography (Cinzel, Playfair Display).
+-   **Immersive Animations**: Powered by Framer Motion, featuring scroll-triggered reveals, parallax effects, and dynamic transitions.
+-   **Interactive Hero**: A visually striking landing page with animated mascots and atmospheric backgrounds.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+### 📅 Event Showcase
+-   **Comprehensive Info**: Details about the 2-day event (Feb 27th & 28th), including Tech Challenges, Cultural Battles, and Pro-Nights.
+-   **Auto Expo**: Special spotlight on the upcoming Auto Expo.
+-   **Gallery**: A "Moments in Time" scrolling showcase of past fest highlights.
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+### 🎟️ Student Portal & Ticketing
+-   **Registration**: Streamlined sign-up process for both GITAM students and external participants.
+-   **Digital Passes**: Instant generation of personalized entry passes with unique QR codes.
+-   **Profile Management**: Users can view their details and access their tickets anytime.
 
-## Learn More
+### 🔒 Admin & Management
+-   **Dashboard**: Real-time insights into registration trends and user statistics.
+-   **Entry Verification**: Tools for verifying QR codes at venue entry points.
 
-To learn more about Next.js, take a look at the following resources:
+## 🛠️ Technology Stack
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+-   **Frontend Framework**: [Next.js 15](https://nextjs.org/) (App Router)
+-   **Styling**: [Tailwind CSS](https://tailwindcss.com/)
+-   **Animations**: [Framer Motion](https://www.framer.com/motion/)
+-   **Backend & Database**: [Firebase](https://firebase.google.com/) (Firestore, Authentication)
+-   **Icons**: [Lucide React](https://lucide.dev/)
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## 🚀 Getting Started
 
-## Deploy on Vercel
+To run the project locally:
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+1.  **Clone the repository**:
+    ```bash
+    git clone https://github.com/Saikrishnamotaparthi/pramanaticketing.git
+    cd pramanaticketing
+    ```
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
-"# pramanaticketing" 
+2.  **Install dependencies**:
+    ```bash
+    npm install
+    # or
+    yarn install
+    ```
+
+3.  **Run the development server**:
+    ```bash
+    npm run dev
+    ```
+
+4.  **Open your browser**:
+    Navigate to [http://localhost:3000](http://localhost:3000) to view the site.
+
+## 📄 License
+Copyright © 2026 PRAMANA. All rights reserved.

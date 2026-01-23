@@ -25,9 +25,7 @@ const garamond = EB_Garamond({
 export const metadata: Metadata = {
   title: "PRAMANA26 - The Ultimate Event",
   description: "Secure ticketing and entry management system",
-  icons: {
-    icon: "/logo.png",
-  },
+
 };
 
 export default function RootLayout({

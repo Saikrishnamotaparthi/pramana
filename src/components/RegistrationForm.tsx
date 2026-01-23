@@ -51,17 +51,6 @@ export default function RegistrationForm() {
                 fullName: user.displayName || "",
                 email: user.email,
             }));
-
-            // Check if user has pass, if so redirect to dashboard
-            const checkPass = async () => {
-                const { collection, query, where, getDocs } = await import("firebase/firestore");
-                const q = query(collection(db, "passes_issued"), where("issuedToEmail", "==", user.email));
-                const snap = await getDocs(q);
-                if (!snap.empty) {
-                    router.push("/dashboard");
-                }
-            };
-            checkPass();
         }
     }, [user, router]);
 
@@ -100,7 +89,7 @@ export default function RegistrationForm() {
                 <h2 className="text-3xl font-bold font-cinzel text-pramana-gold mb-2">Complete Profile</h2>
                 <p className="text-pramana-cream/60 text-sm">Join the PRAMANA26 experience.</p>
             </div>
-            
+
             {visibleFields.map(field => (
                 <div key={field.id} className="flex flex-col group">
                     <label className="text-sm font-bold text-pramana-gold mb-2 group-focus-within:text-pramana-cream transition-colors uppercase tracking-wider">

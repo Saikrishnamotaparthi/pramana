@@ -38,9 +38,9 @@ export async function sendPassEmail(to: string, userName: string, passName: stri
                 }
             ]
         });
-        console.log(`Email sent to ${to}`);
-    } catch (error) {
-        console.error("Error sending email:", error);
+        console.log(`Email sent successfully to user.`);
+    } catch (error: any) {
+        console.error("Error sending email:", error.message || "Unknown error");
         // Don't throw, just log. We don't want to revert payment if email fails.
     }
 }

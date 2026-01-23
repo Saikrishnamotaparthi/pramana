@@ -24,9 +24,7 @@ export default function Navbar() {
                                 Dashboard
                             </Link>
                         )}
-                        <Link href="/tickets" className="text-sm font-medium text-pramana-cream/80 hover:text-pramana-gold transition">
-                            Buy Output
-                        </Link>
+                        {/* Link removed as per user request */}
                         {user && (user.role === 'admin' || user.role === 'superadmin' || user.role === 'view_admin') && (
                             <Link href="/admin" className="text-sm font-medium text-pramana-cream/80 hover:text-pramana-gold transition">
                                 Admin Portal

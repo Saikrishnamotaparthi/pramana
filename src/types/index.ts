@@ -13,7 +13,7 @@ export interface UserProfile {
 export interface AuthContextType {
     user: UserProfile | null;
     loading: boolean;
-    signInWithGoogle: () => Promise<void>;
+    signInWithGoogle: () => Promise<any>;
     logout: () => Promise<void>;
 }
 
@@ -39,6 +39,7 @@ export interface PassConfig {
     status: 'available' | 'sold_out' | 'coming_soon';
     showRemaining?: boolean;
     category?: 'all' | 'gitam' | 'non-gitam';
+    paymentLink?: string;
 }
 
 export interface Coupon {
