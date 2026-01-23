@@ -61,7 +61,7 @@ const SectionHeading = ({ title, subtitle }: { title: string; subtitle: string }
 };
 
 export default function LandingPage() {
-  const { user } = useAuth();
+  const { user, signInWithGoogle } = useAuth();
   const router = useRouter();
   const [openFaq, setOpenFaq] = useState<number | null>(null);
 
@@ -73,9 +73,24 @@ export default function LandingPage() {
     { q: "Is travel or accommodation provided?", a: "Details regarding travel assistance and accommodation will be announced soon." }
   ];
 
-  const handleEntry = () => {
-    if (user) router.push("/tickets");
-    else router.push("/login?redirect=/tickets");
+  const handleEntry = async () => {
+    if (user) {
+      router.push("/tickets");
+    } else {
+      try {
+        await signInWithGoogle();
+        // AuthProvider will handle admin redirect if needed.
+        // For normal users, we might want to go to tickets after login if they clicked "Buy Passes"
+        // But we can't easily track "intent" across the popup without state.
+        // However, after login, if they are on "/", AuthProvider currently sends Admins to /admin.
+        // Users stay on page or go to /register?
+        // Let's rely on manual navigation or implicit.
+        // Better: After await, check user? No, user state updates async.
+        router.push("/tickets");
+      } catch (error) {
+        console.error("Login failed", error);
+      }
+    }
   };
 
   const scrollToInfo = () => {
@@ -98,13 +113,13 @@ export default function LandingPage() {
             <div className="hidden md:block w-32 relative h-10 opacity-80">
               <Image src="/student-life-logo.png" alt="Student Life" fill className="object-contain" sizes="128px" />
             </div>
-            <Link
-              href="/login"
+            <button
+              onClick={handleEntry}
               className="group relative px-6 py-2 bg-pramana-gold text-black rounded-full font-bold font-cinzel text-xs uppercase tracking-widest overflow-hidden"
             >
               <span className="relative z-10 group-hover:text-white transition-colors duration-300">Buy Passes</span>
               <div className="absolute inset-0 bg-white/20 transform translate-y-full group-hover:translate-y-0 transition-transform duration-300"></div>
-            </Link>
+            </button>
           </div>
         </div>
       </header>
@@ -463,7 +478,14 @@ export default function LandingPage() {
             <h4 className="font-cinzel text-white font-bold mb-6 text-sm uppercase tracking-widest">Navigate</h4>
             <ul className="space-y-4 text-sm text-pramana-cream/50 font-mono">
               {['Buy Passes', 'Login', 'Schedule', 'Sponsors'].map((item) => (
-                <li key={item}><a href="#" className="hover:text-pramana-gold transition-colors">{item}</a></li>
+                <li key={item}>
+                  <button
+                    onClick={item === 'Buy Passes' || item === 'Login' ? handleEntry : undefined}
+                    className="hover:text-pramana-gold transition-colors text-left"
+                  >
+                    {item}
+                  </button>
+                </li>
               ))}
             </ul>
           </div>
