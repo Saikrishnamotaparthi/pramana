@@ -61,9 +61,10 @@ const SectionHeading = ({ title, subtitle }: { title: string; subtitle: string }
 };
 
 export default function LandingPage() {
-  const { user, signInWithGoogle } = useAuth();
+  const { user, signInWithGoogle, loading } = useAuth();
   const router = useRouter();
   const [openFaq, setOpenFaq] = useState<number | null>(null);
+  const [isLoggingIn, setIsLoggingIn] = useState(false);
 
   const faqs = [
     { q: "When is Pramana happening?", a: "Pramana is a two-day event scheduled on 27th & 28th February 2026. Event timings will be announced soon." },
@@ -74,21 +75,18 @@ export default function LandingPage() {
   ];
 
   const handleEntry = async () => {
+    if (loading || isLoggingIn) return; // Prevent double clicks or conflicts
     if (user) {
       router.push("/tickets");
     } else {
+      setIsLoggingIn(true);
       try {
         await signInWithGoogle();
-        // AuthProvider will handle admin redirect if needed.
-        // For normal users, we might want to go to tickets after login if they clicked "Buy Passes"
-        // But we can't easily track "intent" across the popup without state.
-        // However, after login, if they are on "/", AuthProvider currently sends Admins to /admin.
-        // Users stay on page or go to /register?
-        // Let's rely on manual navigation or implicit.
-        // Better: After await, check user? No, user state updates async.
         router.push("/tickets");
       } catch (error) {
         console.error("Login failed", error);
+      } finally {
+        setIsLoggingIn(false);
       }
     }
   };
@@ -115,9 +113,12 @@ export default function LandingPage() {
             </div>
             <button
               onClick={handleEntry}
-              className="group relative px-6 py-2 bg-pramana-gold text-black rounded-full font-bold font-cinzel text-xs uppercase tracking-widest overflow-hidden"
+              disabled={isLoggingIn}
+              className="group relative px-6 py-2 bg-pramana-gold text-black rounded-full font-bold font-cinzel text-xs uppercase tracking-widest overflow-hidden disabled:opacity-70 disabled:cursor-not-allowed"
             >
-              <span className="relative z-10 group-hover:text-white transition-colors duration-300">Buy Passes</span>
+              <span className="relative z-10 group-hover:text-white transition-colors duration-300">
+                {isLoggingIn ? "Processing..." : "Buy Passes"}
+              </span>
               <div className="absolute inset-0 bg-white/20 transform translate-y-full group-hover:translate-y-0 transition-transform duration-300"></div>
             </button>
           </div>

@@ -15,7 +15,10 @@ export default function Navbar() {
         <nav className="border-b border-white/10 bg-black/50 backdrop-blur-md px-6 py-4 sticky top-0 z-50">
             <div className="mx-auto flex max-w-7xl items-center justify-between">
                 <div className="flex items-center gap-8">
-                    <Link href="/dashboard" className="text-xl font-cinzel font-bold tracking-widest text-pramana-gold">
+                    <Link
+                        href={user && (user.role === 'admin' || user.role === 'superadmin' || user.role === 'view_admin') ? "/admin" : "/dashboard"}
+                        className="text-xl font-cinzel font-bold tracking-widest text-pramana-gold"
+                    >
                         PRAMANA26
                     </Link>
                     <div className="hidden md:flex gap-8">
