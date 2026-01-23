@@ -53,7 +53,7 @@ body {
   }
 
   .admin-page-container {
-    @apply flex-1 p-8 overflow-y-auto h-screen from-gray-900 via-black to-black;
+    @apply flex-1 p-4 md:p-8 overflow-y-auto h-screen from-gray-900 via-black to-black;
     background-image: radial-gradient(ellipse at top right, var(--tw-gradient-stops));
   }
 

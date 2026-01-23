@@ -118,7 +118,7 @@ export default function LandingPage() {
           <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/stardust.png')] opacity-10"></div>
         </div>
 
-        <div className="relative z-10 text-center space-y-8 transform translate-y-[-5%] px-4">
+        <div className="relative z-10 text-center space-y-8 transform translate-y-[-5%] px-4 pt-24 md:pt-0">
           {/* Animated Pramana Logo */}
           <motion.div
             initial={{ opacity: 0, scale: 0.8, rotate: -10 }}

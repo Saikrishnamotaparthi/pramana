@@ -21,7 +21,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
             if (firebaseUser) {
                 // User is signed in
-                document.cookie = "auth_status=true; path=/; max-age=86400; SameSite=Strict";
+                document.cookie = "auth_status=true; path=/; max-age=86400; SameSite=Lax";
                 const userRef = doc(db, "users", firebaseUser.uid);
                 const userSnap = await getDoc(userRef);
 
@@ -74,7 +74,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
                 }
             } else {
                 // User is signed out
-                document.cookie = "auth_status=; path=/; max-age=0; SameSite=Strict";
+                document.cookie = "auth_status=; path=/; max-age=0; SameSite=Lax";
                 setUser(null);
             }
             setLoading(false);
@@ -86,7 +86,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     useEffect(() => {
         if (!loading && user) {
             // Keep cookie fresh
-            document.cookie = "auth_status=true; path=/; max-age=86400; SameSite=Strict";
+            document.cookie = "auth_status=true; path=/; max-age=86400; SameSite=Lax";
 
             // 1. Unregistered Users -> Restriction
             if (!user.isRegistered && pathname !== "/register") {

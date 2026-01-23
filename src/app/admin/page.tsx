@@ -301,14 +301,14 @@ export default function AdminDashboard() {
 
             <main className="admin-page-container">
                 <div className="admin-content-wrapper">
-                    <header className="flex justify-between items-center mb-12 animate-stagger-1">
+                    <header className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-8 md:mb-12 animate-stagger-1">
                         <div>
-                            <h2 className="text-4xl font-cinzel font-bold text-transparent bg-clip-text bg-gradient-to-r from-pramana-gold to-white neon-text-gold">Dashboard Overview</h2>
-                            <p className="text-pramana-cream/60 mt-2 font-light tracking-wide">Real-time statistics and updates.</p>
+                            <h2 className="text-2xl md:text-4xl font-cinzel font-bold text-transparent bg-clip-text bg-gradient-to-r from-pramana-gold to-white neon-text-gold">Dashboard Overview</h2>
+                            <p className="text-pramana-cream/60 mt-1 md:mt-2 font-light tracking-wide text-xs md:text-base">Real-time statistics and updates.</p>
                         </div>
                         <button
                             onClick={handleExport}
-                            className="glass-panel text-pramana-gold px-6 py-2 rounded-full font-bold shadow-lg shadow-pramana-gold/10 hover:bg-white/10 transition-all duration-300 flex items-center gap-2 border-pramana-gold/20"
+                            className="w-full md:w-auto glass-panel text-pramana-gold px-6 py-2 rounded-full font-bold shadow-lg shadow-pramana-gold/10 hover:bg-white/10 transition-all duration-300 flex items-center justify-center gap-2 border-pramana-gold/20"
                         >
                             <span className="text-lg">📂</span> Export CSV
                         </button>
@@ -317,16 +317,16 @@ export default function AdminDashboard() {
                     {/* Active Day Control */}
                     <div className="bg-white/5 p-6 rounded-2xl border border-white/10 mb-8 backdrop-blur-sm animate-stagger-2">
                         <h3 className="text-lg font-bold mb-4 font-cinzel text-pramana-cream">Entry Control</h3>
-                        <div className="flex gap-4">
-                            <button onClick={() => updateActiveDay('none')} className={`px-4 py-2 rounded-lg font-bold transition ${activeDay === 'none' ? 'bg-red-600/80 text-white shadow-lg shadow-red-900/50' : 'bg-white/5 text-pramana-cream/50 hover:bg-white/10'}`}>Close Entry</button>
-                            <button onClick={() => updateActiveDay('day1')} className={`px-4 py-2 rounded-lg font-bold transition ${activeDay === 'day1' ? 'bg-green-600/80 text-white shadow-lg shadow-green-900/50' : 'bg-white/5 text-pramana-cream/50 hover:bg-white/10'}`}>Day 1 Active</button>
-                            <button onClick={() => updateActiveDay('day2')} className={`px-4 py-2 rounded-lg font-bold transition ${activeDay === 'day2' ? 'bg-blue-600/80 text-white shadow-lg shadow-blue-900/50' : 'bg-white/5 text-pramana-cream/50 hover:bg-white/10'}`}>Day 2 Active</button>
+                        <div className="flex flex-wrap gap-3 md:gap-4">
+                            <button onClick={() => updateActiveDay('none')} className={`flex-1 md:flex-none px-4 py-2 rounded-lg font-bold transition text-sm md:text-base ${activeDay === 'none' ? 'bg-red-600/80 text-white shadow-lg shadow-red-900/50' : 'bg-white/5 text-pramana-cream/50 hover:bg-white/10'}`}>Close Entry</button>
+                            <button onClick={() => updateActiveDay('day1')} className={`flex-1 md:flex-none px-4 py-2 rounded-lg font-bold transition text-sm md:text-base ${activeDay === 'day1' ? 'bg-green-600/80 text-white shadow-lg shadow-green-900/50' : 'bg-white/5 text-pramana-cream/50 hover:bg-white/10'}`}>Day 1 Active</button>
+                            <button onClick={() => updateActiveDay('day2')} className={`flex-1 md:flex-none px-4 py-2 rounded-lg font-bold transition text-sm md:text-base ${activeDay === 'day2' ? 'bg-blue-600/80 text-white shadow-lg shadow-blue-900/50' : 'bg-white/5 text-pramana-cream/50 hover:bg-white/10'}`}>Day 2 Active</button>
                         </div>
                         <p className="text-sm text-pramana-cream/40 mt-2">Current Active Mode: <span className="font-bold uppercase text-pramana-gold">{activeDay}</span></p>
                     </div>
 
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8 animate-stagger-3">
-                        <div className="glass-panel p-6 rounded-2xl glass-panel-hover group">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6 mb-8 animate-stagger-3">
+                        <div className="glass-panel p-4 md:p-6 rounded-2xl glass-panel-hover group">
                             <div className="flex justify-between items-start mb-4">
                                 <div>
                                     <p className="text-pramana-cream/50 text-xs font-bold uppercase tracking-widest mb-2 group-hover:text-pramana-gold transition">Total Revenue</p>
@@ -387,11 +387,11 @@ export default function AdminDashboard() {
                     </div>
 
                     {/* Real Data Charts */}
-                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 md:gap-8">
                         {/* Recent Sales List */}
                         <div className="bg-white/5 p-6 rounded-2xl border border-white/10 min-h-[300px]">
                             <h3 className="text-lg font-bold text-pramana-gold font-cinzel mb-4">Recent Sales</h3>
-                            <div className="overflow-y-auto max-h-[300px]">
+                            <div className="overflow-x-auto overflow-y-auto max-h-[300px]">
                                 {stats.recentSales.length > 0 ? (
                                     <table className="w-full text-left text-sm">
                                         <thead>
