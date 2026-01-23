@@ -71,8 +71,11 @@ export default function RegistrationConfig() {
             type: newField.type as any,
             required: newField.required!,
             category: newField.category as any,
-            options: newField.type === 'select' ? optionsInput.split(',').map(s => s.trim()).filter(Boolean) : undefined,
         };
+
+        if (newField.type === 'select') {
+            fieldData.options = optionsInput.split(',').map(s => s.trim()).filter(Boolean);
+        }
 
         if (editingId) {
             // Update existing
