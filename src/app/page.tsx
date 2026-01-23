@@ -3,19 +3,19 @@
 import { useAuth } from "@/hooks/useAuth";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
-import { motion, useScroll, useTransform, useSpring, useInView } from "framer-motion";
+import { motion, useScroll, useTransform, useSpring, useInView, Variants } from "framer-motion";
 import Link from "next/link";
 import { ArrowRight, ChevronDown, Plus, Minus, Instagram, Linkedin, Mail, MapPin, Calendar, ExternalLink } from "lucide-react";
 import { useState, useRef } from "react";
 
 // --- ANIMATION VARIANTS ---
 
-const fadeUp = {
+const fadeUp: Variants = {
   hidden: { opacity: 0, y: 30 },
   visible: { opacity: 1, y: 0, transition: { duration: 0.8, ease: "easeOut" } }
 };
 
-const staggerContainer = {
+const staggerContainer: Variants = {
   hidden: {},
   visible: { transition: { staggerChildren: 0.1 } }
 };
