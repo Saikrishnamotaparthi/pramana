@@ -14,6 +14,7 @@ export default function BulkIssuePage() {
     const [emails, setEmails] = useState<string[]>([]);
     const [processing, setProcessing] = useState(false);
     const [logs, setLogs] = useState<string[]>([]);
+    const [stats, setStats] = useState<any>(null);
 
     useEffect(() => {
         const fetchPasses = async () => {
@@ -52,6 +53,8 @@ export default function BulkIssuePage() {
                     if (row[emailIdx]) foundEmails.push(String(row[emailIdx]).trim());
                 }
                 setEmails(foundEmails.filter(e => e && e.includes('@')));
+                setStats(null); // Reset stats on new file
+                setLogs([]);
             };
             reader.readAsBinaryString(f);
         }
@@ -63,6 +66,7 @@ export default function BulkIssuePage() {
 
         setProcessing(true);
         setLogs(prev => [...prev, `Starting bulk issue for ${emails.length} emails...`]);
+        setStats(null);
 
         try {
             const res = await fetch("/api/admin/issue-bulk", {
@@ -72,14 +76,13 @@ export default function BulkIssuePage() {
             });
             const result = await res.json();
             if (result.success) {
-                setLogs(prev => [...prev, `Success! Processed ${result.processed}.`]);
+                setStats(result.stats);
+                setLogs(prev => [...prev, `Success! Processed ${result.stats.processed}.`]);
                 if (result.errors?.length) {
                     setLogs(prev => [...prev, ...result.errors]);
                 }
                 alert("Bulk Issue Complete");
-                setFile(null);
-                setEmails([]);
-                // clear file input manually if needed
+                // Don't clear stats so user can see them
             } else {
                 setLogs(prev => [...prev, `Failed: ${result.message}`]);
                 alert("Failed");
@@ -138,6 +141,28 @@ export default function BulkIssuePage() {
                         >
                             {processing ? "Processing..." : "Issue Passes"}
                         </button>
+
+                        {/* Statistics Box */}
+                        {stats && (
+                            <div className="mt-8 grid grid-cols-2 md:grid-cols-4 gap-4 animate-stagger-3">
+                                <div className="bg-black/40 p-4 rounded-xl border border-white/10 text-center">
+                                    <div className="text-pramana-gold text-2xl font-bold font-cinzel">{stats.issued}</div>
+                                    <div className="text-[10px] uppercase tracking-widest text-white/50">Total Issued</div>
+                                </div>
+                                <div className="bg-green-900/20 p-4 rounded-xl border border-green-500/20 text-center">
+                                    <div className="text-green-400 text-2xl font-bold font-cinzel">{stats.issuedToRegistered}</div>
+                                    <div className="text-[10px] uppercase tracking-widest text-green-400/50">Registered Users</div>
+                                </div>
+                                <div className="bg-yellow-900/20 p-4 rounded-xl border border-yellow-500/20 text-center">
+                                    <div className="text-yellow-400 text-2xl font-bold font-cinzel">{stats.issuedToUnregistered}</div>
+                                    <div className="text-[10px] uppercase tracking-widest text-yellow-400/50">Unregistered</div>
+                                </div>
+                                <div className="bg-red-900/20 p-4 rounded-xl border border-red-500/20 text-center">
+                                    <div className="text-red-400 text-2xl font-bold font-cinzel">{stats.duplicatesSkipped}</div>
+                                    <div className="text-[10px] uppercase tracking-widest text-red-400/50">Duplicates (Skipped)</div>
+                                </div>
+                            </div>
+                        )}
 
                         {logs.length > 0 && (
                             <div className="mt-8 p-4 bg-black/50 rounded border border-white/10 h-48 overflow-auto font-mono text-xs">

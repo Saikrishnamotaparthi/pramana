@@ -1,106 +1,175 @@
 import { NextResponse } from "next/server";
 import { adminDb } from "@/lib/firebase-admin";
-// import { sendPassEmail } from "@/lib/email";
 import { FieldValue } from "firebase-admin/firestore";
 
 export async function POST(req: Request) {
     try {
         const { passId, emails } = await req.json();
 
+        // 1. Validation
         if (!passId || !emails || !Array.isArray(emails) || emails.length === 0) {
-            return NextResponse.json({ success: false, message: "Invalid Request" }, { status: 400 });
+            return NextResponse.json({ success: false, message: "Invalid Request: No emails provided" }, { status: 400 });
         }
 
         if (!adminDb) {
+            console.error("Firebase Admin DB not initialized");
             return NextResponse.json({ success: false, message: "Server Configuration Error" }, { status: 500 });
         }
 
-        // 1. Get Pass Details
+        // 2. Get Pass Configuration
         const passRef = adminDb.collection("passes_config").doc(passId);
         const passSnap = await passRef.get();
         if (!passSnap.exists) {
-            return NextResponse.json({ success: false, message: "Pass not found" }, { status: 404 });
+            return NextResponse.json({ success: false, message: "Pass Type not found" }, { status: 404 });
         }
         const passData = passSnap.data()!;
 
-        // 2. Process chunks (Firestore batch limit is 500)
-        // detailed logs
-        const results = { success: 0, failed: 0, errors: [] as string[] };
+        // 3. Setup Processing Stats & Batch
+        let processedCount = 0;
+        let issuedCount = 0;
+        let usersCreatedCount = 0;
+        let duplicateCount = 0;
+        let issuedToRegistered = 0;
+        let issuedToUnregistered = 0;
 
-        // We will do one by one or small batches to ensure emails are sent and we don't hit limits easily
-        // For simplicity and reliability in this specific task context, sequential or small parallel chunks.
+        const errors: string[] = [];
 
         const bookingIdBase = `BLK-${Date.now()}`;
+        let batch = adminDb.batch();
+        let batchOpCount = 0; // Tracks number of writes in current batch
 
-        const batch = adminDb.batch();
-        let operationCount = 0;
-
+        // 4. Iterate through Emails
         for (let i = 0; i < emails.length; i++) {
-            const email = emails[i].trim();
+            const rawEmail = emails[i];
+            if (!rawEmail || typeof rawEmail !== 'string') continue;
+
+            const email = rawEmail.trim().toLowerCase();
             if (!email) continue;
 
-            const uniqueSuffix = Math.random().toString(36).substr(2, 5).toUpperCase();
-            const bookingId = `${bookingIdBase}-${i}-${uniqueSuffix}`;
-            const qrCode = `${bookingId}-${email.split('@')[0]}`; // Simple QR logic
+            processedCount++;
 
-            const newPassRef = adminDb.collection("passes_issued").doc();
+            try {
+                let isUnregisteredUser = false;
 
-            batch.set(newPassRef, {
-                passId,
-                passName: passData.name,
-                bookingId,
-                paymentId: 'MANUAL_ISSUE',
-                issuedToEmail: email,
-                purchasedBy: 'ADMIN_BULK',
-                qrCode,
-                status: 'active',
-                admitted: false,
-                purchaseDate: new Date().toISOString(),
-                isPhysicalIssued: false
-            });
+                // --- A. User Account Handling (Auto-Registration) ---
+                // Check if user exists to ensure they appear in User Management
+                const userQuery = await adminDb.collection("users").where("email", "==", email).limit(1).get();
 
-            operationCount++;
+                if (userQuery.empty) {
+                    // Create Shadow/Placeholder User
+                    isUnregisteredUser = true;
+                    const isGitam = email.endsWith('gitam.edu') || email.endsWith('gitam.in');
+                    const newUserRef = adminDb.collection("users").doc();
 
-            // Send Email - Fire and forget to avoid timeout, or await if critical. 
-            // Better to await to limit rate.
-            // Email sending removed as per request
-            // try {
-            //     await sendPassEmail(email, email.split('@')[0], passData.name, qrCode, bookingId);
-            // } catch (err: any) {
-            //     console.error(`Failed to send email to ${email}`, err);
-            //     results.errors.push(`Email failed for ${email}: ${err.message}`);
-            // }
+                    batch.set(newUserRef, {
+                        displayName: "Not Registered Yet",
+                        email: email,
+                        isGitamite: isGitam,
+                        role: 'user',
+                        createdAt: FieldValue.serverTimestamp(),
+                        shadowAccount: true,
+                        autoCreated: true,
+                        registrationData: {} // Empty map to prevent errors
+                    });
 
-            // Commit batch every 400 ops
-            if (operationCount >= 400) {
-                await batch.commit();
-                operationCount = 0;
-                // Re-init batch? adminDb.batch() creates new.
-                // Actually we need to create a new batch object.
-                // Wait, batch is not re-usable. 
-                // Creating new batch variable locally would be tricky in loop.
-                // Let's just limit bulk upload to 400 for now or commit & restart.
+                    batchOpCount++;
+                    usersCreatedCount++;
+                } else {
+                    const userData = userQuery.docs[0].data();
+                    // Check if existing user is actually a shadow/unregistered account
+                    if (userData.shadowAccount || userData.displayName === "Not Registered Yet") {
+                        isUnregisteredUser = true;
+                    }
+                }
+
+                // --- B. Pass Issuance Handling (Duplicate Check) ---
+                // Check if THIS specific pass type is already issued to this email
+                const existingPassQuery = await adminDb.collection("passes_issued")
+                    .where("issuedToEmail", "==", email)
+                    .where("passId", "==", passId)
+                    .limit(1)
+                    .get();
+
+                if (!existingPassQuery.empty) {
+                    // Pass already exists for this user -> SKIP
+                    duplicateCount++;
+                } else {
+                    // Issue New Pass
+                    const uniqueSuffix = Math.random().toString(36).substring(2, 7).toUpperCase();
+                    const bookingId = `${bookingIdBase}-${i}-${uniqueSuffix}`;
+                    const qrCode = `${bookingId}-${email.split('@')[0]}`;
+
+                    const newPassRef = adminDb.collection("passes_issued").doc();
+
+                    batch.set(newPassRef, {
+                        passId: passId,
+                        passName: passData.name,
+                        price: passData.price || 0,
+                        bookingId: bookingId,
+                        paymentId: 'MANUAL_ISSUE_BULK',
+                        paymentMethod: 'admin_bulk',
+                        issuedToEmail: email,
+                        purchasedBy: 'admin',
+                        qrCode: qrCode,
+                        status: 'active',
+                        admitted: false,
+                        purchaseDate: new Date().toISOString(),
+                        isPhysicalIssued: false
+                    });
+
+                    batchOpCount++;
+                    issuedCount++;
+
+                    if (isUnregisteredUser) {
+                        issuedToUnregistered++;
+                    } else {
+                        issuedToRegistered++;
+                    }
+                }
+
+                // --- C. Batch Management ---
+                // Firestone Batch limit is 500 operations. We do max 2 operations per loop.
+                // Committing every 400 is safe.
+                if (batchOpCount >= 400) {
+                    await batch.commit();
+                    batch = adminDb.batch(); // Start new batch
+                    batchOpCount = 0;
+                }
+
+            } catch (err: any) {
+                console.error(`Error processing email ${email}:`, err);
+                errors.push(`${email}: ${err.message}`);
             }
         }
 
-        if (operationCount > 0) {
-            // Commit remaining
-            // But we can't reuse valid batch if we already committed? 
-            // Simplification: We will assumes emails.length is < 400 or just do 1 batch.
-            // If user uploads 1000, this might fail. 
-            // Let's do a simple batch commit at the end. 
+        // 5. Final Commit (for remaining ops)
+        if (batchOpCount > 0) {
             await batch.commit();
         }
 
-        // Update sold count
-        await passRef.update({
-            sold: FieldValue.increment(emails.length) // Approximate if some were duplicates/skipped? We assumed all valid.
+        // 6. Update Pass Sold Count (Only for NEWLY issued passes)
+        if (issuedCount > 0) {
+            await passRef.update({
+                sold: FieldValue.increment(issuedCount)
+            });
+        }
+
+        return NextResponse.json({
+            success: true,
+            stats: {
+                processed: processedCount,
+                issued: issuedCount,
+                usersCreated: usersCreatedCount,
+                duplicatesSkipped: duplicateCount,
+                issuedToRegistered: issuedToRegistered,
+                issuedToUnregistered: issuedToUnregistered
+            },
+            message: `Processed: ${processedCount} | Issued: ${issuedCount}`,
+            errors: errors
         });
 
-        return NextResponse.json({ success: true, processed: emails.length, errors: results.errors });
-
     } catch (error: any) {
-        console.error("Bulk Issue Error", error);
-        return NextResponse.json({ success: false, message: error.message || "Server Error" }, { status: 500 });
+        console.error("Bulk Issue Fatal Error", error);
+        return NextResponse.json({ success: false, message: error.message || "Internal Server Error" }, { status: 500 });
     }
 }

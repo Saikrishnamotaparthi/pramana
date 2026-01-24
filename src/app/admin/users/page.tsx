@@ -27,7 +27,32 @@ export default function UserManagement() {
             // Fetch Users
             const usersQ = query(collection(db, "users"), orderBy("createdAt", "desc"));
             const usersSnap = await getDocs(usersQ);
-            const userData = usersSnap.docs.map(d => ({ ...d.data(), uid: d.id })) as UserProfile[];
+            let userData = usersSnap.docs.map(d => ({ ...d.data(), uid: d.id })) as UserProfile[];
+
+            // Deduplicate Users (Merge Shadow vs Real)
+            const uniqueUsersMap = new Map<string, UserProfile>();
+            userData.forEach(u => {
+                if (!u.email) return;
+                const email = u.email.toLowerCase();
+                const existing = uniqueUsersMap.get(email);
+
+                if (!existing) {
+                    uniqueUsersMap.set(email, u);
+                } else {
+                    // Conflict: Decide which to keep
+                    // If existing is shadow and current is real, replace existing
+                    // checking 'displayName' is a heuristic if 'shadowAccount' flag is missing on older data
+                    const isExistingShadow = (existing as any).shadowAccount || existing.displayName === "Not Registered Yet";
+                    const isCurrentShadow = (u as any).shadowAccount || u.displayName === "Not Registered Yet";
+
+                    if (isExistingShadow && !isCurrentShadow) {
+                        uniqueUsersMap.set(email, u);
+                    }
+                    // Else: Existing is Real, Current is Shadow -> Keep Existing
+                    // Else: Both Real/Both Shadow -> Keep first (most recent due to sort?)
+                }
+            });
+            userData = Array.from(uniqueUsersMap.values());
 
             // Fetch Issued Passes (to map to users)
             const passesSnap = await getDocs(collection(db, "passes_issued"));
@@ -43,6 +68,23 @@ export default function UserManagement() {
             // Fetch Pass Configs
             const configsSnap = await getDocs(collection(db, "passes_config"));
             const configs = configsSnap.docs.map(d => ({ id: d.id, ...d.data() }));
+
+            // Identify Orphaned Passes (Issued to email but no user doc)
+            const registeredEmails = new Set(userData.map(u => u.email?.toLowerCase()));
+            const orphanedEmails = Object.keys(passesMap).filter(email => email && !registeredEmails.has(email.toLowerCase()));
+
+            orphanedEmails.forEach(email => {
+                const isGitam = email.toLowerCase().endsWith('gitam.edu') || email.toLowerCase().endsWith('gitam.in');
+                userData.push({
+                    uid: `shadow-${email}`, // Artificial UID
+                    email: email,
+                    displayName: "Not Registered Yet",
+                    isGitamite: isGitam,
+                    role: 'user',
+                    registrationData: {},
+                    createdAt: new Date().toISOString() // Mock date
+                } as any);
+            });
 
             setUsers(userData);
             setPassesIssued(passesMap);
