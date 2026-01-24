@@ -83,15 +83,14 @@ export async function POST(req: Request) {
                 }
 
                 // --- B. Pass Issuance Handling (Duplicate Check) ---
-                // Check if THIS specific pass type is already issued to this email
+                // Check if user has ANY pass issued (Global Duplicate Check)
                 const existingPassQuery = await adminDb.collection("passes_issued")
                     .where("issuedToEmail", "==", email)
-                    .where("passId", "==", passId)
                     .limit(1)
                     .get();
 
                 if (!existingPassQuery.empty) {
-                    // Pass already exists for this user -> SKIP
+                    // Pass already exists for this user (any type) -> SKIP
                     duplicateCount++;
                 } else {
                     // Issue New Pass

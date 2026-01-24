@@ -263,6 +263,12 @@ export default function UserManagement() {
         }
     };
 
+    const totalUsers = users.length;
+    const totalRegistered = users.filter(u => !(u as any).shadowAccount && u.displayName !== "Not Registered Yet").length;
+    const totalUnregistered = users.filter(u => (u as any).shadowAccount || u.displayName === "Not Registered Yet").length;
+    const totalIssued = Object.keys(passesIssued).length;
+    const totalUnpaid = users.filter(u => !passesIssued[u.email]).length;
+
     return (
         <div className="flex min-h-screen bg-pramana-black text-pramana-cream font-playfair">
             <AdminSidebar />
@@ -277,6 +283,26 @@ export default function UserManagement() {
                             <span>📊</span> Export CSV
                         </button>
                     </header>
+
+                    {/* Analytics Boxes */}
+                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8 animate-stagger-1">
+                        <div className="bg-black/40 p-4 rounded-xl border border-white/10 text-center backdrop-blur-sm">
+                            <div className="text-pramana-gold text-2xl font-bold font-cinzel">{totalRegistered}</div>
+                            <div className="text-[10px] uppercase tracking-widest text-white/50">Total Registered</div>
+                        </div>
+                        <div className="bg-white/5 p-4 rounded-xl border border-white/10 text-center backdrop-blur-sm">
+                            <div className="text-white text-2xl font-bold font-cinzel">{totalUnregistered}</div>
+                            <div className="text-[10px] uppercase tracking-widest text-white/50">Unregistered (Shadow)</div>
+                        </div>
+                        <div className="bg-red-900/10 p-4 rounded-xl border border-red-500/20 text-center backdrop-blur-sm">
+                            <div className="text-red-400 text-2xl font-bold font-cinzel">{totalUnpaid}</div>
+                            <div className="text-[10px] uppercase tracking-widest text-red-400/50">Unpaid Users</div>
+                        </div>
+                        <div className="bg-green-900/10 p-4 rounded-xl border border-green-500/20 text-center backdrop-blur-sm">
+                            <div className="text-green-400 text-2xl font-bold font-cinzel">{totalIssued}</div>
+                            <div className="text-[10px] uppercase tracking-widest text-green-400/50">Total Passes Issued</div>
+                        </div>
+                    </div>
 
                     <div className="bg-white/5 p-6 rounded-2xl border border-white/10 flex flex-col gap-6 backdrop-blur-sm animate-stagger-2">
                         <div className="flex flex-col md:flex-row gap-4">
