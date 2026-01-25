@@ -6,6 +6,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import AdminSidebar from "@/components/AdminSidebar";
+import { canManageEntry } from "@/utils/rbac";
 
 export default function AdminDashboard() {
     const { user, loading } = useAuth();
@@ -43,12 +44,12 @@ export default function AdminDashboard() {
     });
 
     useEffect(() => {
-        if (!loading && (!user || (user.role !== 'admin' && user.role !== 'superadmin' && user.role !== 'view_admin'))) {
+        if (!loading && (!user || (user.role !== 'admin' && user.role !== 'superadmin' && user.role !== 'view_admin' && user.role !== 'marketing_admin'))) {
             router.push("/");
             return;
         }
 
-        if (user && (user.role === 'admin' || user.role === 'superadmin' || user.role === 'view_admin')) {
+        if (user && (user.role === 'admin' || user.role === 'superadmin' || user.role === 'view_admin' || user.role === 'marketing_admin')) {
             const fetchStats = async () => {
                 const { collection, getDocs } = await import("firebase/firestore");
                 const { db } = await import("@/lib/firebase");
@@ -94,6 +95,14 @@ export default function AdminDashboard() {
                 const trendMap = new Map<string, number>();
                 const allPasses: any[] = [];
 
+                // Helper to safely parse dates (String or Timestamp)
+                const parseDate = (val: any) => {
+                    if (!val) return null;
+                    if (val.toDate) return val.toDate(); // Firestore Timestamp
+                    const d = new Date(val);
+                    return isNaN(d.getTime()) ? null : d;
+                };
+
                 issuedSnap.forEach(doc => {
                     const data = doc.data();
                     allPasses.push(data);
@@ -122,19 +131,24 @@ export default function AdminDashboard() {
                     }
 
                     // Process Trend (by purchaseDate)
-                    if (data.purchaseDate) {
-                        const dateKey = new Date(data.purchaseDate).toISOString().split('T')[0]; // YYYY-MM-DD
+                    const pDate = parseDate(data.purchaseDate);
+                    if (pDate) {
+                        const dateKey = pDate.toISOString().split('T')[0]; // YYYY-MM-DD
                         trendMap.set(dateKey, (trendMap.get(dateKey) || 0) + 1);
                     }
                 });
 
                 // 3. Process Recent Sales
                 const recentSales = allPasses
-                    .sort((a, b) => new Date(b.purchaseDate).getTime() - new Date(a.purchaseDate).getTime())
+                    .sort((a, b) => {
+                        const dateA = parseDate(a.purchaseDate)?.getTime() || 0;
+                        const dateB = parseDate(b.purchaseDate)?.getTime() || 0;
+                        return dateB - dateA;
+                    })
                     .slice(0, 5)
                     .map(p => ({
                         ...p,
-                        timeAgo: getTimeAgo(new Date(p.purchaseDate))
+                        timeAgo: getTimeAgo(parseDate(p.purchaseDate) || new Date())
                     }));
 
                 // 4. Process Daily Trends (Last 7 Days)
@@ -315,17 +329,19 @@ export default function AdminDashboard() {
                     </header>
 
                     {/* Active Day Control */}
-                    <div className="bg-white/5 p-6 rounded-2xl border border-white/10 mb-8 backdrop-blur-sm animate-stagger-2">
-                        <h3 className="text-lg font-bold mb-4 font-cinzel text-pramana-cream">Entry Control</h3>
-                        <div className="flex flex-wrap gap-3 md:gap-4">
-                            <button onClick={() => updateActiveDay('none')} className={`flex-1 md:flex-none px-4 py-2 rounded-lg font-bold transition text-sm md:text-base ${activeDay === 'none' ? 'bg-red-600/80 text-white shadow-lg shadow-red-900/50' : 'bg-white/5 text-pramana-cream/50 hover:bg-white/10'}`}>Close Entry</button>
-                            <button onClick={() => updateActiveDay('day1')} className={`flex-1 md:flex-none px-4 py-2 rounded-lg font-bold transition text-sm md:text-base ${activeDay === 'day1' ? 'bg-green-600/80 text-white shadow-lg shadow-green-900/50' : 'bg-white/5 text-pramana-cream/50 hover:bg-white/10'}`}>Day 1 Active</button>
-                            <button onClick={() => updateActiveDay('day2')} className={`flex-1 md:flex-none px-4 py-2 rounded-lg font-bold transition text-sm md:text-base ${activeDay === 'day2' ? 'bg-blue-600/80 text-white shadow-lg shadow-blue-900/50' : 'bg-white/5 text-pramana-cream/50 hover:bg-white/10'}`}>Day 2 Active</button>
+                    {canManageEntry(user) && (
+                        <div className="bg-white/5 p-6 rounded-2xl border border-white/10 mb-8 backdrop-blur-sm animate-stagger-2">
+                            <h3 className="text-lg font-bold mb-4 font-cinzel text-pramana-cream">Entry Control</h3>
+                            <div className="flex flex-wrap gap-3 md:gap-4">
+                                <button onClick={() => updateActiveDay('none')} className={`flex-1 md:flex-none px-4 py-2 rounded-lg font-bold transition text-sm md:text-base ${activeDay === 'none' ? 'bg-red-600/80 text-white shadow-lg shadow-red-900/50' : 'bg-white/5 text-pramana-cream/50 hover:bg-white/10'}`}>Close Entry</button>
+                                <button onClick={() => updateActiveDay('day1')} className={`flex-1 md:flex-none px-4 py-2 rounded-lg font-bold transition text-sm md:text-base ${activeDay === 'day1' ? 'bg-green-600/80 text-white shadow-lg shadow-green-900/50' : 'bg-white/5 text-pramana-cream/50 hover:bg-white/10'}`}>Day 1 Active</button>
+                                <button onClick={() => updateActiveDay('day2')} className={`flex-1 md:flex-none px-4 py-2 rounded-lg font-bold transition text-sm md:text-base ${activeDay === 'day2' ? 'bg-blue-600/80 text-white shadow-lg shadow-blue-900/50' : 'bg-white/5 text-pramana-cream/50 hover:bg-white/10'}`}>Day 2 Active</button>
+                            </div>
+                            <p className="text-sm text-pramana-cream/40 mt-2">Current Active Mode: <span className="font-bold uppercase text-pramana-gold">{activeDay}</span></p>
                         </div>
-                        <p className="text-sm text-pramana-cream/40 mt-2">Current Active Mode: <span className="font-bold uppercase text-pramana-gold">{activeDay}</span></p>
-                    </div>
+                    )}
 
-                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6 mb-8 animate-stagger-3">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6 mb-8 animate-stagger-3">
                         <div className="glass-panel p-4 md:p-6 rounded-2xl glass-panel-hover group">
                             <div className="flex justify-between items-start mb-4">
                                 <div>
@@ -355,15 +371,7 @@ export default function AdminDashboard() {
                                 <span className="p-3 bg-purple-500/10 text-purple-400 rounded-xl border border-purple-500/20 shadow-[0_0_10px_rgba(168,85,247,0.1)]">👥</span>
                             </div>
                         </div>
-                        <div className="glass-panel p-6 rounded-2xl glass-panel-hover group">
-                            <div className="flex justify-between items-start mb-4">
-                                <div>
-                                    <p className="text-pramana-cream/50 text-xs font-bold uppercase tracking-widest mb-2 group-hover:text-pramana-gold transition">Checked In</p>
-                                    <h3 className="text-3xl font-bold text-white font-cinzel group-hover:drop-shadow-[0_0_8px_rgba(255,255,255,0.3)] transition">{stats.checkedIn}</h3>
-                                </div>
-                                <span className="p-3 bg-orange-500/10 text-orange-400 rounded-xl border border-orange-500/20 shadow-[0_0_10px_rgba(249,115,22,0.1)]">📍</span>
-                            </div>
-                        </div>
+
                     </div>
 
                     {/* Day 1 & Day 2 Stats */}

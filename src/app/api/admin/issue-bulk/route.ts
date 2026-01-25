@@ -38,6 +38,8 @@ export async function POST(req: Request) {
         let batch = adminDb.batch();
         let batchOpCount = 0; // Tracks number of writes in current batch
 
+        const referralUpdates: Record<string, number> = {};
+
         // 4. Iterate through Emails
         for (let i = 0; i < emails.length; i++) {
             const rawEmail = emails[i];
@@ -50,6 +52,7 @@ export async function POST(req: Request) {
 
             try {
                 let isUnregisteredUser = false;
+                let userReferralCode: string | null = null;
 
                 // --- A. User Account Handling (Auto-Registration) ---
                 // Check if user exists to ensure they appear in User Management
@@ -58,6 +61,7 @@ export async function POST(req: Request) {
                 if (userQuery.empty) {
                     // Create Shadow/Placeholder User
                     isUnregisteredUser = true;
+                    // ... (creation logic same as before)
                     const isGitam = email.endsWith('gitam.edu') || email.endsWith('gitam.in');
                     const newUserRef = adminDb.collection("users").doc();
 
@@ -69,28 +73,28 @@ export async function POST(req: Request) {
                         createdAt: FieldValue.serverTimestamp(),
                         shadowAccount: true,
                         autoCreated: true,
-                        registrationData: {} // Empty map to prevent errors
+                        registrationData: {}
                     });
 
                     batchOpCount++;
                     usersCreatedCount++;
                 } else {
                     const userData = userQuery.docs[0].data();
-                    // Check if existing user is actually a shadow/unregistered account
                     if (userData.shadowAccount || userData.displayName === "Not Registered Yet") {
                         isUnregisteredUser = true;
+                    }
+                    if (userData.referralCodeUsed) {
+                        userReferralCode = userData.referralCodeUsed;
                     }
                 }
 
                 // --- B. Pass Issuance Handling (Duplicate Check) ---
-                // Check if user has ANY pass issued (Global Duplicate Check)
                 const existingPassQuery = await adminDb.collection("passes_issued")
                     .where("issuedToEmail", "==", email)
                     .limit(1)
                     .get();
 
                 if (!existingPassQuery.empty) {
-                    // Pass already exists for this user (any type) -> SKIP
                     duplicateCount++;
                 } else {
                     // Issue New Pass
@@ -119,6 +123,11 @@ export async function POST(req: Request) {
                     batchOpCount++;
                     issuedCount++;
 
+                    // TRACK REFERRAL
+                    if (userReferralCode) {
+                        referralUpdates[userReferralCode] = (referralUpdates[userReferralCode] || 0) + 1;
+                    }
+
                     if (isUnregisteredUser) {
                         issuedToUnregistered++;
                     } else {
@@ -127,11 +136,9 @@ export async function POST(req: Request) {
                 }
 
                 // --- C. Batch Management ---
-                // Firestone Batch limit is 500 operations. We do max 2 operations per loop.
-                // Committing every 400 is safe.
                 if (batchOpCount >= 400) {
                     await batch.commit();
-                    batch = adminDb.batch(); // Start new batch
+                    batch = adminDb.batch();
                     batchOpCount = 0;
                 }
 
@@ -144,6 +151,19 @@ export async function POST(req: Request) {
         // 5. Final Commit (for remaining ops)
         if (batchOpCount > 0) {
             await batch.commit();
+        }
+
+        // 6. Update Referral Counts (Outside loop to prevent same-doc-in-batch error)
+        const referralCodes = Object.keys(referralUpdates);
+        if (referralCodes.length > 0) {
+            const referralBatch = adminDb.batch();
+            referralCodes.forEach(code => {
+                const ref = adminDb.collection("referral_codes").doc(code);
+                referralBatch.update(ref, {
+                    passesIssued: FieldValue.increment(referralUpdates[code])
+                });
+            });
+            await referralBatch.commit();
         }
 
         // 6. Update Pass Sold Count (Only for NEWLY issued passes)

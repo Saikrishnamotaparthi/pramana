@@ -116,7 +116,8 @@ export default function ManageAdmins() {
                                                 <span className={`px-2 py-1 text-xs rounded-full font-bold capitalize border
                                                 ${u.role === 'superadmin' ? 'bg-purple-900/40 text-purple-400 border-purple-500/30' :
                                                         u.role === 'admin' ? 'bg-blue-900/40 text-blue-400 border-blue-500/30' :
-                                                            u.role === 'view_admin' ? 'bg-yellow-900/40 text-yellow-400 border-yellow-500/30' : 'bg-gray-800 text-gray-400 border-gray-600'}`}>
+                                                            u.role === 'view_admin' ? 'bg-yellow-900/40 text-yellow-400 border-yellow-500/30' :
+                                                                u.role === 'marketing_admin' ? 'bg-orange-900/40 text-orange-400 border-orange-500/30' : 'bg-gray-800 text-gray-400 border-gray-600'}`}>
                                                     {u.role.replace('_', ' ')}
                                                 </span>
                                             </td>
@@ -134,6 +135,10 @@ export default function ManageAdmins() {
                                                         <button onClick={() => handleRoleUpdate(u.uid, 'entry_admin')}
                                                             className={`px-3 py-1.5 text-xs font-bold rounded-lg transition ${u.role === 'entry_admin' ? 'bg-white/5 text-gray-500 cursor-not-allowed' : 'bg-purple-900/30 text-purple-400 hover:bg-purple-900/50 border border-purple-500/30'}`}>
                                                             Entry Admin
+                                                        </button>
+                                                        <button onClick={() => handleRoleUpdate(u.uid, 'marketing_admin')}
+                                                            className={`px-3 py-1.5 text-xs font-bold rounded-lg transition ${u.role === 'marketing_admin' ? 'bg-white/5 text-gray-500 cursor-not-allowed' : 'bg-orange-900/30 text-orange-400 hover:bg-orange-900/50 border border-orange-500/30'}`}>
+                                                            Marketing Admin
                                                         </button>
                                                         <button onClick={() => handleRoleUpdate(u.uid, 'user')}
                                                             className="px-3 py-1.5 text-xs font-bold rounded-lg bg-red-900/30 text-red-400 hover:bg-red-900/50 border border-red-500/30 transition">
@@ -187,7 +192,12 @@ export default function ManageAdmins() {
                                                 onClick={() => { handleRoleUpdate(foundUser.uid, 'entry_admin'); setShowAddModal(false); }}
                                                 className="bg-purple-600/20 text-purple-400 border border-purple-500/30 hover:bg-purple-600/30 px-3 py-1 rounded text-sm font-bold transition"
                                             >
-                                                Entry Admin
+                                            </button>
+                                            <button
+                                                onClick={() => { handleRoleUpdate(foundUser.uid, 'marketing_admin'); setShowAddModal(false); }}
+                                                className="bg-orange-600/20 text-orange-400 border border-orange-500/30 hover:bg-orange-600/30 px-3 py-1 rounded text-sm font-bold transition"
+                                            >
+                                                Marketing Admin
                                             </button>
                                         </div>
                                     </div>

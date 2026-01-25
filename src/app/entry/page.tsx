@@ -194,11 +194,7 @@ export default function EntryPage() {
                 <div className="bg-white/5 backdrop-blur-xl p-10 rounded-3xl shadow-2xl text-center max-w-md w-full mb-4 border border-white/10 animate-fade-in-up">
                     <h1 className="text-3xl font-bold text-pramana-gold mb-4 font-cinzel">Entry Closed</h1>
                     <p className="text-pramana-cream/60 mb-8">Entry is not currently active for any day.</p>
-                    <div className="text-xs text-left bg-black/50 p-4 rounded-xl overflow-auto max-h-32 border border-white/5 font-mono text-pramana-cream/40">
-                        <p className="mb-1"><strong className="text-pramana-gold">Debug Info:</strong></p>
-                        <p>User: {user?.email} ({user?.role})</p>
-                        <p>Status: {debugInfo}</p>
-                    </div>
+
                 </div>
             </div>
         );

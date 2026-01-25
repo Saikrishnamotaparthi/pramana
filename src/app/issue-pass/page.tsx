@@ -5,6 +5,7 @@ import { createPortal } from "react-dom";
 import { useAuth } from "@/hooks/useAuth";
 import QRCode from "qrcode";
 import { Printer, RotateCw, AlertTriangle, CheckCircle } from "lucide-react";
+import AdminSidebar from "@/components/AdminSidebar";
 
 export default function IssuePassPage() {
     const { loading } = useAuth();
@@ -184,13 +185,16 @@ export default function IssuePassPage() {
 
     if (loading) return <div>Loading...</div>;
 
+
+
     return (
-        <div className="min-h-screen bg-pramana-black text-pramana-cream font-playfair flex flex-col selection:bg-pramana-gold selection:text-black">
+        <div className="flex min-h-screen bg-pramana-black text-pramana-cream font-playfair">
+            <AdminSidebar />
 
             {/* Render Print Portal */}
             {mounted && physicalQrUrl && <PrintPortal />}
 
-            <div className="flex-1 flex flex-col w-full h-full bg-[radial-gradient(ellipse_at_top_right,_var(--tw-gradient-stops))] from-gray-900 via-black to-black">
+            <div className="flex-1 flex flex-col w-full h-full bg-[radial-gradient(ellipse_at_top_right,_var(--tw-gradient-stops))] from-gray-900 via-black to-black relative">
                 {/* Header */}
                 <div className="bg-white/5 backdrop-blur-md border-b border-white/10 p-4 flex justify-between items-center shadow-lg sticky top-0 z-10">
                     <h1 className="text-xl font-bold font-cinzel text-pramana-gold">Physical Pass Issuance</h1>

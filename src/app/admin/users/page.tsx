@@ -5,6 +5,8 @@ import { db } from "@/lib/firebase";
 import { collection, getDocs, query, orderBy } from "firebase/firestore";
 import { UserProfile } from "@/types";
 import AdminSidebar from "@/components/AdminSidebar";
+import { canIssuePasses } from "@/utils/rbac";
+import { useAuth } from "@/hooks/useAuth";
 
 export default function UserManagement() {
     const [users, setUsers] = useState<UserProfile[]>([]);
@@ -12,6 +14,7 @@ export default function UserManagement() {
     const [passConfigs, setPassConfigs] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
     const [filter, setFilter] = useState("");
+    const { user } = useAuth();
 
     // Modal State
     const [showIssueModal, setShowIssueModal] = useState(false);
@@ -253,6 +256,20 @@ export default function UserManagement() {
                 }
             }));
 
+            // Handle Referral Analytics
+            if ((selectedUserForPass as any).referralCodeUsed) {
+                try {
+                    const { increment, updateDoc, doc } = await import("firebase/firestore");
+                    const codeRef = doc(db, "referral_codes", (selectedUserForPass as any).referralCodeUsed);
+                    await updateDoc(codeRef, {
+                        passesIssued: increment(1)
+                    });
+                } catch (e) {
+                    console.error("Failed to update referral stats", e);
+                    // Non-blocking error
+                }
+            }
+
             alert("Pass Issued Successfully!");
             setShowIssueModal(false);
         } catch (error) {
@@ -378,7 +395,7 @@ export default function UserManagement() {
                                                     )}
                                                 </td>
                                                 <td className="px-6 py-4 whitespace-nowrap">
-                                                    {!pass && (
+                                                    {!pass && canIssuePasses(user) && (
                                                         <button
                                                             onClick={() => { setSelectedUserForPass(u); setShowIssueModal(true); }}
                                                             className="bg-blue-600/80 text-white px-3 py-1.5 rounded text-xs font-bold hover:bg-blue-600 shadow-lg shadow-blue-900/20 transition"

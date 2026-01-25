@@ -111,7 +111,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
                 if (!pathname.startsWith('/entry')) {
                     router.replace("/entry");
                 }
-            } else if (user.role === 'superadmin' || user.role === 'admin') {
+            } else if (user.role === 'superadmin' || user.role === 'admin' || user.role === 'view_admin' || user.role === 'marketing_admin') {
                 // Admins Logic
                 // If landing on root, guide to admin. Otherwise allow freedom.
                 if (pathname === "/") {

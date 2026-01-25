@@ -34,7 +34,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
+    <html lang="en" suppressHydrationWarning>
       <body className={`${cinzel.variable} ${playfair.variable} ${garamond.variable} font-playfair bg-pramana-black text-pramana-cream antialiased selection:bg-pramana-gold selection:text-black`}>
         <AuthProvider>
           <Navbar />

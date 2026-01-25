@@ -6,6 +6,9 @@ import { db } from "@/lib/firebase";
 import { collection, getDocs } from "firebase/firestore";
 import * as XLSX from "xlsx";
 import { PassConfig } from "@/types";
+import { useAuth } from "@/hooks/useAuth";
+import { canAccessBulkIssue } from "@/utils/rbac";
+import { useRouter } from "next/navigation";
 
 export default function BulkIssuePage() {
     const [passes, setPasses] = useState<PassConfig[]>([]);
@@ -15,6 +18,15 @@ export default function BulkIssuePage() {
     const [processing, setProcessing] = useState(false);
     const [logs, setLogs] = useState<string[]>([]);
     const [stats, setStats] = useState<any>(null);
+    const { user, loading } = useAuth();
+    const router = useRouter();
+
+    useEffect(() => {
+        if (!loading && !canAccessBulkIssue(user)) {
+            alert("Access Denied: View Admins cannot perform bulk actions.");
+            router.replace("/admin");
+        }
+    }, [user, loading, router]);
 
     useEffect(() => {
         const fetchPasses = async () => {
@@ -100,6 +112,8 @@ export default function BulkIssuePage() {
         XLSX.utils.book_append_sheet(wb, ws, "Template");
         XLSX.writeFile(wb, "bulk_issue_template.xlsx");
     };
+
+    if (loading || !canAccessBulkIssue(user)) return null;
 
     return (
         <div className="flex min-h-screen bg-pramana-black text-pramana-cream font-playfair">

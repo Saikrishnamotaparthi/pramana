@@ -16,7 +16,11 @@ service cloud.firestore {
     }
     
     function isViewAdmin() {
-      return request.auth != null && getUserRole() in ['view_admin', 'admin', 'superadmin', 'entry_admin'];
+      return request.auth != null && getUserRole() in ['view_admin', 'admin', 'superadmin', 'entry_admin', 'marketing_admin'];
+    }
+
+    function isMarketingAdmin() {
+      return request.auth != null && getUserRole() == 'marketing_admin';
     }
     
     function isOwner(userId) {
@@ -55,6 +59,12 @@ service cloud.firestore {
         isViewAdmin()
       );
       allow write: if isAdmin(); 
+    }
+
+    // Referral Codes (Read: Auth Users, Write: Admin or Marketing Admin)
+    match /referral_codes/{codeId} {
+      allow read: if request.auth != null;
+      allow write: if isAdmin() || isMarketingAdmin();
     }
   }
 }

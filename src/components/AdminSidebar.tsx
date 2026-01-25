@@ -16,6 +16,7 @@ import {
 } from "lucide-react";
 import { useState } from "react";
 import { useAuth } from "@/hooks/useAuth";
+import { canAccessBulkIssue, canManageAdmins, isMarketingAdmin } from "@/utils/rbac";
 
 const links = [
     { href: "/admin", label: "Dashboard", icon: LayoutDashboard },
@@ -23,10 +24,11 @@ const links = [
     // Coupons removed
     { href: "/admin/bulk-issue", label: "Bulk Issue", icon: Printer },
     { href: "/admin/registration", label: "Registration Forms", icon: ClipboardList },
+    { href: "/admin/referrals", label: "Referrals", icon: Users },
     { href: "/admin/users", label: "User Management", icon: Users },
     { href: "/admin/manage-admins", label: "Admins", icon: Shield },
     { href: "/issue-pass", label: "Physical Issue", icon: Printer },
-    { href: "/tickets", label: "Public Page", icon: Globe },
+
 ];
 
 export default function AdminSidebar() {
@@ -79,7 +81,16 @@ export default function AdminSidebar() {
 
                 {/* Navigation */}
                 <nav className="flex-1 p-3 space-y-2 overflow-y-auto scrollbar-hide">
-                    {links.map((link) => {
+                    {links.filter(link => {
+                        // Marketing Admin Restrictions
+                        if (isMarketingAdmin(user)) {
+                            return ['/admin', '/admin/referrals', '/tickets'].includes(link.href);
+                        }
+
+                        if (link.href === '/admin/bulk-issue') return canAccessBulkIssue(user);
+                        if (link.href === '/admin/manage-admins') return canManageAdmins(user);
+                        return true;
+                    }).map((link) => {
                         const isActive = pathname === link.href;
                         const Icon = link.icon;
 
