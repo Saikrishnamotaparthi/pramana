@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { adminDb } from "@/lib/firebase-admin";
+import { Filter } from "firebase-admin/firestore";
 
 export async function POST(req: Request) {
     try {
@@ -10,12 +11,24 @@ export async function POST(req: Request) {
         }
 
         const passesRef = adminDb.collection("passes_issued");
-        const snapshot = await passesRef.where("qrCode", "==", qrCode).get(); // Check booking QR
+
+        console.log(`[Lookup] Searching for QR: "${qrCode}"`);
+
+        // Check Booking QR, Physical QR, OR Booking ID (for bulk issues)
+        const snapshot = await passesRef.where(
+            Filter.or(
+                Filter.where("qrCode", "==", qrCode),
+                Filter.where("physicalQr", "==", qrCode),
+                Filter.where("bookingId", "==", qrCode)
+            )
+        ).get();
+
+        console.log(`[Lookup] Found ${snapshot.size} documents for QR: "${qrCode}"`);
 
         if (snapshot.empty) {
             // Also check if they scanned a Physical QR? But usually they scan booking QR.
             // Let's stick to booking QR for now.
-            return NextResponse.json({ success: false, message: "Booking not found" }, { status: 404 });
+            return NextResponse.json({ success: false, message: `Booking not found. Scanned: ${qrCode}` }, { status: 404 });
         }
 
         const passDoc = snapshot.docs[0];
