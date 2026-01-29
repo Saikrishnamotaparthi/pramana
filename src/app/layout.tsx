@@ -25,6 +25,9 @@ const garamond = EB_Garamond({
 export const metadata: Metadata = {
   title: "PRAMANA26 - The Ultimate Event",
   description: "Secure ticketing and entry management system",
+  verification: {
+    google: "f72Uf8FCj_W1lOrReUDKXzKcUOv1ZYKSTyvg4FVnUto",
+  },
 
 };
 
