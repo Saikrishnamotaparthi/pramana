@@ -30,6 +30,10 @@ export default function RegistrationForm() {
     const [isValidating, setIsValidating] = useState(false);
     const [referralError, setReferralError] = useState("");
 
+    // Aadhar Upload State
+    const [aadharFile, setAadharFile] = useState<File | null>(null);
+    const [aadharAck, setAadharAck] = useState(false);
+
     useEffect(() => {
         // Fetch fields from Firestore 'config/registration'
         async function fetchFields() {
@@ -77,7 +81,7 @@ export default function RegistrationForm() {
 
     const handleStep1Submit = (e: React.FormEvent) => {
         e.preventDefault();
-        // If Non-Gitamite, go to Step 2 (Referral)
+        // If Non-Gitamite, go to Step 2 (Aadhar)
         // If Gitamite, submit directly
         if (!isGitam) {
             setStep(2);
@@ -120,14 +124,18 @@ export default function RegistrationForm() {
     const completeRegistration = async (codeUsed?: string) => {
         setSubmitting(true);
         try {
+            const formDataToSend = new FormData();
+            formDataToSend.append('uid', user.uid);
+            formDataToSend.append('registrationData', JSON.stringify(formData));
+            if (codeUsed) formDataToSend.append('referralCode', codeUsed);
+
+            if (!isGitam && aadharFile) {
+                formDataToSend.append('aadharFile', aadharFile);
+            }
+
             const response = await fetch('/api/complete-registration', {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    uid: user.uid,
-                    registrationData: formData,
-                    referralCode: codeUsed
-                })
+                body: formDataToSend // auto-sets Content-Type to multipart/form-data
             });
 
             const result = await response.json();
@@ -145,21 +153,36 @@ export default function RegistrationForm() {
         }
     };
 
+    const getStepTitle = () => {
+        if (step === 1) return "Complete Profile";
+        if (step === 2) return "Identity Verification";
+        if (step === 3) return "Referral Code";
+        return "";
+    }
+
+    const getStepSubtitle = () => {
+        if (step === 1) return "Join the PRAMANA26 experience.";
+        if (step === 2) return "Upload your ID for verification.";
+        if (step === 3) return "Do you have a referral code?";
+        return "";
+    }
+
     return (
         <div className="max-w-lg w-full mx-auto p-10 bg-white/5 backdrop-blur-md rounded-3xl border border-white/10 shadow-2xl animate-fade-in-up transition-all duration-500">
             <div className="text-center mb-8">
                 <h2 className="text-3xl font-bold font-cinzel text-pramana-gold mb-2">
-                    {step === 1 ? "Complete Profile" : "Referral Code"}
+                    {getStepTitle()}
                 </h2>
                 <p className="text-pramana-cream/60 text-sm">
-                    {step === 1 ? "Join the PRAMANA26 experience." : "Do you have a referral code?"}
+                    {getStepSubtitle()}
                 </p>
 
                 {/* Step Indicator */}
                 {!isGitam && (
                     <div className="flex justify-center gap-2 mt-4">
-                        <div className={`h-1 w-8 rounded-full transition-colors ${step === 1 ? "bg-pramana-gold" : "bg-white/20"}`}></div>
-                        <div className={`h-1 w-8 rounded-full transition-colors ${step === 2 ? "bg-pramana-gold" : "bg-white/20"}`}></div>
+                        <div className={`h-1 w-8 rounded-full transition-colors ${step >= 1 ? "bg-pramana-gold" : "bg-white/20"}`}></div>
+                        <div className={`h-1 w-8 rounded-full transition-colors ${step >= 2 ? "bg-pramana-gold" : "bg-white/20"}`}></div>
+                        <div className={`h-1 w-8 rounded-full transition-colors ${step >= 3 ? "bg-pramana-gold" : "bg-white/20"}`}></div>
                     </div>
                 )}
             </div>
@@ -203,7 +226,59 @@ export default function RegistrationForm() {
                 </form>
             )}
 
-            {step === 2 && (
+            {!isGitam && step === 2 && (
+                <div className="space-y-6 animate-in fade-in slide-in-from-right-10 duration-500">
+
+                    {/* Aadhar Upload Section */}
+                    <div className="flex flex-col group border-b border-white/10 pb-6 mb-4">
+                        <label className="text-sm font-bold text-pramana-gold mb-2 uppercase tracking-wider">
+                            Upload Aadhar Card (Front Side) *
+                        </label>
+                        <input
+                            type="file"
+                            accept="image/*"
+                            onChange={(e) => {
+                                if (e.target.files && e.target.files[0]) {
+                                    setAadharFile(e.target.files[0]);
+                                }
+                            }}
+                            className="text-white text-sm file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-pramana-gold file:text-black hover:file:bg-yellow-500 mb-2 cursor-pointer"
+                        />
+                        <p className="text-xs text-white/50 mb-4 italic">
+                            Note: This Aadhar card is only for verification purpose only. It will be only stored temporarily; after verification it will be deleted.
+                        </p>
+
+                        <div className="flex items-start gap-3 mt-2">
+                            <div
+                                onClick={() => setAadharAck(!aadharAck)}
+                                className={`w-5 h-5 mt-0.5 rounded border border-pramana-gold flex items-center justify-center cursor-pointer transition-colors ${aadharAck ? 'bg-pramana-gold' : 'bg-transparent'}`}
+                            >
+                                {aadharAck && <Check className="w-3 h-3 text-black" />}
+                            </div>
+                            <p className="text-xs text-white/70 cursor-pointer select-none" onClick={() => setAadharAck(!aadharAck)}>
+                                I consent to the use of my Aadhaar details for one-time event entry verification only. No data will be stored or retained.
+                            </p>
+                        </div>
+                    </div>
+
+                    <button
+                        onClick={() => setStep(3)}
+                        disabled={!aadharFile || !aadharAck}
+                        className="w-full bg-pramana-gold text-black py-4 rounded-xl font-bold font-cinzel text-lg tracking-widest hover:bg-yellow-500 transition-all disabled:opacity-50 disabled:cursor-not-allowed shadow-[0_0_20px_rgba(184,134,11,0.2)] flex items-center justify-center gap-2 group/btn"
+                    >
+                        NEXT STEP <ArrowRight className="group-hover/btn:translate-x-1 transition-transform" />
+                    </button>
+
+                    <button
+                        onClick={() => setStep(1)}
+                        className="w-full text-xs text-pramana-cream/30 hover:text-white mt-4 underline underline-offset-4"
+                    >
+                        Back to details
+                    </button>
+                </div>
+            )}
+
+            {!isGitam && step === 3 && (
                 <div className="space-y-6 animate-in fade-in slide-in-from-right-10 duration-500">
                     <div className="flex flex-col group">
                         <label className="text-sm font-bold text-pramana-gold mb-2 group-focus-within:text-pramana-cream transition-colors uppercase tracking-wider">
@@ -234,17 +309,17 @@ export default function RegistrationForm() {
                         <button
                             onClick={() => completeRegistration()}
                             disabled={submitting}
-                            className="w-full bg-white/5 text-pramana-cream/60 py-3 rounded-xl font-bold text-sm tracking-widest hover:bg-white/10 hover:text-white transition-all"
+                            className="w-full bg-white/5 text-pramana-cream/60 py-3 rounded-xl font-bold text-sm tracking-widest hover:bg-white/10 hover:text-white transition-all disabled:opacity-50 disabled:cursor-not-allowed"
                         >
                             SKIP FOR NOW
                         </button>
                     </div>
 
                     <button
-                        onClick={() => setStep(1)}
+                        onClick={() => setStep(2)}
                         className="w-full text-xs text-pramana-cream/30 hover:text-white mt-4 underline underline-offset-4"
                     >
-                        Back to details
+                        Back to verification
                     </button>
                 </div>
             )}

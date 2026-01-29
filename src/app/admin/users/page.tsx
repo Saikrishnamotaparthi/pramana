@@ -22,6 +22,12 @@ export default function UserManagement() {
     const [selectedPassId, setSelectedPassId] = useState("");
     const [processing, setProcessing] = useState(false);
 
+    // Aadhar Modal State
+    const [showAadharModal, setShowAadharModal] = useState(false);
+    const [aadharImageUrl, setAadharImageUrl] = useState<string | null>(null);
+    const [viewingAadharUser, setViewingAadharUser] = useState<UserProfile | null>(null);
+    const [loadingAadhar, setLoadingAadhar] = useState(false);
+
     useEffect(() => {
         const fetchData = async () => {
             const { collection, getDocs, query, orderBy } = await import("firebase/firestore");
@@ -280,6 +286,59 @@ export default function UserManagement() {
         }
     };
 
+    const handleViewAadhar = async (targetUser: UserProfile) => {
+        setViewingAadharUser(targetUser);
+        setShowAadharModal(true);
+        setLoadingAadhar(true);
+        setAadharImageUrl(null);
+
+        try {
+            if (!user) return;
+            const { auth } = await import("@/lib/firebase");
+            const token = await auth.currentUser?.getIdToken();
+
+            if (!token) {
+                throw new Error("Authentication failed");
+            }
+
+            const response = await fetch(`/api/admin/view-aadhar?uid=${targetUser.uid}`, {
+                headers: {
+                    'Authorization': `Bearer ${token}`
+                }
+            });
+
+            if (!response.ok) {
+                if (response.status === 404) {
+                    alert("Aadhar file not found for this user.");
+                    setShowAadharModal(false);
+                } else {
+                    throw new Error("Failed to fetch document");
+                }
+                return;
+            }
+
+            const blob = await response.blob();
+            const url = URL.createObjectURL(blob);
+            setAadharImageUrl(url);
+
+        } catch (error) {
+            console.error("Error viewing aadhar", error);
+            alert("Error loading document");
+            setShowAadharModal(false);
+        } finally {
+            setLoadingAadhar(false);
+        }
+    };
+
+    const closeAadharModal = () => {
+        setShowAadharModal(false);
+        if (aadharImageUrl) {
+            URL.revokeObjectURL(aadharImageUrl);
+            setAadharImageUrl(null);
+        }
+        setViewingAadharUser(null);
+    };
+
     const totalUsers = users.length;
     const totalRegistered = users.filter(u => !(u as any).shadowAccount && u.displayName !== "Not Registered Yet").length;
     const totalUnregistered = users.filter(u => (u as any).shadowAccount || u.displayName === "Not Registered Yet").length;
@@ -406,6 +465,17 @@ export default function UserManagement() {
                                                     {pass && (
                                                         <span className="text-pramana-cream/30 text-xs italic">Issued</span>
                                                     )}
+
+                                                    {/* View Aadhar Button for Non-Gitam */}
+                                                    {!u.isGitamite && u.registrationData?.aadharFilePath && (
+                                                        <button
+                                                            onClick={() => handleViewAadhar(u)}
+                                                            className="ml-2 bg-yellow-600/20 text-yellow-500 border border-yellow-600/30 px-3 py-1.5 rounded text-xs font-bold hover:bg-yellow-600/30 transition"
+                                                            title="View Aadhar Card"
+                                                        >
+                                                            👁️ ID
+                                                        </button>
+                                                    )}
                                                 </td>
                                             </tr>
                                         );
@@ -450,6 +520,38 @@ export default function UserManagement() {
                                         className="px-4 py-2 bg-blue-600 text-white rounded font-bold disabled:opacity-50"
                                     >
                                         {processing ? "Issuing..." : "Confirm & Issue"}
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    )}
+
+                    {showAadharModal && (
+                        <div className="fixed inset-0 bg-black/90 backdrop-blur-sm flex items-center justify-center p-4 z-[60] animate-in fade-in duration-200">
+                            <div className="bg-zinc-900 border border-white/10 p-2 rounded-2xl w-full max-w-4xl shadow-2xl flex flex-col max-h-[90vh]">
+                                <div className="flex justify-between items-center p-4 border-b border-white/10">
+                                    <div>
+                                        <h3 className="text-xl font-bold font-cinzel text-pramana-gold">Identity Verification</h3>
+                                        <p className="text-sm text-gray-400">Document for: <span className="text-white">{viewingAadharUser?.email}</span></p>
+                                    </div>
+                                    <button onClick={closeAadharModal} className="w-8 h-8 flex items-center justify-center rounded-full bg-white/10 hover:bg-white/20 text-white transition">
+                                        ✕
+                                    </button>
+                                </div>
+
+                                <div className="flex-1 overflow-auto p-4 flex items-center justify-center min-h-[300px] bg-black/50 rounded-xl m-2">
+                                    {loadingAadhar ? (
+                                        <div className="animate-spin h-10 w-10 border-4 border-pramana-gold border-t-transparent rounded-full"></div>
+                                    ) : aadharImageUrl ? (
+                                        <img src={aadharImageUrl} alt="Aadhar Card" className="max-w-full max-h-[70vh] object-contain rounded shadow-lg" />
+                                    ) : (
+                                        <div className="text-gray-500">Document not available</div>
+                                    )}
+                                </div>
+
+                                <div className="p-4 border-t border-white/10 flex justify-end">
+                                    <button onClick={closeAadharModal} className="px-6 py-2 bg-white/10 hover:bg-white/20 text-white rounded-lg font-bold transition">
+                                        Close Viewer
                                     </button>
                                 </div>
                             </div>

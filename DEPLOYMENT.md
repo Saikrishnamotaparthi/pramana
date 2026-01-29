@@ -1,43 +1,223 @@
-# Deployment Guide
+# Deployment Guide for Payment Web Application (Ubuntu 22.04 LTS)
 
-## 1. Environment Variables
+This guide provides step-by-step instructions to deploy the application on an **Ubuntu 22.04 LTS** server with **50GB Disk**, **8GB RAM**, and **2 vCPUs**.
+
+## 1. Initial Server Setup & Prerequisites
+
+Connect to your server via SSH and run the following commands to update the system and install necessary tools.
 
 ```bash
-# Firebase Admin SDK (Service Account)
-# Firebase Configuration
-NEXT_PUBLIC_FIREBASE_API_KEY=AIzaSyCivgVhHdakXBUABFgR6lsUH4tU-ScFlq8
-NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN=payment-gateway-cda3e.firebaseapp.com
-NEXT_PUBLIC_FIREBASE_PROJECT_ID=payment-gateway-cda3e
-NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET=payment-gateway-cda3e.firebasestorage.app
-NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID=820719601720
-NEXT_PUBLIC_FIREBASE_APP_ID=1:820719601720:web:d35baeea1f1453ed487ecd
-FIREBASE_SERVICE_ACCOUNT_KEY='{
-  "type": "service_account",
-  "project_id": "payment-gateway-cda3e",
-  "private_key_id": "f53552790118a27746d9734e606f96488dbbf7a5",
-  "private_key": "-----BEGIN PRIVATE KEY-----\nMIIEvAIBADANBgkqhkiG9w0BAQEFAASCBKYwggSiAgEAAoIBAQDS6+/NNwD0crf5\ngXMbuuqaNKmGk4RVd8JDQ0Eqsyy3MFnoJ2kitIgzjEEXxmLCeSZTzHPyzHb5lVDp\nwwKkx5env4pQL9OpWOhT0LfDnG60iGwH4SpLAUw7ryX44jxnAZh1CL9GZ9mDc67u\nlOhtq6e7MslopBy9gQ6anOGKQV8da4YcILLuboihnh9ormRWE/RdzerN74VpeGDG\noW6QxERa3/pG6yCH1py/xgXs/E6RR2gEqPElO+DhLk85UHXcc2649PF3yehDjne5\n99AYKkiTvMLvK7z/yCDiOpAgjAWI/k+ik1f21vuOmC2QI/XnMSHw2+GTskv82e7W\nrB5ru/xjAgMBAAECggEALiIx8MpjmJQQ/m9cfIe9MZ5sKAXTD5iisnCe69aF5Mmc\nGKWqHs+q7M90G12mk0/JXNHe2I/1Q/DvYjnntZ/8YVIJUDGt06AhLNf9objxE+a0\n7mJHDGHLyVAtd4sQWB1muc6Ae8dSMajXbdK/JeHCTbU1jYA70w1L4vCGemWDBt1s\nm0Zv1OQkD9kG+6IhHLYk9NJTs/7zdy8EseUfmSWGeNFW8+cZFfb8wWspfSgw4ClT\nlgZrPDOfNg/vW+3mlQb/MQGp+wA6SIurqd4YC+oqHD6+IWZOVgs2ixwGMKzlnz+o\nbrSalpz/A0i7nRVnCWfm6EvIufvCGQUMlrXxlKA9aQKBgQDx/ftVafTxWBEpAmgO\nA/jt/K/6X/nhY2S17kT9/G4d40PSZ5X0uZd35OBQO2NE06rPSWrZRO3+SuLCpqHD\nfZKF2Q6s4D6fBqZ1q7ggMV9Vo1bDIft6QbCPCvh/3Ugr6qOWUYkw2HCrtmJm3eq4\nMi304l9YZ1XLEERODElylhTsaQKBgQDfIYeLFntXjHd9dJY1DV7eSVdvkizDZAP4\nsbMXgLdYh2ICyvIbfYXKT8JcBuFbh1WlsyAjmTXG6UiIR8Jb/OTH+m5/KFvthuoz\nca7jRdf1dXNgupANX6KHczg3xbJfymzo+cw4sCnUgVblw+URwmz1UKjcixX3zn+U\nRpOQYlA46wKBgGHFu3mcMOIeMfi+xyn6guYs9TEU/BILpZI4Ldns1tTukOV/AsB5\nB/DiIZtpE0eoude8kxYr2nim6w24Y51nq/62X06L3+FCv5jFg8RGDn28W/7FSSTx\nS5PP2+1Vi6ZqzCOc1/BLUuKd8w4a1Y4MgDL0D4/ZWHmOHfrmzfolF1kZAoGAV5B5\n99x3xRDL58D0HZfErilMFe3ggUFjyZo69TM/QI/Ip93rC1zEP3Pzi1fr4paGxwM3\nzqCWmRv9qfW3UZA6XDxsVpyJDvsON+gaQPis2pggEkrEs2rfhpZx7nk4Gh1/hiJZ\nwblogQvNBVhOMh0B03e2/O3cTiaMrKzRxiy+3McCgYAEw7U2h6lmZ+ioGLaJVPi9\n1pSR2ah4aNrxYOkh3hC1DnS7d5e7tXGfeMOyXOXz58mxFivjyYSmVy+alW7WP33M\nPnvVCY9n1dCjMSQE7hMhCvUx4Q9GdB6N8aqNhk96ftg2I3Gr4LwVga+riWzoFl/N\nFCh5gRubizLdwKvxMyNzJw==\n-----END PRIVATE KEY-----\n",
-  "client_email": "firebase-adminsdk-fbsvc@payment-gateway-cda3e.iam.gserviceaccount.com",
-  "client_id": "115738173407473438459",
-  "auth_uri": "https://accounts.google.com/o/oauth2/auth",
-  "token_uri": "https://oauth2.googleapis.com/token",
-  "auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs",
-  "client_x509_cert_url": "https://www.googleapis.com/robot/v1/metadata/x509/firebase-adminsdk-fbsvc%40payment-gateway-cda3e.iam.gserviceaccount.com",
-  "universe_domain": "googleapis.com"
-}
+# Update system packages
+sudo apt update && sudo apt upgrade -y
 
-
+# Install curl, git, and build essentials
+sudo apt install -y curl git build-essential unzip
 ```
 
-## 2. Build Commands
-The project uses Next.js.
-- **Build Command:** `npm run build`
-- **Output Directory:** `.next` (Next.js default)
-- **Install Command:** `npm install`
+### Install Node.js 20 (LTS)
+We will use NodeSource to install the latest LTS version of Node.js.
 
+```bash
+# Download and setup Node.js 20.x repo
+curl -fsSL https://deb.nodesource.com/setup_20.x | sudo -E bash -
 
-## 3. Local Production Test
-To run the production build locally:
+# Install Node.js
+sudo apt install -y nodejs
+
+# Verify installation
+node -v
+npm -v
+```
+
+### Install PM2 (Process Manager)
+PM2 is used to keep the application running in the background.
+
+```bash
+sudo npm install -g pm2
+```
+
+### Install Nginx (Web Server)
+Nginx will act as a reverse proxy to forward traffic from port 80 (HTTP) to our app on port 3000.
+
+```bash
+sudo apt install -y nginx
+```
+
+---
+
+## 2. Application Setup
+
+### Step 1: Upload or Clone the Code
+Navigate to the web root directory.
+
+```bash
+cd /var/www
+```
+
+**Option A: Git Clone (Recommended)**
+```bash
+# Replace with your actual repository URL
+sudo git clone https://github.com/Saikrishnamotaparthi/pramana.git payment-web
+cd payment-web
+```
+
+**Option B: File Upload (Zip)**
+If you are uploading a zip file (e.g., via FileZilla or SCP):
+1.  Upload `payment-web.zip` to `/var/www/`.
+2.  Unzip it:
+    ```bash
+    sudo unzip payment-web.zip -d payment-web
+    cd payment-web
+    ```
+
+### Step 2: Set Permissions
+Ensure the current user has permission to manage the files.
+```bash
+sudo chown -R $USER:$USER /var/www/payment-web
+```
+
+### Step 3: Install Dependencies
+```bash
+# Install production dependencies
+npm ci
+
+# Recommended: Upgrade npm if needed
+sudo npm install -g npm@latest
+```
+
+---
+
+## 3. Configuration
+
+### Step 1: Environment Variables
+Create the production environment file.
+
+```bash
+nano .env.local
+```
+
+**Paste your environment variables here.** These MUST be provided by the development team.
+
+```ini
+NEXT_PUBLIC_FIREBASE_API_KEY=AIzr...
+NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN=...
+NEXT_PUBLIC_FIREBASE_PROJECT_ID=...
+NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET=...
+NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID=...
+NEXT_PUBLIC_FIREBASE_APP_ID=...
+
+# Backend Secrets
+FIREBASE_SERVICE_ACCOUNT_KEY={"type":"service_account",...}
+EMAIL_USER=your-email@gmail.com
+EMAIL_PASS=your-app-password
+```
+
+Press `Ctrl+O`, `Enter` to save, and `Ctrl+X` to exit.
+
+### Step 2: Build the Application
+Compile the Next.js application for production.
+
 ```bash
 npm run build
-npm start
 ```
+*Note: This may take a few minutes. Ensure no errors occur.*
+
+---
+
+## 4. Running the Application with PM2
+
+We have included an `ecosystem.config.js` file for easy management.
+
+```bash
+# Start the application using PM2
+pm2 start ecosystem.config.js
+
+# Save the PM2 list so it restarts on reboot
+pm2 save
+
+# Generate startup script (Follow the command output instructions)
+pm2 startup
+```
+*Run the command output by `pm2 startup` (it usually starts with `sudo env PATH...`).*
+
+---
+
+## 5. Nginx Reverse Proxy Configuration
+
+Configure Nginx to enforce HTTP/HTTPS and route traffic to the app.
+
+### Step 1: Create Config File
+```bash
+sudo nano /etc/nginx/sites-available/payment-web
+```
+
+### Step 2: Paste Configuration
+Replace `your-domain.com` with your actual domain or server IP.
+
+```nginx
+server {
+    listen 80;
+    server_name your-domain.com www.your-domain.com; # Or use text: _ for default
+
+    location / {
+        proxy_pass http://localhost:3000;
+        proxy_http_version 1.1;
+        proxy_set_header Upgrade $http_upgrade;
+        proxy_set_header Connection 'upgrade';
+        proxy_set_header Host $host;
+        proxy_cache_bypass $http_upgrade;
+    }
+}
+```
+
+### Step 3: Enable Site & Restart Nginx
+```bash
+# Link the config to sites-enabled
+sudo ln -s /etc/nginx/sites-available/payment-web /etc/nginx/sites-enabled/
+
+# Remove default site (optional, to avoid conflicts)
+sudo rm /etc/nginx/sites-enabled/default
+
+# Test configuration
+sudo nginx -t
+
+# Restart Nginx
+sudo systemctl restart nginx
+```
+
+---
+
+## 6. (Optional) SSL Certificate with Certbot
+
+If you have a domain name, secure it with a free SSL certificate.
+
+```bash
+# Install Certbot
+sudo apt install -y certbot python3-certbot-nginx
+
+# Obtain SSL
+sudo certbot --nginx -d your-domain.com -d www.your-domain.com
+```
+
+---
+
+## 7. Troubleshooting & Maintenance
+
+- **View App Logs:**
+  ```bash
+  pm2 logs payment-web
+  ```
+
+- **Restart App:**
+  ```bash
+  pm2 restart payment-web
+  ```
+
+- **Update App:**
+  ```bash
+  cd /var/www/payment-web
+  git pull
+  npm ci
+  npm run build
+  pm2 restart payment-web
+  ```

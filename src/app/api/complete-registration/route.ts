@@ -1,17 +1,47 @@
 import { NextRequest, NextResponse } from "next/server";
 import { adminDb } from "@/lib/firebase-admin";
 import { FieldValue } from "firebase-admin/firestore";
+import { writeFile, mkdir } from "fs/promises";
+import { join } from "path";
+import { existsSync } from "fs";
 
 export async function POST(req: NextRequest) {
     try {
-        const body = await req.json();
-        const { uid, registrationData, referralCode } = body;
+        const formData = await req.formData();
+        const uid = formData.get("uid") as string;
+        const registrationDataString = formData.get("registrationData") as string;
+        const referralCode = formData.get("referralCode") as string | null;
+        const aadharFile = formData.get("aadharFile") as File | null;
 
-        if (!uid || !registrationData) {
+        if (!uid || !registrationDataString) {
             return NextResponse.json({ error: "Missing required fields" }, { status: 400 });
         }
 
+        const registrationData = JSON.parse(registrationDataString);
         const userRef = adminDb.collection("users").doc(uid);
+
+        // Handle File Upload
+        if (aadharFile) {
+            const bytes = await aadharFile.arrayBuffer();
+            const buffer = Buffer.from(bytes);
+
+            // Create directory if it doesn't exist
+            const uploadDir = join(process.cwd(), "secure_uploads", "aadhar");
+            if (!existsSync(uploadDir)) {
+                await mkdir(uploadDir, { recursive: true });
+            }
+
+            // Save file
+            const fileName = `${uid}_front_${Date.now()}.jpg`;
+            const filePath = join(uploadDir, fileName);
+            await writeFile(filePath, buffer);
+
+            // You might want to save the path or filename in user data too, but not explicitly requested.
+            // But let's add it to registrationData for reference if needed later, or just logging.
+            // keeping it simple as per request "store every thing" implies just storing the file.
+            // We can optionally add a reference in the DB.
+            registrationData.aadharFilePath = filePath;
+        }
 
         if (referralCode) {
             const codeRef = adminDb.collection("referral_codes").doc(referralCode);
