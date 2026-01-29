@@ -239,7 +239,14 @@ export default function RegistrationForm() {
                             accept="image/*"
                             onChange={(e) => {
                                 if (e.target.files && e.target.files[0]) {
-                                    setAadharFile(e.target.files[0]);
+                                    const file = e.target.files[0];
+                                    if (file.size > 15 * 1024 * 1024) { // 15MB
+                                        alert("File size exceeds 15MB limit");
+                                        e.target.value = "";
+                                        setAadharFile(null);
+                                        return;
+                                    }
+                                    setAadharFile(file);
                                 }
                             }}
                             className="text-white text-sm file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-pramana-gold file:text-black hover:file:bg-yellow-500 mb-2 cursor-pointer"
