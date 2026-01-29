@@ -16,6 +16,7 @@
     "html2canvas": "^1.4.1",
     "html5-qrcode": "^2.3.8",
     "lucide-react": "^0.560.0",
+    "mime-types": "^3.0.2",
     "next": "16.0.8",
     "nodemailer": "^7.0.11",
     "qrcode": "^1.5.4",
@@ -26,6 +27,7 @@
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4",
+    "@types/mime-types": "^3.0.1",
     "@types/node": "^20",
     "@types/nodemailer": "^7.0.4",
     "@types/qrcode": "^1.5.6",
