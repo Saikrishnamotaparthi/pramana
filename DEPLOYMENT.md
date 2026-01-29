@@ -221,3 +221,40 @@ sudo certbot --nginx -d your-domain.com -d www.your-domain.com
   npm run build
   pm2 restart payment-web
   ```
+
+## 8. Quick Guide: Start & Stop the Website
+
+Here are the direct commands to start and stop the website.
+
+### ➤ How to START the Website
+If the server was rebooted or the app is stopped, run:
+
+```bash
+# 1. Start the app
+pm2 start payment-web
+
+# 2. Save the state (so it starts automatically next time)
+pm2 save
+
+# 3. Check if it is running
+pm2 status
+```
+*If this is the **first time**, use `pm2 start ecosystem.config.js` instead of `pm2 start payment-web`.*
+
+### ➤ How to STOP (Down) the Deployment
+To take the website offline:
+
+```bash
+# 1. Stop the application
+pm2 stop payment-web
+
+# 2. (Optional) Stop the web server completely
+sudo systemctl stop nginx
+```
+
+### ➤ How to RESTART (Update)
+If you made code changes or the site is stuck:
+
+```bash
+pm2 restart payment-web
+```
