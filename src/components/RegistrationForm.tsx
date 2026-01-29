@@ -240,8 +240,8 @@ export default function RegistrationForm() {
                             onChange={(e) => {
                                 if (e.target.files && e.target.files[0]) {
                                     const file = e.target.files[0];
-                                    if (file.size > 15 * 1024 * 1024) { // 15MB
-                                        alert("File size exceeds 15MB limit");
+                                    if (file.size > 5 * 1024 * 1024) { // 5MB
+                                        alert("File size exceeds 5MB limit. Please upload a smaller file.");
                                         e.target.value = "";
                                         setAadharFile(null);
                                         return;
@@ -252,7 +252,7 @@ export default function RegistrationForm() {
                             className="text-white text-sm file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-pramana-gold file:text-black hover:file:bg-yellow-500 mb-2 cursor-pointer"
                         />
                         <p className="text-xs text-white/50 mb-4 italic">
-                            Note: This Aadhar card is only for verification purpose only. It will be only stored temporarily; after verification it will be deleted.
+                            Note: This Aadhar card is only for verification purpose only. Max Size: 5MB.
                         </p>
 
                         <div className="flex items-start gap-3 mt-2">
