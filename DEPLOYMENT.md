@@ -258,3 +258,7 @@ If you made code changes or the site is stuck:
 ```bash
 pm2 restart payment-web
 ```
+git pull
+npm install
+npm run build
+pm2 restart payment-web

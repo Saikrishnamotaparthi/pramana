@@ -4,7 +4,7 @@ export interface UserProfile {
     displayName: string | null;
     photoURL: string | null;
     isGitamite: boolean;
-    role: 'user' | 'admin' | 'superadmin' | 'view_admin' | 'entry_admin' | 'marketing_admin';
+    role: 'user' | 'admin' | 'superadmin' | 'view_admin' | 'entry_admin' | 'marketing_admin' | 'ppass_admin';
     isRegistered: boolean; // True if they have completed the post-login registration
     registrationData?: any; // To hold dynamic form data
     createdAt?: number;

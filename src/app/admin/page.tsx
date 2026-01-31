@@ -44,156 +44,114 @@ export default function AdminDashboard() {
     });
 
     useEffect(() => {
-        if (!loading && (!user || (user.role !== 'admin' && user.role !== 'superadmin' && user.role !== 'view_admin' && user.role !== 'marketing_admin'))) {
+        if (!loading && (!user || (user.role !== 'admin' && user.role !== 'superadmin' && user.role !== 'view_admin' && user.role !== 'marketing_admin' && user.role !== 'ppass_admin'))) {
             router.push("/");
+            return;
+        }
+
+        if (user?.role === 'ppass_admin') {
+            router.replace("/issue-pass");
             return;
         }
 
         if (user && (user.role === 'admin' || user.role === 'superadmin' || user.role === 'view_admin' || user.role === 'marketing_admin')) {
             const fetchStats = async () => {
-                const { collection, getDocs } = await import("firebase/firestore");
+                const { collection, getDocs, getCountFromServer, query, where, orderBy, limit } = await import("firebase/firestore");
                 const { db } = await import("@/lib/firebase");
 
-                // 0. Fetch Users First (Source of Truth for Category)
-                const usersSnap = await getDocs(collection(db, "users"));
-                const totalUsers = usersSnap.size;
-                let gitamUsers = 0;
-                let publicUsers = 0;
-
-                const userMap = new Map();
-                usersSnap.forEach(doc => {
-                    const data = doc.data();
-                    if (data.isGitamite) gitamUsers++;
-                    else if (data.role === 'user') publicUsers++;
-
-                    if (data.email) {
-                        userMap.set(data.email, data.isGitamite);
-                    }
-                });
-
-                // 1. Revenue & Sales
-                const passesConfigSnap = await getDocs(collection(db, "passes_config"));
-                let revenue = 0;
-                let passesSold = 0;
-                passesConfigSnap.forEach(doc => {
-                    const data = doc.data();
-                    revenue += (data.price || 0) * (data.sold || 0);
-                    passesSold += (data.sold || 0);
-                });
-
-                // 2. Detailed Splits & Trends (Using User Map for Category)
-                const issuedSnap = await getDocs(collection(db, "passes_issued"));
-                let gitamSold = 0;
-                let publicSold = 0;
-                let checkedIn = 0;
-
-                // Day Specific Stats
-                let d1Gitam = 0, d1NonGitam = 0, d1Total = 0;
-                let d2Gitam = 0, d2NonGitam = 0, d2Total = 0;
-
-                // Trend Data Helpers
-                const trendMap = new Map<string, number>();
-                const allPasses: any[] = [];
-
-                // Helper to safely parse dates (String or Timestamp)
+                // Helper for Recent Sales
                 const parseDate = (val: any) => {
                     if (!val) return null;
-                    if (val.toDate) return val.toDate(); // Firestore Timestamp
+                    if (val.toDate) return val.toDate();
                     const d = new Date(val);
                     return isNaN(d.getTime()) ? null : d;
                 };
 
-                issuedSnap.forEach(doc => {
-                    const data = doc.data();
-                    allPasses.push(data);
+                // --- AGGRESSIVE OPTIMIZATION FOR QUOTA SAVING ---
+                try {
+                    // 1. Total Users & Gitam Users
+                    const usersRef = collection(db, "users");
+                    const usersSnap = await getCountFromServer(usersRef);
+                    const totalUsers = usersSnap.data().count;
 
-                    if (data.status === 'active') {
-                        // Determine Category: User Profile > Email Check
-                        const isGitamite = userMap.has(data.issuedToEmail)
-                            ? userMap.get(data.issuedToEmail)
-                            : data.issuedToEmail?.endsWith("@gitam.edu");
+                    const gitamUsersSnap = await getCountFromServer(query(usersRef, where("isGitamite", "==", true)));
+                    const gitamUsers = gitamUsersSnap.data().count;
+                    const publicUsers = totalUsers - gitamUsers;
 
-                        if (isGitamite) gitamSold++;
-                        else publicSold++;
+                    // 2. Passes Stats (Using Count)
+                    const passesRef = collection(db, "passes_issued");
 
-                        if (data.admitted) checkedIn++;
+                    // Sold (Active)
+                    const soldSnap = await getCountFromServer(query(passesRef, where("status", "==", "active")));
+                    const passesSold = soldSnap.data().count;
 
-                        // Day Stats Check
-                        const logs = data.entryLogs || [];
-                        if (logs.includes('day1')) {
-                            d1Total++;
-                            if (isGitamite) d1Gitam++; else d1NonGitam++;
+                    // Checked In
+                    const checkedInSnap = await getCountFromServer(query(passesRef, where("admitted", "==", true)));
+                    const checkedIn = checkedInSnap.data().count;
+
+                    // Day 1 & Day 2 Attendance
+                    const day1Snap = await getCountFromServer(query(passesRef, where("entryLogs", "array-contains", "day1")));
+                    const d1Total = day1Snap.data().count;
+
+                    const day2Snap = await getCountFromServer(query(passesRef, where("entryLogs", "array-contains", "day2")));
+                    const d2Total = day2Snap.data().count;
+
+                    // 3. Revenue & Pass Categories
+                    const passesConfigSnap = await getDocs(collection(db, "passes_config"));
+                    let revenue = 0;
+                    let gitamSold = 0;
+                    let publicSold = 0;
+
+                    passesConfigSnap.forEach(doc => {
+                        const data = doc.data();
+                        const sold = data.sold || 0;
+                        revenue += (data.price || 0) * sold;
+
+                        // Categorize Sales
+                        if (data.category === 'gitam' || data.name?.toLowerCase().includes('gitam')) {
+                            gitamSold += sold;
+                        } else {
+                            publicSold += sold;
                         }
-                        if (logs.includes('day2')) {
-                            d2Total++;
-                            if (isGitamite) d2Gitam++; else d2NonGitam++;
-                        }
-                    }
-
-                    // Process Trend (by purchaseDate)
-                    const pDate = parseDate(data.purchaseDate);
-                    if (pDate) {
-                        const dateKey = pDate.toISOString().split('T')[0]; // YYYY-MM-DD
-                        trendMap.set(dateKey, (trendMap.get(dateKey) || 0) + 1);
-                    }
-                });
-
-                // 3. Process Recent Sales
-                const recentSales = allPasses
-                    .sort((a, b) => {
-                        const dateA = parseDate(a.purchaseDate)?.getTime() || 0;
-                        const dateB = parseDate(b.purchaseDate)?.getTime() || 0;
-                        return dateB - dateA;
-                    })
-                    .slice(0, 5)
-                    .map(p => ({
-                        ...p,
-                        timeAgo: getTimeAgo(parseDate(p.purchaseDate) || new Date())
-                    }));
-
-                // 4. Process Daily Trends (Last 7 Days)
-                const dailyTrends = [];
-                let maxTrend = 0;
-                for (let i = 6; i >= 0; i--) {
-                    const d = new Date();
-                    d.setDate(d.getDate() - i);
-                    const dateKey = d.toISOString().split('T')[0];
-                    const count = trendMap.get(dateKey) || 0;
-                    if (count > maxTrend) maxTrend = count;
-                    dailyTrends.push({
-                        date: dateKey,
-                        count,
-                        label: d.toLocaleDateString('en-US', { weekday: 'short' }) // Mon, Tue...
                     });
+
+                    // 4. Recent Sales (Limit 10 active check client side to avoid index)
+                    const recentSnap = await getDocs(query(passesRef, orderBy("purchaseDate", "desc"), limit(10)));
+                    const recentSales = recentSnap.docs
+                        .map(d => d.data())
+                        .filter(d => d.status === 'active')
+                        .slice(0, 5)
+                        .map(data => ({
+                            ...data,
+                            timeAgo: getTimeAgo(parseDate(data.purchaseDate) || new Date())
+                        }));
+
+                    // 5. Config Active Day
+                    const { doc, getDoc } = await import("firebase/firestore");
+                    const configRef = doc(db, "config", "entry");
+                    const configSnap = await getDoc(configRef);
+                    if (configSnap.exists()) {
+                        setActiveDay((configSnap.data().activeDay as 'none' | 'day1' | 'day2') || 'none');
+                    }
+
+                    setStats({
+                        revenue,
+                        passesSold,
+                        gitamSold,
+                        publicSold,
+                        checkedIn,
+                        totalUsers,
+                        gitamUsers,
+                        publicUsers,
+                        day1: { gitam: 0, nonGitam: 0, total: d1Total },
+                        day2: { gitam: 0, nonGitam: 0, total: d2Total },
+                        recentSales,
+                        dailyTrends: [], // Disabled
+                        maxTrend: 1
+                    });
+                } catch (error) {
+                    console.error("Error fetching admin stats:", error);
                 }
-
-                // Avoid divide by zero for bars
-                if (maxTrend === 0) maxTrend = 1;
-
-
-                // 5. Fetch Config
-                const { doc, getDoc } = await import("firebase/firestore");
-                const configRef = doc(db, "config", "entry");
-                const configSnap = await getDoc(configRef);
-                if (configSnap.exists()) {
-                    setActiveDay((configSnap.data().activeDay as 'none' | 'day1' | 'day2') || 'none');
-                }
-
-                setStats({
-                    revenue,
-                    passesSold,
-                    gitamSold,
-                    publicSold,
-                    checkedIn,
-                    totalUsers,
-                    gitamUsers,
-                    publicUsers,
-                    day1: { gitam: d1Gitam, nonGitam: d1NonGitam, total: d1Total },
-                    day2: { gitam: d2Gitam, nonGitam: d2NonGitam, total: d2Total },
-                    recentSales,
-                    dailyTrends,
-                    maxTrend
-                });
             };
             fetchStats();
         }

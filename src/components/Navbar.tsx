@@ -16,7 +16,7 @@ export default function Navbar() {
             <div className="mx-auto flex max-w-7xl items-center justify-between">
                 <div className="flex items-center gap-8">
                     <Link
-                        href={user && (user.role === 'admin' || user.role === 'superadmin' || user.role === 'view_admin') ? "/admin" : "/dashboard"}
+                        href={user && (user.role === 'admin' || user.role === 'superadmin' || user.role === 'view_admin') ? "/admin" : user?.role === 'ppass_admin' ? "/issue-pass" : "/dashboard"}
                         className="text-xl font-cinzel font-bold tracking-widest text-pramana-gold"
                     >
                         PRAMANA26
@@ -31,6 +31,11 @@ export default function Navbar() {
                         {user && (user.role === 'admin' || user.role === 'superadmin' || user.role === 'view_admin') && (
                             <Link href="/admin" className="text-sm font-medium text-pramana-cream/80 hover:text-pramana-gold transition">
                                 Admin Portal
+                            </Link>
+                        )}
+                        {user && user.role === 'ppass_admin' && (
+                            <Link href="/issue-pass" className="text-sm font-medium text-pramana-cream/80 hover:text-pramana-gold transition">
+                                Issue Pass
                             </Link>
                         )}
                     </div>

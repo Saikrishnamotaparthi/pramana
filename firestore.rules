@@ -51,14 +51,18 @@ service cloud.firestore {
       allow write: if isAdmin(); // View Admin cannot write
     }
     
+    function isPpassAdmin() {
+      return request.auth != null && getUserRole() == 'ppass_admin';
+    }
+
     // Passes Issued
     match /passes_issued/{passId} {
       allow read: if request.auth != null && (
         resource.data.purchasedBy == request.auth.uid || 
         resource.data.issuedToEmail == request.auth.token.email || 
-        isViewAdmin()
+        isViewAdmin() || isPpassAdmin()
       );
-      allow write: if isAdmin(); 
+      allow write: if isAdmin() || isPpassAdmin(); 
     }
 
     // Referral Codes (Read: Auth Users, Write: Admin or Marketing Admin)

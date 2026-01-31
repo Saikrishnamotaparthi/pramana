@@ -140,6 +140,10 @@ export default function ManageAdmins() {
                                                             className={`px-3 py-1.5 text-xs font-bold rounded-lg transition ${u.role === 'marketing_admin' ? 'bg-white/5 text-gray-500 cursor-not-allowed' : 'bg-orange-900/30 text-orange-400 hover:bg-orange-900/50 border border-orange-500/30'}`}>
                                                             Marketing Admin
                                                         </button>
+                                                        <button onClick={() => handleRoleUpdate(u.uid, 'ppass_admin')}
+                                                            className={`px-3 py-1.5 text-xs font-bold rounded-lg transition ${u.role === 'ppass_admin' ? 'bg-white/5 text-gray-500 cursor-not-allowed' : 'bg-cyan-900/30 text-cyan-400 hover:bg-cyan-900/50 border border-cyan-500/30'}`}>
+                                                            PPASS Admin
+                                                        </button>
                                                         <button onClick={() => handleRoleUpdate(u.uid, 'user')}
                                                             className="px-3 py-1.5 text-xs font-bold rounded-lg bg-red-900/30 text-red-400 hover:bg-red-900/50 border border-red-500/30 transition">
                                                             Revoke
@@ -192,12 +196,19 @@ export default function ManageAdmins() {
                                                 onClick={() => { handleRoleUpdate(foundUser.uid, 'entry_admin'); setShowAddModal(false); }}
                                                 className="bg-purple-600/20 text-purple-400 border border-purple-500/30 hover:bg-purple-600/30 px-3 py-1 rounded text-sm font-bold transition"
                                             >
+                                                Entry Admin
                                             </button>
                                             <button
                                                 onClick={() => { handleRoleUpdate(foundUser.uid, 'marketing_admin'); setShowAddModal(false); }}
                                                 className="bg-orange-600/20 text-orange-400 border border-orange-500/30 hover:bg-orange-600/30 px-3 py-1 rounded text-sm font-bold transition"
                                             >
                                                 Marketing Admin
+                                            </button>
+                                            <button
+                                                onClick={() => { handleRoleUpdate(foundUser.uid, 'ppass_admin'); setShowAddModal(false); }}
+                                                className="bg-cyan-600/20 text-cyan-400 border border-cyan-500/30 hover:bg-cyan-600/30 px-3 py-1 rounded text-sm font-bold transition"
+                                            >
+                                                Physical Pass Admin
                                             </button>
                                         </div>
                                     </div>

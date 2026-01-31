@@ -15,13 +15,27 @@ export async function POST(req: Request) {
         console.log(`[Lookup] Searching for QR: "${qrCode}"`);
 
         // Check Booking QR, Physical QR, OR Booking ID (for bulk issues)
-        const snapshot = await passesRef.where(
-            Filter.or(
-                Filter.where("qrCode", "==", qrCode),
-                Filter.where("physicalQr", "==", qrCode),
-                Filter.where("bookingId", "==", qrCode)
-            )
-        ).get();
+        // Check Booking QR, Physical QR, OR Booking ID, OR Email
+        const { email } = await req.json().catch(() => ({})); // Handle if email passed in body directly or just reuse qrCode prop if unified? 
+        // Plan said: "Update POST handler to accept email in addition to qrCode."
+        // Let's assume the client might send { qrCode: "..." } where "..." could be an email, OR { email: "..." }.
+        // Given the unified input, let's treat `qrCode` as a generic `query` input in the API, or check if it looks like an email.
+
+        let queryVal = qrCode;
+        // If queryVal is email, we search issuedToEmail.
+        // But to be safe, let's just add issuedToEmail to the OR filter if queryVal contains '@'.
+
+        const filters = [
+            Filter.where("qrCode", "==", queryVal),
+            Filter.where("physicalQr", "==", queryVal),
+            Filter.where("bookingId", "==", queryVal)
+        ];
+
+        if (queryVal && queryVal.includes('@')) {
+            filters.push(Filter.where("issuedToEmail", "==", queryVal));
+        }
+
+        const snapshot = await passesRef.where(Filter.or(...filters)).get();
 
         console.log(`[Lookup] Found ${snapshot.size} documents for QR: "${qrCode}"`);
 
@@ -42,11 +56,21 @@ export async function POST(req: Request) {
 
         // Fetch user profile to get category (Gitam/Non-Gitam)
         let category = "Unknown";
+        let userDetails: any = null;
+
         if (data.issuedToEmail) {
             const userSnap = await adminDb.collection("users").where("email", "==", data.issuedToEmail).get();
             if (!userSnap.empty) {
                 const userData = userSnap.docs[0].data();
                 category = userData.isGitamite ? "Gitam" : "Non-Gitam";
+                userDetails = {
+                    uid: userSnap.docs[0].id,
+                    displayName: userData.displayName,
+                    role: userData.role,
+                    isGitamite: userData.isGitamite,
+                    registrationData: userData.registrationData || null,
+                    photoURL: userData.photoURL
+                };
             }
         }
 
@@ -59,7 +83,9 @@ export async function POST(req: Request) {
                 bookingId: data.bookingId,
                 physicalQr: data.physicalQr || null,
                 issuedPhysical: !!data.issuedPhysical,
-                category: category
+                entryLogs: data.entryLogs || [],
+                category: category,
+                user: userDetails
             }
         });
 

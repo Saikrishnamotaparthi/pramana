@@ -20,6 +20,7 @@ interface IssuedPass {
     issuedToEmail: string;
     purchaseDate: string;
     entryLogs?: string[];
+    issuedPhysical?: boolean;
 }
 
 interface UserProfile {
@@ -47,6 +48,11 @@ export default function DashboardPage() {
             // Redirect Admins to Admin Portal
             if (user.role === 'admin' || user.role === 'superadmin' || user.role === 'view_admin') {
                 router.replace("/admin");
+                return;
+            }
+
+            if (user.role === 'ppass_admin') {
+                router.replace("/issue-pass");
                 return;
             }
 
@@ -298,17 +304,23 @@ export default function DashboardPage() {
                                             </div>
 
                                             {/* Status Footer */}
-                                            <div className="p-4 bg-white/5 border-t border-white/5 grid grid-cols-2 divide-x divide-white/10">
-                                                <div className="px-4 text-center">
-                                                    <p className="text-[10px] uppercase text-pramana-cream/40 tracking-widest mb-1">Day 1 Access</p>
-                                                    <div className={`text-sm font-bold ${pass.entryLogs?.includes('day1') ? 'text-green-400' : 'text-white/60'}`}>
-                                                        {pass.entryLogs?.includes('day1') ? '✓ CHECKED IN' : 'PENDING'}
+                                            <div className="p-4 bg-white/5 border-t border-white/5 grid grid-cols-3 divide-x divide-white/10">
+                                                <div className="px-2 text-center flex flex-col justify-center">
+                                                    <p className="text-[9px] md:text-[10px] uppercase text-pramana-cream/40 tracking-widest mb-1">Physical Pass</p>
+                                                    <div className={`text-xs md:text-sm font-bold ${pass.issuedPhysical ? 'text-green-400' : 'text-yellow-500'}`}>
+                                                        {pass.issuedPhysical ? '✓ COLLECTED' : 'NOT COLLECTED'}
                                                     </div>
                                                 </div>
-                                                <div className="px-4 text-center">
-                                                    <p className="text-[10px] uppercase text-pramana-cream/40 tracking-widest mb-1">Day 2 Access</p>
-                                                    <div className={`text-sm font-bold ${pass.entryLogs?.includes('day2') ? 'text-blue-400' : 'text-white/60'}`}>
-                                                        {pass.entryLogs?.includes('day2') ? '✓ CHECKED IN' : 'PENDING'}
+                                                <div className="px-2 text-center flex flex-col justify-center">
+                                                    <p className="text-[9px] md:text-[10px] uppercase text-pramana-cream/40 tracking-widest mb-1">Day 1 Access</p>
+                                                    <div className={`text-xs md:text-sm font-bold ${pass.entryLogs?.includes('day1') ? 'text-green-400' : 'text-white/60'}`}>
+                                                        {pass.entryLogs?.includes('day1') ? '✓ IN' : '-'}
+                                                    </div>
+                                                </div>
+                                                <div className="px-2 text-center flex flex-col justify-center">
+                                                    <p className="text-[9px] md:text-[10px] uppercase text-pramana-cream/40 tracking-widest mb-1">Day 2 Access</p>
+                                                    <div className={`text-xs md:text-sm font-bold ${pass.entryLogs?.includes('day2') ? 'text-blue-400' : 'text-white/60'}`}>
+                                                        {pass.entryLogs?.includes('day2') ? '✓ IN' : '-'}
                                                     </div>
                                                 </div>
                                             </div>

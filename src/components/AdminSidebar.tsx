@@ -12,11 +12,12 @@ import {
     Globe,
     LogOut,
     Menu,
-    X
+    X,
+    ScanLine
 } from "lucide-react";
 import { useState } from "react";
 import { useAuth } from "@/hooks/useAuth";
-import { canAccessBulkIssue, canManageAdmins, isMarketingAdmin } from "@/utils/rbac";
+import { canAccessBulkIssue, canManageAdmins, isMarketingAdmin, isPpassAdmin } from "@/utils/rbac";
 
 const links = [
     { href: "/admin", label: "Dashboard", icon: LayoutDashboard },
@@ -27,6 +28,7 @@ const links = [
     { href: "/admin/referrals", label: "Referrals", icon: Users },
     { href: "/admin/users", label: "User Management", icon: Users },
     { href: "/admin/manage-admins", label: "Admins", icon: Shield },
+    { href: "/admin/scan-pass", label: "Scan Pass", icon: ScanLine },
     { href: "/issue-pass", label: "Physical Issue", icon: Printer },
 
 ];
@@ -82,6 +84,11 @@ export default function AdminSidebar() {
                 {/* Navigation */}
                 <nav className="flex-1 p-3 space-y-2 overflow-y-auto scrollbar-hide">
                     {links.filter(link => {
+                        // PPASS Admin Restrictions
+                        if (isPpassAdmin(user)) {
+                            return link.href === '/issue-pass';
+                        }
+
                         // Marketing Admin Restrictions
                         if (isMarketingAdmin(user)) {
                             return ['/admin', '/admin/referrals', '/tickets'].includes(link.href);
