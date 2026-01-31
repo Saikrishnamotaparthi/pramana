@@ -735,7 +735,7 @@ export default function UserManagement() {
                 )}
 
                 {showAadharModal && (
-                    <div className="fixed inset-0 bg-black/90 flex items-center justify-center p-4 z-[60]">
+                    <div className="fixed inset-0 bg-black/90 flex items-center justify-center p-4 z-[70]">
                         <div className="bg-zinc-900 border border-white/10 p-2 rounded-2xl w-full max-w-4xl max-h-[90vh] flex flex-col">
                             <div className="flex justify-between p-4 border-b border-white/10">
                                 <h3 className="text-xl font-bold text-pramana-gold">Aadhar Viewer</h3>
@@ -788,12 +788,27 @@ export default function UserManagement() {
                                     <h4 className="text-xs uppercase tracking-widest text-pramana-gold mb-3">Registration Data</h4>
                                     {viewingDetailsUser.registrationData && Object.keys(viewingDetailsUser.registrationData).length > 0 ? (
                                         <div className="grid grid-cols-1 gap-2 text-sm">
-                                            {Object.entries(viewingDetailsUser.registrationData).map(([key, val]) => (
-                                                <div key={key} className="flex justify-between border-b border-white/5 pb-1">
-                                                    <span className="text-white/40 capitalize">{key.replace(/_/g, ' ')}</span>
-                                                    <span className="text-white text-right font-medium">{String(val)}</span>
-                                                </div>
-                                            ))}
+                                            {Object.entries(viewingDetailsUser.registrationData).map(([key, val]) => {
+                                                if (key === 'aadharFilePath' && !viewingDetailsUser.isGitamite) {
+                                                    return (
+                                                        <div key={key} className="flex justify-between border-b border-white/5 pb-1 items-center">
+                                                            <span className="text-white/40 capitalize">Aadhar File</span>
+                                                            <button
+                                                                onClick={() => handleViewAadhar(viewingDetailsUser)}
+                                                                className="text-xs bg-yellow-600/20 text-yellow-500 border border-yellow-600/30 px-2 py-1 rounded hover:bg-yellow-600/30 transition"
+                                                            >
+                                                                View File
+                                                            </button>
+                                                        </div>
+                                                    );
+                                                }
+                                                return (
+                                                    <div key={key} className="flex justify-between border-b border-white/5 pb-1">
+                                                        <span className="text-white/40 capitalize">{key.replace(/_/g, ' ')}</span>
+                                                        <span className="text-white text-right font-medium">{String(val)}</span>
+                                                    </div>
+                                                );
+                                            })}
                                         </div>
                                     ) : (
                                         <p className="text-white/30 italic">No registration data.</p>
