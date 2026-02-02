@@ -227,31 +227,70 @@ export default function DashboardPage() {
                             {myPasses.length > 0 && <span className="text-pramana-cream/40 font-mono text-xs">{myPasses.length} Active Pass(es)</span>}
                         </div>
 
-                        {myPasses.length === 0 && (
-                            <div className="glass-panel p-6 rounded-2xl mb-8 border-yellow-500/20 bg-yellow-900/5">
-                                <p className="text-sm text-yellow-200/80 text-center font-mono leading-relaxed">
-                                    <span className="text-yellow-500 font-bold">NOTICE:</span> If you have recently purchased a pass on G-EVENTS, your digital ticket will be displayed here shortly after verification.<br />
-                                    Once the payment is completed, you will receive a payment confirmation email from G-EVENTS.<br />
-                                    For any assistance, please contact us at <a href="mailto:pramana.hyd@gitam.edu" className="underline hover:text-white">pramana.hyd@gitam.edu</a>.
-                                </p>
-                            </div>
-                        )}
+
 
                         {myPasses.length === 0 ? (
-                            <div className="glass-panel p-16 rounded-3xl text-center flex flex-col items-center justify-center border-dashed border-white/10 group hover:border-pramana-gold/30 transition-all duration-500">
-                                <div className="h-24 w-24 bg-white/5 rounded-full flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-500 ring-1 ring-white/10 group-hover:ring-pramana-gold/50">
-                                    <span className="text-4xl opacity-50 grayscale group-hover:grayscale-0 transition-all duration-500">🎟️</span>
+                            <>
+                                <div className="glass-panel p-16 rounded-3xl text-center flex flex-col items-center justify-center border-dashed border-white/10 group hover:border-pramana-gold/30 transition-all duration-500">
+                                    <div className="h-24 w-24 bg-white/5 rounded-full flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-500 ring-1 ring-white/10 group-hover:ring-pramana-gold/50">
+                                        <span className="text-4xl opacity-50 grayscale group-hover:grayscale-0 transition-all duration-500">🎟️</span>
+                                    </div>
+                                    <h3 className="text-2xl font-bold text-white font-cinzel mb-2">No Passes Found</h3>
+                                    <p className="text-pramana-cream/50 mb-8 max-w-md">Your adventure hasn't started yet. Purchase a pass to unlock the experience.</p>
+                                    <Link
+                                        href="/tickets"
+                                        className="relative group overflow-hidden px-8 py-3 bg-pramana-gold text-black font-bold rounded-full font-cinzel shadow-[0_0_20px_rgba(184,134,11,0.3)] hover:shadow-[0_0_40px_rgba(184,134,11,0.6)] transition-all duration-300"
+                                    >
+                                        <span className="relative z-10">Purchase Passes</span>
+                                        <div className="absolute inset-0 bg-white/30 transform -skew-x-12 translate-x-[-150%] group-hover:translate-x-[150%] transition-transform duration-700 ease-in-out"></div>
+                                    </Link>
                                 </div>
-                                <h3 className="text-2xl font-bold text-white font-cinzel mb-2">No Passes Found</h3>
-                                <p className="text-pramana-cream/50 mb-8 max-w-md">Your adventure hasn't started yet. Purchase a pass to unlock the experience.</p>
-                                <Link
-                                    href="/tickets"
-                                    className="relative group overflow-hidden px-8 py-3 bg-pramana-gold text-black font-bold rounded-full font-cinzel shadow-[0_0_20px_rgba(184,134,11,0.3)] hover:shadow-[0_0_40px_rgba(184,134,11,0.6)] transition-all duration-300"
-                                >
-                                    <span className="relative z-10">Purchase Passes</span>
-                                    <div className="absolute inset-0 bg-white/30 transform -skew-x-12 translate-x-[-150%] group-hover:translate-x-[150%] transition-transform duration-700 ease-in-out"></div>
-                                </Link>
-                            </div>
+
+                                <div className="relative overflow-hidden rounded-2xl mt-8 mb-8 border border-yellow-500/30 bg-gradient-to-b from-yellow-900/10 to-black/60 shadow-[0_0_30px_rgba(234,179,8,0.1)] group">
+                                    {/* Decorative Elements */}
+                                    <div className="absolute top-0 right-0 w-64 h-64 bg-yellow-500/5 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2 pointer-events-none group-hover:bg-yellow-500/10 transition-colors duration-700"></div>
+                                    <div className="absolute bottom-0 left-0 w-48 h-48 bg-yellow-500/5 rounded-full blur-2xl translate-y-1/3 -translate-x-1/3 pointer-events-none"></div>
+
+                                    <div className="relative z-10 p-6 md:p-8 flex flex-col md:flex-row gap-8 items-center md:items-start text-center md:text-left">
+                                        {/* Icon Section */}
+                                        <div className="flex-shrink-0">
+                                            <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-yellow-500/20 to-black border border-yellow-500/30 flex items-center justify-center shadow-[0_0_15px_rgba(234,179,8,0.2)] group-hover:scale-105 transition-transform duration-500">
+                                                <span className="text-3xl animate-pulse">📢</span>
+                                            </div>
+                                        </div>
+
+                                        {/* Text Section */}
+                                        <div className="flex-1">
+                                            <h4 className="text-xl font-cinzel font-bold text-yellow-500 mb-4 flex items-center justify-center md:justify-start gap-3">
+                                                <span>Important Note</span>
+                                                <div className="h-px flex-1 bg-gradient-to-r from-yellow-500/50 to-transparent max-w-[100px]"></div>
+                                            </h4>
+
+                                            <p className="text-pramana-cream/80 text-lg leading-7 mb-6 font-sans">
+                                                After successful payment, your passes will be reflected on your dashboard only after verification. This process may take <span className="text-white font-semibold border-b border-yellow-500/30 pb-0.5">5–7 working days</span>. <br className="hidden md:block" />
+                                                Kindly cooperate in the meantime and consider the confirmation email received from G-EVENTS as the primary proof of payment.
+                                            </p>
+
+                                            {/* Button Section */}
+                                            <div>
+                                                <a
+                                                    href="https://forms.gle/mRA8r8CFUV8FyadY7"
+                                                    target="_blank"
+                                                    rel="noopener noreferrer"
+                                                    className="group/btn relative inline-flex items-center gap-3 px-6 py-2.5 bg-gradient-to-r from-yellow-600/10 to-transparent border border-yellow-500/30 hover:border-yellow-500/80 rounded-lg transition-all duration-300 hover:shadow-[0_0_20px_rgba(234,179,8,0.15)] hover:bg-yellow-600/20"
+                                                >
+                                                    <span className="text-yellow-200 group-hover/btn:text-white text-xs font-bold uppercase tracking-widest transition-colors">
+                                                        Report an Issue
+                                                    </span>
+                                                    <span className="bg-yellow-500/10 p-1 rounded group-hover/btn:bg-yellow-500 group-hover/btn:text-black transition-all duration-300 transform group-hover/btn:rotate-[-45deg]">
+                                                        <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M14 5l7 7m0 0l-7 7m7-7H3" /></svg>
+                                                    </span>
+                                                </a>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </>
                         ) : (
                             <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-8">
                                 {myPasses.map(pass => (
