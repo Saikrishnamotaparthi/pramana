@@ -4,11 +4,11 @@
 import { useState, useEffect, useRef } from "react";
 import { useAuth } from "@/hooks/useAuth";
 import { useRouter } from "next/navigation";
-import { Html5QrcodeScanner } from "html5-qrcode";
+import { Html5Qrcode } from "html5-qrcode";
 import { collection, onSnapshot, doc } from "firebase/firestore";
 import { db } from "@/lib/firebase";
 import Image from "next/image";
-import { Search, Loader2, CheckCircle, XCircle, User, Calendar, Shield, Camera, X } from "lucide-react";
+import { Search, Loader2, CheckCircle, XCircle, User, Calendar, Shield, Camera, X, AlertTriangle } from "lucide-react";
 
 export default function EntryPage() {
     const { user, loading } = useAuth();
@@ -21,8 +21,11 @@ export default function EntryPage() {
     const [searching, setSearching] = useState(false);
     const [error, setError] = useState("");
     const [showCamera, setShowCamera] = useState(false);
+    const [cameraError, setCameraError] = useState<string | null>(null);
+    const [retryCount, setRetryCount] = useState(0);
+
     const inputRef = useRef<HTMLInputElement>(null);
-    const scannerRef = useRef<Html5QrcodeScanner | null>(null);
+    const scannerRef = useRef<Html5Qrcode | null>(null);
 
     // Data State
     const [passData, setPassData] = useState<any>(null);
@@ -61,42 +64,86 @@ export default function EntryPage() {
     // Camera Logic
     useEffect(() => {
         if (showCamera) {
-            const timer = setTimeout(() => {
-                if (!scannerRef.current) {
+            setCameraError(null);
+
+            // Give UI a moment to render the div
+            const timer = setTimeout(async () => {
+                const elementId = "reader";
+                if (!document.getElementById(elementId)) return;
+
+                // Cleanup existing instance if any (shouldn't happen due to cleanup below, but safety first)
+                if (scannerRef.current) {
                     try {
-                        const scanner = new Html5QrcodeScanner(
-                            "reader",
-                            { fps: 10, qrbox: 250 },
-                            /* verbose= */ false
-                        );
-                        scanner.render(onScanSuccess, (err: any) => { /* ignore */ });
-                        scannerRef.current = scanner;
-                    } catch (e) {
-                        console.error("Scanner init error", e);
-                    }
+                        await scannerRef.current.stop();
+                    } catch (e) { console.error("Error stopping existing scanner", e); }
+                    scannerRef.current = null;
                 }
-            }, 100);
-            return () => clearTimeout(timer);
+
+                try {
+                    const html5QrCode = new Html5Qrcode(elementId);
+                    scannerRef.current = html5QrCode;
+
+                    await html5QrCode.start(
+                        { facingMode: "environment" }, // Prefer back camera
+                        {
+                            fps: 10,
+                            qrbox: { width: 250, height: 250 },
+                            aspectRatio: 1.0
+                        },
+                        (decodedText) => {
+                            // Success callback
+                            onScanSuccess(decodedText);
+                        },
+                        (errorMessage) => {
+                            // Ignore scan errors, they happen every frame no QR is found
+                        }
+                    );
+                } catch (err: any) {
+                    console.error("Camera start error:", err);
+                    let msg = "Failed to access camera.";
+                    if (typeof err === 'string') {
+                        msg = err;
+                    } else if (err?.name === 'NotAllowedError' || err?.message?.includes('permission')) {
+                        msg = "Camera permission denied. Please allow camera access in browser settings.";
+                    } else if (err?.name === 'NotFoundError') {
+                        msg = "No camera found on this device.";
+                    } else if (err?.name === 'NotReadableError') {
+                        msg = "Camera is in use by another app or hardware error.";
+                    }
+                    setCameraError(msg);
+                }
+            }, 300); // Slight delay for render
+
+            return () => {
+                clearTimeout(timer);
+                if (scannerRef.current) {
+                    scannerRef.current.stop().catch(console.error).finally(() => {
+                        scannerRef.current?.clear();
+                        scannerRef.current = null;
+                    });
+                }
+            };
         } else {
+            // Ensure stopped if showCamera becomes false
             if (scannerRef.current) {
-                scannerRef.current.clear().catch(console.error);
-                scannerRef.current = null;
+                scannerRef.current.stop().catch(console.error).finally(() => {
+                    scannerRef.current?.clear();
+                    scannerRef.current = null;
+                });
             }
         }
-    }, [showCamera]);
+    }, [showCamera, retryCount]); // Retry count allows manual retry
 
     const onScanSuccess = (decodedText: string) => {
+        // Stop scanning immediately
         if (scannerRef.current) {
-            scannerRef.current.clear().catch(console.error);
-            scannerRef.current = null;
+            scannerRef.current.stop().catch(console.error).finally(() => {
+                scannerRef.current?.clear();
+                scannerRef.current = null;
+            });
         }
         setShowCamera(false);
-        // We set directly and trigger lookup
-        // But handleLookup relies on state, so we need a param or updated state
-        // Let's call lookup directly or update state and trigger effect?
-        // Better: update input value and call specialized lookup function or pass arg.
         setInputValue(decodedText);
-        // We need to bypass the inputValue state for immediate lookup
         performLookup(decodedText);
     };
 
@@ -221,8 +268,26 @@ export default function EntryPage() {
                                 >
                                     <X size={24} />
                                 </button>
-                                <div id="reader" className="w-full"></div>
-                                <p className="text-center mt-2 text-white/50 text-xs uppercase tracking-widest">Scanning...</p>
+
+                                {/* Camera Viewport */}
+                                <div id="reader" className="w-full h-full min-h-[300px] bg-black"></div>
+
+                                {cameraError && (
+                                    <div className="absolute inset-0 z-10 bg-black/80 flex flex-col items-center justify-center p-6 text-center animate-in fade-in">
+                                        <AlertTriangle size={48} className="text-red-500 mb-4" />
+                                        <p className="text-red-400 font-bold mb-6">{cameraError}</p>
+                                        <button
+                                            onClick={() => setRetryCount(c => c + 1)}
+                                            className="bg-white/10 hover:bg-white/20 px-6 py-2 rounded-xl text-white font-bold transition border border-white/20"
+                                        >
+                                            Try Again
+                                        </button>
+                                    </div>
+                                )}
+
+                                {!cameraError && (
+                                    <p className="text-center mt-2 text-white/50 text-xs uppercase tracking-widest absolute bottom-4 left-0 right-0 pointer-events-none">Scanning...</p>
+                                )}
                             </div>
                         ) : (
                             <div className="relative group">

@@ -265,6 +265,10 @@ pm2 restart payment-web
 
 cd /var/www
 cd /var/www/payment-web
+git pull
+npm install
+npm run build
+pm2 restart payment-web
 
 Saikrishnamotaparthi
 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
