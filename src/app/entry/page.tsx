@@ -68,13 +68,13 @@ export default function EntryPage() {
 
         const startScanner = async () => {
             if (!showCamera) return;
-            if (scannerLock.current) return; // Prevent overlapping ops
+            // Lock only if you want to block re-entry, but for start/stop toggles we rely on showCamera
+            if (scannerLock.current) return;
             scannerLock.current = true;
 
             try {
                 // Ensure UI element exists
                 if (!document.getElementById(elementId)) {
-                    // Wait a bit if not ready
                     await new Promise(r => setTimeout(r, 100));
                     if (!document.getElementById(elementId)) {
                         scannerLock.current = false;
@@ -94,12 +94,13 @@ export default function EntryPage() {
                 }
 
                 // Check state before starting
-                // @ts-ignore - internal state access if needed, or just trusting logic
-                const state = scannerRef.current.getState();
-                if (state === Html5QrcodeScannerState.SCANNING || state === Html5QrcodeScannerState.PAUSED) {
-                    // Already running, maybe stop first?
-                    await scannerRef.current.stop();
-                }
+                try {
+                    // @ts-ignore
+                    const state = scannerRef.current.getState();
+                    if (state === Html5QrcodeScannerState.SCANNING || state === Html5QrcodeScannerState.PAUSED) {
+                        await scannerRef.current.stop();
+                    }
+                } catch (e) { }
 
                 setCameraError(null);
                 await scannerRef.current.start(
@@ -122,7 +123,7 @@ export default function EntryPage() {
                     let msg = "Failed to access camera.";
                     if (typeof err === 'string') {
                         msg = err;
-                    } else if (err?.name === 'NotAllowedError' || err?.message?.includes('permission')) {
+                    } else if (err?.name === 'NotAllowedError' || err?.message?.includes('permission') || err?.message?.includes('Permission denied')) {
                         msg = "Camera permission denied. Please allow camera access.";
                     } else if (err?.name === 'NotFoundError') {
                         msg = "No camera found.";
@@ -137,43 +138,34 @@ export default function EntryPage() {
         };
 
         const stopScanner = async () => {
-            if (scannerLock.current) {
-                // If locked, wait? Or just return?
-                // Returning might leave it open.
-                // Let's try to wait or just force a cleanup later.
-                // For now, if locked, we assume the operation in progress will finish.
-                // But we need to ensure we stop if we are unmounting.
+            if (scannerRef.current) {
+                try {
+                    // @ts-ignore
+                    const state = scannerRef.current.getState();
+                    if (state === Html5QrcodeScannerState.SCANNING || state === Html5QrcodeScannerState.PAUSED) {
+                        await scannerRef.current.stop();
+                    }
+                    try { scannerRef.current.clear(); } catch (e) { }
+                } catch (e) { console.warn("Stop failed", e); }
+                scannerRef.current = null;
             }
-            // We set lock effectively for stop too, but we need to respect the previous lock.
-            // Simplified: we only run stop if we are NOT locked or if we force it.
-            // Actually, best is to wait for lock to release.
         };
 
         // Trigger start
         if (showCamera) {
             // Delay slightly to allow render
-            setTimeout(() => startScanner(), 100);
+            const timer = setTimeout(() => startScanner(), 100);
+            return () => {
+                clearTimeout(timer);
+                // We only define isMounted in useEffect scope, so this arrow func works fine
+            };
         } else {
-            // Stop if hidden
-            if (scannerRef.current) {
-                // We wrap stop in an async wrapper but useEffect cleanup is sync-ish.
-                // We fire and forget the stop, but handle errors.
-                scannerRef.current.stop().catch(e => console.warn("Stop failed", e)).finally(() => {
-                    try { scannerRef.current?.clear(); } catch (e) { }
-                    scannerRef.current = null;
-                });
-            }
+            stopScanner();
         }
 
         return () => {
             isMounted = false;
-            // Cleanup on unmount
-            if (scannerRef.current) {
-                scannerRef.current.stop().catch(e => console.warn("Cleanup stop failed", e)).finally(() => {
-                    try { scannerRef.current?.clear(); } catch (e) { }
-                    scannerRef.current = null;
-                });
-            }
+            stopScanner();
         };
     }, [showCamera, retryCount]);
 
@@ -182,8 +174,12 @@ export default function EntryPage() {
         const stop = async () => {
             if (scannerRef.current) {
                 try {
-                    await scannerRef.current.stop();
-                    scannerRef.current.clear();
+                    // @ts-ignore
+                    const state = scannerRef.current.getState();
+                    if (state === Html5QrcodeScannerState.SCANNING || state === Html5QrcodeScannerState.PAUSED) {
+                        await scannerRef.current.stop();
+                    }
+                    try { scannerRef.current.clear(); } catch (e) { }
                 } catch (e) { console.warn("Stop on success failed", e); }
                 scannerRef.current = null;
             }
