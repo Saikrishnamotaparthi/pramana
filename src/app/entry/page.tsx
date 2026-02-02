@@ -3,7 +3,6 @@
 import { useState, useEffect, useRef } from "react";
 import { useAuth } from "@/hooks/useAuth";
 import { useRouter } from "next/navigation";
-import { Html5Qrcode, Html5QrcodeScannerState } from "html5-qrcode";
 import { collection, onSnapshot, doc } from "firebase/firestore";
 import { db } from "@/lib/firebase";
 import Image from "next/image";
@@ -13,19 +12,13 @@ export default function EntryPage() {
     const { user, loading } = useAuth();
     const router = useRouter();
     const [activeDay, setActiveDay] = useState<string | null>(null);
-    const [debugInfo, setDebugInfo] = useState<string>("Initializing...");
 
     // UI State
     const [inputValue, setInputValue] = useState("");
     const [searching, setSearching] = useState(false);
     const [error, setError] = useState("");
-    const [showCamera, setShowCamera] = useState(false);
-    const [cameraError, setCameraError] = useState<string | null>(null);
-    const [retryCount, setRetryCount] = useState(0);
 
     const inputRef = useRef<HTMLInputElement>(null);
-    const scannerRef = useRef<Html5Qrcode | null>(null);
-    const scannerLock = useRef<boolean>(false); // Strict lock for async operations
 
     // Data State
     const [passData, setPassData] = useState<any>(null);
@@ -35,13 +28,13 @@ export default function EntryPage() {
     // Focus input on load and keep focus (for barcode scanners) if not using camera
     useEffect(() => {
         const focusInput = () => {
-            if (!searching && !passData && !checkInResult && !showCamera) {
+            if (!searching && !passData && !checkInResult) {
                 inputRef.current?.focus();
             }
         };
         const timer = setInterval(focusInput, 1000);
         return () => clearInterval(timer);
-    }, [searching, passData, checkInResult, showCamera]);
+    }, [searching, passData, checkInResult]);
 
     // Auth & Config Listener
     useEffect(() => {
@@ -60,136 +53,6 @@ export default function EntryPage() {
             }
         }
     }, [user, loading, router]);
-
-    // Camera Logic
-    useEffect(() => {
-        let isMounted = true;
-        const elementId = "reader";
-
-        const startScanner = async () => {
-            if (!showCamera) return;
-            // Lock only if you want to block re-entry, but for start/stop toggles we rely on showCamera
-            if (scannerLock.current) return;
-            scannerLock.current = true;
-
-            try {
-                // Ensure UI element exists
-                if (!document.getElementById(elementId)) {
-                    await new Promise(r => setTimeout(r, 100));
-                    if (!document.getElementById(elementId)) {
-                        scannerLock.current = false;
-                        return;
-                    }
-                }
-
-                // Initialize if needed
-                if (!scannerRef.current) {
-                    try {
-                        scannerRef.current = new Html5Qrcode(elementId);
-                    } catch (e) {
-                        console.error("Failed to create Html5Qrcode instance", e);
-                        scannerLock.current = false;
-                        return;
-                    }
-                }
-
-                // Check state before starting
-                try {
-                    // @ts-ignore
-                    const state = scannerRef.current.getState();
-                    if (state === Html5QrcodeScannerState.SCANNING || state === Html5QrcodeScannerState.PAUSED) {
-                        await scannerRef.current.stop();
-                    }
-                } catch (e) { }
-
-                setCameraError(null);
-                await scannerRef.current.start(
-                    { facingMode: "environment" },
-                    {
-                        fps: 10,
-                        qrbox: { width: 250, height: 250 },
-                        aspectRatio: 1.0
-                    },
-                    (decodedText) => {
-                        if (isMounted) onScanSuccess(decodedText);
-                    },
-                    (errorMessage) => {
-                        // ignore
-                    }
-                );
-            } catch (err: any) {
-                console.error("Camera start error:", err);
-                if (isMounted && showCamera) {
-                    let msg = "Failed to access camera.";
-                    if (typeof err === 'string') {
-                        msg = err;
-                    } else if (err?.name === 'NotAllowedError' || err?.message?.includes('permission') || err?.message?.includes('Permission denied')) {
-                        msg = "Camera permission denied. Please allow camera access.";
-                    } else if (err?.name === 'NotFoundError') {
-                        msg = "No camera found.";
-                    } else if (err?.name === 'NotReadableError') {
-                        msg = "Camera in use or hardware error.";
-                    }
-                    setCameraError(msg);
-                }
-            } finally {
-                scannerLock.current = false;
-            }
-        };
-
-        const stopScanner = async () => {
-            if (scannerRef.current) {
-                try {
-                    // @ts-ignore
-                    const state = scannerRef.current.getState();
-                    if (state === Html5QrcodeScannerState.SCANNING || state === Html5QrcodeScannerState.PAUSED) {
-                        await scannerRef.current.stop();
-                    }
-                    try { scannerRef.current.clear(); } catch (e) { }
-                } catch (e) { console.warn("Stop failed", e); }
-                scannerRef.current = null;
-            }
-        };
-
-        // Trigger start
-        if (showCamera) {
-            // Delay slightly to allow render
-            const timer = setTimeout(() => startScanner(), 100);
-            return () => {
-                clearTimeout(timer);
-                // We only define isMounted in useEffect scope, so this arrow func works fine
-            };
-        } else {
-            stopScanner();
-        }
-
-        return () => {
-            isMounted = false;
-            stopScanner();
-        };
-    }, [showCamera, retryCount]);
-
-    const onScanSuccess = (decodedText: string) => {
-        // Stop scanning immediately logic moved to helper to be safe
-        const stop = async () => {
-            if (scannerRef.current) {
-                try {
-                    // @ts-ignore
-                    const state = scannerRef.current.getState();
-                    if (state === Html5QrcodeScannerState.SCANNING || state === Html5QrcodeScannerState.PAUSED) {
-                        await scannerRef.current.stop();
-                    }
-                    try { scannerRef.current.clear(); } catch (e) { }
-                } catch (e) { console.warn("Stop on success failed", e); }
-                scannerRef.current = null;
-            }
-        };
-        stop();
-
-        setShowCamera(false);
-        setInputValue(decodedText);
-        performLookup(decodedText);
-    };
 
     const performLookup = async (code: string) => {
         if (!code.trim() || searching) return;
@@ -292,64 +155,28 @@ export default function EntryPage() {
                 {/* Search / Scan Input */}
                 {!passData && !checkInResult && (
                     <div className="mt-10 animate-in fade-in zoom-in duration-300">
-                        {showCamera ? (
-                            <div className="relative bg-black rounded-3xl overflow-hidden shadow-2xl border border-white/10 mb-8 p-4">
-                                <button
-                                    onClick={() => setShowCamera(false)}
-                                    className="absolute top-4 right-4 z-20 bg-black/50 hover:bg-red-600/80 text-white p-2 rounded-full transition"
-                                >
-                                    <X size={24} />
-                                </button>
-
-                                {/* Camera Viewport */}
-                                <div id="reader" className="w-full h-full min-h-[300px] bg-black"></div>
-
-                                {cameraError && (
-                                    <div className="absolute inset-0 z-10 bg-black/80 flex flex-col items-center justify-center p-6 text-center animate-in fade-in">
-                                        <AlertTriangle size={48} className="text-red-500 mb-4" />
-                                        <p className="text-red-400 font-bold mb-6">{cameraError}</p>
-                                        <button
-                                            onClick={() => setRetryCount(c => c + 1)}
-                                            className="bg-white/10 hover:bg-white/20 px-6 py-2 rounded-xl text-white font-bold transition border border-white/20"
-                                        >
-                                            Try Again
-                                        </button>
+                        <div className="relative group">
+                            <div className="absolute -inset-1 bg-gradient-to-r from-pramana-gold to-yellow-600 rounded-2xl blur opacity-25 group-hover:opacity-50 transition duration-1000"></div>
+                            <div className="relative flex gap-2">
+                                <div className="flex-1 relative">
+                                    <input
+                                        ref={inputRef}
+                                        autoFocus
+                                        value={inputValue}
+                                        onChange={e => setInputValue(e.target.value)}
+                                        onKeyDown={handleKeyDown}
+                                        placeholder="Scan QR or Enter Email..."
+                                        className="w-full text-center text-2xl md:text-3xl font-bold p-8 rounded-2xl bg-black border border-white/20 text-pramana-gold placeholder:text-white/10 focus:border-pramana-gold focus:ring-1 focus:ring-pramana-gold outline-none transition-all font-mono shadow-2xl pl-20"
+                                    />
+                                    <div className="absolute left-6 top-1/2 -translate-y-1/2 text-white/20 pointer-events-none">
+                                        {searching ? <Loader2 className="animate-spin" size={32} /> : <Search size={32} />}
                                     </div>
-                                )}
-
-                                {!cameraError && (
-                                    <p className="text-center mt-2 text-white/50 text-xs uppercase tracking-widest absolute bottom-4 left-0 right-0 pointer-events-none">Scanning...</p>
-                                )}
-                            </div>
-                        ) : (
-                            <div className="relative group">
-                                <div className="absolute -inset-1 bg-gradient-to-r from-pramana-gold to-yellow-600 rounded-2xl blur opacity-25 group-hover:opacity-50 transition duration-1000"></div>
-                                <div className="relative flex gap-2">
-                                    <div className="flex-1 relative">
-                                        <input
-                                            ref={inputRef}
-                                            autoFocus
-                                            value={inputValue}
-                                            onChange={e => setInputValue(e.target.value)}
-                                            onKeyDown={handleKeyDown}
-                                            placeholder="Scan QR or Enter Email..."
-                                            className="w-full text-center text-2xl md:text-3xl font-bold p-8 rounded-2xl bg-black border border-white/20 text-pramana-gold placeholder:text-white/10 focus:border-pramana-gold focus:ring-1 focus:ring-pramana-gold outline-none transition-all font-mono shadow-2xl pl-20"
-                                        />
-                                        <div className="absolute left-6 top-1/2 -translate-y-1/2 text-white/20 pointer-events-none">
-                                            {searching ? <Loader2 className="animate-spin" size={32} /> : <Search size={32} />}
-                                        </div>
-                                    </div>
-                                    <button
-                                        onClick={() => setShowCamera(true)}
-                                        className="bg-white/5 border border-white/10 hover:bg-white/10 text-pramana-gold rounded-2xl p-6 flex items-center justify-center transition-all shadow-lg hover:border-pramana-gold/50"
-                                    >
-                                        <Camera size={32} />
-                                    </button>
                                 </div>
+                                {/* Removed Camera Button */}
                             </div>
-                        )}
+                        </div>
 
-                        {!showCamera && error && (
+                        {error && (
                             <div className="mt-6 bg-red-900/20 border border-red-500/30 text-red-400 p-4 rounded-xl flex items-center justify-center gap-3 animate-in fade-in slide-in-from-top-2">
                                 <XCircle />
                                 <span className="font-bold">{error}</span>
