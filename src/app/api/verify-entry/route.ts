@@ -5,6 +5,10 @@ export async function POST(req: Request) {
     try {
         const { qrCode } = await req.json();
 
+        if (!qrCode) {
+            return NextResponse.json({ success: false, message: "QR Code is required" }, { status: 400 });
+        }
+
         const passesRef = adminDb.collection("passes_issued");
 
         // 1. Check Main Booking QR

@@ -81,6 +81,7 @@ export async function POST(req: Request) {
                 passName: data.passName,
                 email: data.issuedToEmail,
                 bookingId: data.bookingId,
+                qrCode: data.qrCode,
                 physicalQr: data.physicalQr || null,
                 issuedPhysical: !!data.issuedPhysical,
                 entryLogs: data.entryLogs || [],
