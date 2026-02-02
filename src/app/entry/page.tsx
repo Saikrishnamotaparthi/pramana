@@ -1,4 +1,3 @@
-
 "use client";
 
 import { useState, useEffect, useRef } from "react";
@@ -63,6 +62,7 @@ export default function EntryPage() {
 
     // Camera Logic
     useEffect(() => {
+        let isMounted = true;
         if (showCamera) {
             setCameraError(null);
 
@@ -71,11 +71,14 @@ export default function EntryPage() {
                 const elementId = "reader";
                 if (!document.getElementById(elementId)) return;
 
-                // Cleanup existing instance if any (shouldn't happen due to cleanup below, but safety first)
+                // Cleanup existing instance if any
                 if (scannerRef.current) {
                     try {
                         await scannerRef.current.stop();
-                    } catch (e) { console.error("Error stopping existing scanner", e); }
+                    } catch (e) { /* ignore if not running */ }
+                    try {
+                        scannerRef.current.clear();
+                    } catch (e) { /* ignore */ }
                     scannerRef.current = null;
                 }
 
@@ -91,54 +94,58 @@ export default function EntryPage() {
                             aspectRatio: 1.0
                         },
                         (decodedText) => {
-                            // Success callback
-                            onScanSuccess(decodedText);
+                            if (isMounted) onScanSuccess(decodedText);
                         },
                         (errorMessage) => {
-                            // Ignore scan errors, they happen every frame no QR is found
+                            // Ignore scan errors
                         }
                     );
                 } catch (err: any) {
                     console.error("Camera start error:", err);
-                    let msg = "Failed to access camera.";
-                    if (typeof err === 'string') {
-                        msg = err;
-                    } else if (err?.name === 'NotAllowedError' || err?.message?.includes('permission')) {
-                        msg = "Camera permission denied. Please allow camera access in browser settings.";
-                    } else if (err?.name === 'NotFoundError') {
-                        msg = "No camera found on this device.";
-                    } else if (err?.name === 'NotReadableError') {
-                        msg = "Camera is in use by another app or hardware error.";
+                    if (isMounted) {
+                        // Failed to start, so it's not running. Clear ref.
+                        scannerRef.current = null;
+
+                        let msg = "Failed to access camera.";
+                        if (typeof err === 'string') {
+                            msg = err;
+                        } else if (err?.name === 'NotAllowedError' || err?.message?.includes('permission')) {
+                            msg = "Camera permission denied. Please allow camera access in browser settings.";
+                        } else if (err?.name === 'NotFoundError') {
+                            msg = "No camera found on this device.";
+                        } else if (err?.name === 'NotReadableError') {
+                            msg = "Camera is in use by another app or hardware error.";
+                        }
+                        setCameraError(msg);
                     }
-                    setCameraError(msg);
                 }
             }, 300); // Slight delay for render
 
             return () => {
+                isMounted = false;
                 clearTimeout(timer);
                 if (scannerRef.current) {
-                    scannerRef.current.stop().catch(console.error).finally(() => {
-                        scannerRef.current?.clear();
+                    scannerRef.current.stop().catch(() => { }).finally(() => {
+                        try { scannerRef.current?.clear(); } catch (e) { }
                         scannerRef.current = null;
                     });
                 }
             };
         } else {
-            // Ensure stopped if showCamera becomes false
             if (scannerRef.current) {
-                scannerRef.current.stop().catch(console.error).finally(() => {
-                    scannerRef.current?.clear();
+                scannerRef.current.stop().catch(() => { }).finally(() => {
+                    try { scannerRef.current?.clear(); } catch (e) { }
                     scannerRef.current = null;
                 });
             }
         }
-    }, [showCamera, retryCount]); // Retry count allows manual retry
+    }, [showCamera, retryCount]);
 
     const onScanSuccess = (decodedText: string) => {
         // Stop scanning immediately
         if (scannerRef.current) {
-            scannerRef.current.stop().catch(console.error).finally(() => {
-                scannerRef.current?.clear();
+            scannerRef.current.stop().catch(() => { }).finally(() => {
+                try { scannerRef.current?.clear(); } catch (e) { }
                 scannerRef.current = null;
             });
         }

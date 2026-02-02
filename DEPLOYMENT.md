@@ -263,6 +263,28 @@ npm install
 npm run build
 pm2 restart payment-web
 
+1. VPN Access has been provided, and details are as follows: -
+
+      Username:   pramana.hyd@gitam.edu
+      Password:    h4ObBVYE0xPbJs#X
+
+      Procedure to connect VPN on the home PC/laptop:
+      * Browse "vpn.gitam.edu"
+      * Log in with credentials and download and install the Cisco AnyConnect VPN client.
+      * Open Cisco AnyConnect VPN client, enter vpn.gitam.edu
+      * Select group "GITAM-CUSTOM-VPN" and enter the credentials, and click on connect.
+      * Enter a 6-digit code that you received on your mobile phone ( 7995988480 ).
+      * After the VPN connection is established, you can connect to the server through the PuTTY/Mobaxterm applications.
+
+2. A new instance has been created, and the credentials are as follows:-
+      
+      Server IP: 172.17.84.11
+      Username: pramana
+      Password: xVUEzvKX$M9TyJNi
+      SSH Port: 2022
+      URL: https://pramana.gitam.edu
+
+
 cd /var/www
 cd /var/www/payment-web
 git pull
