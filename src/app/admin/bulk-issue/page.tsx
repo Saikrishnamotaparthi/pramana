@@ -80,27 +80,63 @@ export default function BulkIssuePage() {
         setLogs(prev => [...prev, `Starting bulk issue for ${emails.length} emails...`]);
         setStats(null);
 
+        const BATCH_SIZE = 50;
+        const chunks = [];
+        for (let i = 0; i < emails.length; i += BATCH_SIZE) {
+            chunks.push(emails.slice(i, i + BATCH_SIZE));
+        }
+
+        let totalProcessed = 0;
+        let cumulativeStats = {
+            processed: 0,
+            issued: 0,
+            usersCreated: 0,
+            duplicatesSkipped: 0,
+            issuedToRegistered: 0,
+            issuedToUnregistered: 0
+        };
+
         try {
-            const res = await fetch("/api/admin/issue-bulk", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ passId: selectedPass, emails })
-            });
-            const result = await res.json();
-            if (result.success) {
-                setStats(result.stats);
-                setLogs(prev => [...prev, `Success! Processed ${result.stats.processed}.`]);
-                if (result.errors?.length) {
-                    setLogs(prev => [...prev, ...result.errors]);
+            for (let i = 0; i < chunks.length; i++) {
+                const chunk = chunks[i];
+                const batchNum = i + 1;
+                setLogs(prev => [...prev, `Processing batch ${batchNum}/${chunks.length} (${chunk.length} emails)...`]);
+
+                try {
+                    const res = await fetch("/api/admin/issue-bulk", {
+                        method: "POST",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify({ passId: selectedPass, emails: chunk })
+                    });
+                    const result = await res.json();
+
+                    if (result.success) {
+                        // Aggregate Stats
+                        cumulativeStats.processed += result.stats.processed || 0;
+                        cumulativeStats.issued += result.stats.issued || 0;
+                        cumulativeStats.usersCreated += result.stats.usersCreated || 0;
+                        cumulativeStats.duplicatesSkipped += result.stats.duplicatesSkipped || 0;
+                        cumulativeStats.issuedToRegistered += result.stats.issuedToRegistered || 0;
+                        cumulativeStats.issuedToUnregistered += result.stats.issuedToUnregistered || 0;
+
+                        setStats({ ...cumulativeStats }); // Update UI with running total
+
+                        if (result.errors?.length) {
+                            setLogs(prev => [...prev, ...result.errors]);
+                        }
+                    } else {
+                        setLogs(prev => [...prev, `Batch ${batchNum} Failed: ${result.message}`]);
+                    }
+                } catch (batchError: any) {
+                    setLogs(prev => [...prev, `Batch ${batchNum} Error: ${batchError.message}`]);
                 }
-                alert("Bulk Issue Complete");
-                // Don't clear stats so user can see them
-            } else {
-                setLogs(prev => [...prev, `Failed: ${result.message}`]);
-                alert("Failed");
             }
+
+            setLogs(prev => [...prev, `Bulk Issue Complete. Total Processed: ${cumulativeStats.processed}`]);
+            alert("Bulk Issue Complete");
+
         } catch (error: any) {
-            setLogs(prev => [...prev, `Error: ${error.message}`]);
+            setLogs(prev => [...prev, `Fatal Error: ${error.message}`]);
         } finally {
             setProcessing(false);
         }
