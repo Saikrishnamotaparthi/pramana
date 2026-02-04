@@ -13,6 +13,7 @@ export default function AdminDashboard() {
     const router = useRouter();
 
     const [activeDay, setActiveDay] = useState<'none' | 'day1' | 'day2'>('none');
+    const [qrVisible, setQrVisible] = useState<boolean>(false);
     const [stats, setStats] = useState<{
         revenue: number;
         passesSold: number;
@@ -132,6 +133,7 @@ export default function AdminDashboard() {
                     const configSnap = await getDoc(configRef);
                     if (configSnap.exists()) {
                         setActiveDay((configSnap.data().activeDay as 'none' | 'day1' | 'day2') || 'none');
+                        setQrVisible(configSnap.data().showQR || false);
                     }
 
                     setStats({
@@ -180,6 +182,17 @@ export default function AdminDashboard() {
         if (confirm(`Set Active Day to ${day}?`)) {
             await setDoc(doc(db, "config", "entry"), { activeDay: day }, { merge: true });
             setActiveDay(day);
+        }
+    };
+
+
+
+    const updateQrVisibility = async (visible: boolean) => {
+        const { doc, setDoc } = await import("firebase/firestore");
+        const { db } = await import("@/lib/firebase");
+        if (confirm(`Set QR Visibility to ${visible ? 'VISIBLE' : 'HIDDEN'}?`)) {
+            await setDoc(doc(db, "config", "entry"), { showQR: visible }, { merge: true });
+            setQrVisible(visible);
         }
     };
 
@@ -296,6 +309,19 @@ export default function AdminDashboard() {
                                 <button onClick={() => updateActiveDay('day2')} className={`flex-1 md:flex-none px-4 py-2 rounded-lg font-bold transition text-sm md:text-base ${activeDay === 'day2' ? 'bg-blue-600/80 text-white shadow-lg shadow-blue-900/50' : 'bg-white/5 text-pramana-cream/50 hover:bg-white/10'}`}>Day 2 Active</button>
                             </div>
                             <p className="text-sm text-pramana-cream/40 mt-2">Current Active Mode: <span className="font-bold uppercase text-pramana-gold">{activeDay}</span></p>
+
+                            <hr className="border-white/10 my-4" />
+
+                            <h3 className="text-lg font-bold mb-4 font-cinzel text-pramana-cream">QR Code Visibility</h3>
+                            <div className="flex gap-4">
+                                <button onClick={() => updateQrVisibility(true)} className={`px-4 py-2 rounded-lg font-bold transition ${qrVisible ? 'bg-green-600/80 text-white shadow-lg shadow-green-900/50' : 'bg-white/5 text-pramana-cream/50 hover:bg-white/10'}`}>
+                                    Show QRs
+                                </button>
+                                <button onClick={() => updateQrVisibility(false)} className={`px-4 py-2 rounded-lg font-bold transition ${!qrVisible ? 'bg-red-600/80 text-white shadow-lg shadow-red-900/50' : 'bg-white/5 text-pramana-cream/50 hover:bg-white/10'}`}>
+                                    Hide QRs
+                                </button>
+                            </div>
+                            <p className="text-sm text-pramana-cream/40 mt-2">Status: <span className={`font-bold uppercase ${qrVisible ? 'text-green-400' : 'text-red-400'}`}>{qrVisible ? 'VISIBLE' : 'HIDDEN'}</span></p>
                         </div>
                     )}
 

@@ -38,6 +38,7 @@ export default function DashboardPage() {
     const [fetching, setFetching] = useState(true);
     const [qrUrls, setQrUrls] = useState<Record<string, string>>({});
     const [bannerBase64, setBannerBase64] = useState<string | null>(null);
+    const [showQR, setShowQR] = useState(false);
 
     // Ticket Downloading Logic
     const [downloadingPassId, setDownloadingPassId] = useState<string | null>(null);
@@ -77,6 +78,13 @@ export default function DashboardPage() {
                     const userSnap = await getDoc(userRef);
                     if (userSnap.exists()) {
                         setUserProfile(userSnap.data() as UserProfile);
+                    }
+
+                    // 1.5 Fetch Config for QR Visibility
+                    const configRef = doc(db, "config", "entry");
+                    const configSnap = await getDoc(configRef);
+                    if (configSnap.exists()) {
+                        setShowQR(configSnap.data().showQR || false);
                     }
 
                     // 2. Fetch Passes
@@ -313,7 +321,7 @@ export default function DashboardPage() {
                                                     </div>
                                                 </div>
                                                 <h3 className="font-cinzel font-bold text-2xl text-white mb-1 group-hover:text-pramana-gold transition-colors">{pass.passName}</h3>
-                                                <p className="text-xs text-white/40 font-mono tracking-wider">{pass.bookingId}</p>
+                                                <p className="text-xs text-green-400 font-mono tracking-wider">CONFIRMED</p>
                                             </div>
 
                                             {/* QR Section */}
@@ -322,19 +330,28 @@ export default function DashboardPage() {
                                                 <div className="absolute top-0 left-0 w-full h-[2px] bg-pramana-gold/50 shadow-[0_0_15px_#b8860b] transform translate-y-[-10px] group-hover:animate-scan opacity-0 group-hover:opacity-100 transition-opacity"></div>
 
                                                 <div className="bg-white p-3 rounded-xl shadow-[0_0_30px_rgba(255,255,255,0.1)] mb-6 transition-transform duration-300 group-hover:scale-105">
-                                                    {qrUrls[pass.id] ? (
-                                                        <img src={qrUrls[pass.id]} alt="QR" className="w-48 h-48 object-contain mix-blend-multiply" />
+                                                    {showQR ? (
+                                                        qrUrls[pass.id] ? (
+                                                            <img src={qrUrls[pass.id]} alt="QR" className="w-48 h-48 object-contain mix-blend-multiply" />
+                                                        ) : (
+                                                            <div className="w-48 h-48 bg-slate-100 animate-pulse rounded-lg flex items-center justify-center text-slate-300">Generating...</div>
+                                                        )
                                                     ) : (
-                                                        <div className="w-48 h-48 bg-slate-100 animate-pulse rounded-lg flex items-center justify-center text-slate-300">Generating...</div>
+                                                        <div className="w-48 h-48 bg-slate-100 rounded-lg flex flex-col items-center justify-center text-slate-400 gap-2">
+                                                            <span className="text-4xl opacity-50">🔒</span>
+                                                            <span className="text-xs font-bold uppercase tracking-widest text-center">QR Coming Soon</span>
+                                                        </div>
                                                     )}
                                                 </div>
 
                                                 <button
                                                     onClick={() => handleDownloadTicket(pass.id)}
-                                                    disabled={downloadingPassId === pass.id}
-                                                    className="flex items-center gap-2 text-xs font-bold text-pramana-cream/60 hover:text-white transition-colors uppercase tracking-widest group/btn disabled:opacity-50"
+                                                    disabled={downloadingPassId === pass.id || !showQR}
+                                                    className="flex items-center gap-2 text-xs font-bold text-pramana-cream/60 hover:text-white transition-colors uppercase tracking-widest group/btn disabled:opacity-50 disabled:cursor-not-allowed"
                                                 >
-                                                    {downloadingPassId === pass.id ? (
+                                                    {!showQR ? (
+                                                        <span>QR Coming Soon</span>
+                                                    ) : downloadingPassId === pass.id ? (
                                                         <><span>GENERATING...</span><div className="animate-spin h-3 w-3 border-2 border-white border-t-transparent rounded-full"></div></>
                                                     ) : (
                                                         <><span>Download Ticket</span><span className="group-hover/btn:translate-y-1 transition-transform">↓</span></>
@@ -343,13 +360,7 @@ export default function DashboardPage() {
                                             </div>
 
                                             {/* Status Footer */}
-                                            <div className="p-4 bg-white/5 border-t border-white/5 grid grid-cols-3 divide-x divide-white/10">
-                                                <div className="px-2 text-center flex flex-col justify-center">
-                                                    <p className="text-[9px] md:text-[10px] uppercase text-pramana-cream/40 tracking-widest mb-1">Physical Pass</p>
-                                                    <div className={`text-xs md:text-sm font-bold ${pass.issuedPhysical ? 'text-green-400' : 'text-yellow-500'}`}>
-                                                        {pass.issuedPhysical ? '✓ COLLECTED' : 'NOT COLLECTED'}
-                                                    </div>
-                                                </div>
+                                            <div className="p-4 bg-white/5 border-t border-white/5 grid grid-cols-2 divide-x divide-white/10">
                                                 <div className="px-2 text-center flex flex-col justify-center">
                                                     <p className="text-[9px] md:text-[10px] uppercase text-pramana-cream/40 tracking-widest mb-1">Day 1 Access</p>
                                                     <div className={`text-xs md:text-sm font-bold ${pass.entryLogs?.includes('day1') ? 'text-green-400' : 'text-white/60'}`}>
