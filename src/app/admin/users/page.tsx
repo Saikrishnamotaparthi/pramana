@@ -421,6 +421,14 @@ export default function UserManagement() {
         setProcessing(true);
         try {
             const passConfig = passConfigs.find(p => p.id === selectedPassId);
+
+            // 1. Capacity Check
+            if (passConfig.limit > 0 && (passConfig.sold || 0) >= passConfig.limit) {
+                alert(`Pass Limit Reached! Cannot issue more passes of type: ${passConfig.name}`);
+                setProcessing(false);
+                return;
+            }
+
             const bookingId = `MSG-${Date.now()}`;
             const qrCode = `${bookingId}-${selectedUserForPass.email.split('@')[0]}`;
 
@@ -447,6 +455,14 @@ export default function UserManagement() {
                     paymentMethod: 'admin_manual'
                 }
             }));
+
+            // 2. Update Sold Count
+            try {
+                const passConfigRef = doc(db, "passes_config", selectedPassId);
+                await updateDoc(passConfigRef, { sold: increment(1) });
+            } catch (e) {
+                console.error("Failed to increment sold count", e);
+            }
 
             if ((selectedUserForPass as any).referralCodeUsed) {
                 // Referral stats update (best effort)
@@ -809,7 +825,14 @@ export default function UserManagement() {
                             <p className="mb-4 text-gray-400">For: {selectedUserForPass?.email}</p>
                             <select className="w-full bg-black/50 border border-white/20 rounded p-2 text-white mb-4" onChange={e => setSelectedPassId(e.target.value)} value={selectedPassId}>
                                 <option value="">Select Pass</option>
-                                {passConfigs.map(p => <option key={p.id} value={p.id}>{p.name} - ₹{p.price}</option>)}
+                                {passConfigs.map(p => {
+                                    const isSoldOut = p.limit > 0 && (p.sold || 0) >= p.limit;
+                                    return (
+                                        <option key={p.id} value={p.id} disabled={isSoldOut} className={isSoldOut ? "text-gray-500 bg-gray-900" : ""}>
+                                            {p.name} - ₹{p.price} {isSoldOut ? '(SOLD OUT)' : ''}
+                                        </option>
+                                    );
+                                })}
                             </select>
                             <div className="flex justify-end gap-2">
                                 <button onClick={() => setShowIssueModal(false)} className="px-4 py-2 text-white/50">Cancel</button>

@@ -24,7 +24,18 @@ export async function POST(req: Request) {
         }
         const passData = passSnap.data()!;
 
-        // 3. Setup Processing Stats & Batch
+        // 3. Capacity Check
+        if (passData.limit > 0) {
+            const remaining = passData.limit - (passData.sold || 0);
+            if (emails.length > remaining) {
+                return NextResponse.json({
+                    success: false,
+                    message: `Insufficient capacity. Remaining: ${remaining}, Requested: ${emails.length}`
+                }, { status: 400 });
+            }
+        }
+
+        // 4. Setup Processing Stats & Batch
         let processedCount = 0;
         let issuedCount = 0;
         let usersCreatedCount = 0;

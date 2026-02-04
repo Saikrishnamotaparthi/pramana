@@ -167,9 +167,14 @@ export default function BulkIssuePage() {
                                 value={selectedPass}
                             >
                                 <option value="" className="bg-black text-gray-500">-- Select Pass --</option>
-                                {passes.map(p => (
-                                    <option key={p.id} value={p.id} className="bg-black text-white">{p.name} (₹{p.price})</option>
-                                ))}
+                                {passes.map(p => {
+                                    const isSoldOut = p.limit > 0 && (p.sold || 0) >= p.limit;
+                                    return (
+                                        <option key={p.id} value={p.id} disabled={isSoldOut} className={isSoldOut ? "text-gray-500 bg-gray-900" : "bg-black text-white"}>
+                                            {p.name} (₹{p.price}) {isSoldOut ? '(SOLD OUT)' : ''}
+                                        </option>
+                                    );
+                                })}
                             </select>
                         </div>
 
