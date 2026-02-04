@@ -149,18 +149,62 @@ export default function UserManagement() {
             }
 
             // STANDARD MODE: Users Collection
-            let q;
             const usersRef = collection(db, "users");
             const constraints: any[] = [];
 
-            // 1. Search (Overrides other filters usually, but let's try to combine if possible?) 
-            //    Combining search (inequality) with other equalities requires composite index.
+            // 1. Search (Dual Query: Email OR Name)
             if (filter.trim()) {
                 const term = filter.trim().toLowerCase();
-                constraints.push(where("email", ">=", term));
-                constraints.push(where("email", "<=", term + '\uf8ff'));
-                // Note: We skip other filters in search mode to avoid index explosion/complexity
+                const termCapitalized = term.charAt(0).toUpperCase() + term.slice(1);
+
+                // We cannot use 'OR' with range filters easily in one query.
+                // We run parallel queries and merge.
+                // Note: Pagination during generic search is disabled/limited for simplicity (loading 50 of each).
+
+                const queries = [
+                    // Email Search
+                    query(usersRef, where("email", ">=", term), where("email", "<=", term + '\uf8ff'), limit(PAGE_SIZE)),
+                    // Name Search (exact/starts-with lower)
+                    query(usersRef, where("displayName", ">=", term), where("displayName", "<=", term + '\uf8ff'), limit(PAGE_SIZE)),
+                    // Name Search (Capitalized for common names)
+                    query(usersRef, where("displayName", ">=", termCapitalized), where("displayName", "<=", termCapitalized + '\uf8ff'), limit(PAGE_SIZE))
+                ];
+
+                const snapshots = await Promise.all(queries.map(q => getDocs(q)));
+
+                let combinedDocs: any[] = [];
+                const seenIds = new Set();
+
+                snapshots.forEach(snap => {
+                    snap.docs.forEach(d => {
+                        if (!seenIds.has(d.id)) {
+                            seenIds.add(d.id);
+                            combinedDocs.push(d);
+                        }
+                    });
+                });
+
+                // Sort purely in memory because we merged results
+                // Default: sort by name or email? Let's keep it simple: by name
+                combinedDocs.sort((a, b) => (a.data().displayName || "").localeCompare(b.data().displayName || ""));
+
+                // Slice if too many? For now just take all found (max 150)
+                let newUsers = combinedDocs.map(d => ({ ...d.data(), uid: d.id })) as UserProfile[];
+
+                // Apply logic to skip "Unpaid" filter client side if needed, but usually search ignores filters
+                // Let's create a unified flow: search overrides pagination and most filters for simplicity
+
+                const userData = await enrichUsersWithPasses(newUsers);
+                setPassesIssued(prev => ({ ...prev, ...userData.passesMap }));
+                setUsers(userData.users);
+
+                setHasMore(false); // Disable load more for complex search results
+                setLoading(false);
+                setLoadingMore(false);
+                return;
+
             } else {
+                // ... Existing Logic for Non-Search ...
                 // 2. Category Filter
                 if (categoryFilter !== 'all') {
                     constraints.push(where("isGitamite", "==", categoryFilter === 'gitam'));
@@ -171,69 +215,59 @@ export default function UserManagement() {
                     constraints.push(where("isRegistered", "==", registrationFilter === 'registered'));
                 }
 
-                // Default Sort (Only if no inequality filter like Search is used)
-                // If we have filters, simple Sort might require index. 
-                // We'll add sort by createdAt if it's a simple query, or just rely on default.
-                // To be safe with unknown indexes:
                 if (constraints.length === 0) {
                     constraints.push(orderBy("createdAt", "desc"));
                 }
-            }
 
-            // Pagination
-            if (isLoadMore && lastDoc) {
-                constraints.push(startAfter(lastDoc));
-            }
-
-            constraints.push(limit(PAGE_SIZE));
-
-            q = query(usersRef, ...constraints);
-            const snapshot = await getDocs(q);
-            let newUsers = snapshot.docs.map(d => ({ ...d.data(), uid: d.id })) as UserProfile[];
-
-            // 4. Client-Side "Unpaid" Filter
-            // We fetch passes for these users, then filter.
-            // Note: This might reduce page size, but it's the only way for "Unpaid" without schema change.
-            const userData = await enrichUsersWithPasses(newUsers);
-
-            if (paymentFilter === 'unpaid') {
-                // Filter out those with passes
-                const unpaidUsers = userData.users.filter(u => !userData.passesMap[u.email]);
-
-                // If we filtered too many, we might want to auto-fetch more? 
-                // For now, simpler to just show what we found.
-                newUsers = unpaidUsers;
-                // Update the passes map to only match these users (optional, but clean)
-                // Keeping the full map is fine.
-                setPassesIssued(prev => ({ ...prev, ...userData.passesMap }));
-
-                if (isLoadMore) {
-                    setUsers(prev => [...prev, ...newUsers]);
-                } else {
-                    setUsers(newUsers);
+                // Pagination
+                if (isLoadMore && lastDoc) {
+                    constraints.push(startAfter(lastDoc));
                 }
-            } else {
-                // Normal
-                setPassesIssued(prev => ({ ...prev, ...userData.passesMap }));
-                if (isLoadMore) {
-                    setUsers(prev => [...prev, ...userData.users]);
-                } else {
-                    setUsers(userData.users);
-                }
-            }
 
-            setLastDoc(snapshot.docs[snapshot.docs.length - 1]);
-            // If we filtered client side, 'hasMore' is still based on the DB fetch
-            setHasMore(snapshot.docs.length === PAGE_SIZE);
+                constraints.push(limit(PAGE_SIZE));
+
+                const q = query(usersRef, ...constraints);
+                const snapshot = await getDocs(q);
+                let newUsers = snapshot.docs.map(d => ({ ...d.data(), uid: d.id })) as UserProfile[];
+
+                // 4. Client-Side "Unpaid" Filter
+                const userData = await enrichUsersWithPasses(newUsers);
+
+                if (paymentFilter === 'unpaid') {
+                    const unpaidUsers = userData.users.filter(u => !userData.passesMap[u.email]);
+                    newUsers = unpaidUsers;
+                    setPassesIssued(prev => ({ ...prev, ...userData.passesMap }));
+
+                    if (isLoadMore) {
+                        setUsers(prev => [...prev, ...newUsers]);
+                    } else {
+                        setUsers(newUsers);
+                    }
+                } else {
+                    setPassesIssued(prev => ({ ...prev, ...userData.passesMap }));
+                    if (isLoadMore) {
+                        setUsers(prev => [...prev, ...userData.users]);
+                    } else {
+                        setUsers(userData.users);
+                    }
+                }
+
+                setLastDoc(snapshot.docs[snapshot.docs.length - 1]);
+                setHasMore(snapshot.docs.length === PAGE_SIZE);
+            }
 
         } catch (error) {
             console.error("Error fetching users:", error);
-            // If index error, it logs to console. We could alert user but console is okay for Admin.
         } finally {
             setLoading(false);
             setLoadingMore(false);
         }
     };
+
+    // ... (rest of file)
+
+    // And also update the search input placeholder down below
+
 
     // Helper: Enrich users with Pass Data
     const enrichUsersWithPasses = async (currentUsers: UserProfile[]) => {
@@ -492,16 +526,40 @@ export default function UserManagement() {
     };
 
     const handleExport = async () => {
-        if (!confirm("This will export only the currently LOADED users to CSV. Continue?")) return;
+        if (!confirm("This will export ALL users to Excel. This operation might take a few seconds. Continue?")) return;
+        setProcessing(true); // Reuse processing state to show some UI feedback if possible, or just rely on async
+
         try {
-            // reuse logic but on `users` state
-            const gitamUsers = users.filter(u => u.isGitamite);
-            const nonGitamUsers = users.filter(u => !u.isGitamite);
+            // 1. Fetch ALL Users
+            // Note: For very large datasets, chunking is better, but for <10k, this is usually fine.
+            const usersSnap = await getDocs(collection(db, "users"));
+            const allUsers = usersSnap.docs.map(d => ({ ...d.data(), uid: d.id })) as UserProfile[];
+
+            // 2. Fetch ALL Passes (to ensure we have payment status for everyone)
+            // We could try to reuse 'passesIssued' state if we trust it's complete, but for a global export, safer to fetch fresh.
+            const passesSnap = await getDocs(collection(db, "passes_issued"));
+            const allPassesMap: Record<string, any> = {};
+            passesSnap.forEach(d => {
+                const data = d.data();
+                if (data.issuedToEmail) allPassesMap[data.issuedToEmail] = data;
+            });
+
+            // 3. Prepare Registration Fields Mapping
+            // We want to map field IDs (e.g. 'field_123') to labels (e.g. 'Branch')
+            const fieldLabelMap: Record<string, string> = {};
+            registrationConfig.forEach(field => {
+                fieldLabelMap[field.id] = field.label;
+            });
+
+            // 4. Format Data
+            const gitamUsers = allUsers.filter(u => u.isGitamite);
+            const nonGitamUsers = allUsers.filter(u => !u.isGitamite);
 
             const formatUserForSheet = (u: any) => {
-                const pass = passesIssued[u.email];
+                const pass = allPassesMap[u.email];
                 const paymentStatus = pass ? "Paid" : "Not Paid";
-                // Base Row
+
+                // Base Row with Core Info
                 const row: any = {
                     "Name": u.displayName,
                     "Email": u.email,
@@ -510,19 +568,46 @@ export default function UserManagement() {
                     "Payment Status": paymentStatus,
                     "Pass Name": pass?.passName || "-",
                     "Transaction ID": pass?.paymentId || "-",
-                    "Registration Data": JSON.stringify(u.registrationData || {})
+                    "Booking ID": pass?.bookingId || "-",
+                    "Joined Date": u.createdAt ? new Date(u.createdAt).toLocaleDateString() : "-",
                 };
+
+                // Flatten Registration Data
+                // We iterate through the CONFIG to ensure consistent column order and existence
+                if (u.registrationData) {
+                    registrationConfig.forEach(field => {
+                        // Skip 'phone' if we already mapped it, but having it twice isn't fatal. 
+                        // Let's rely on the config labels.
+                        // We check if the user has data for this field ID
+                        // Note: registrationData keys usually match the field IDs
+                        const val = u.registrationData[field.id];
+                        row[field.label] = val || "-";
+                    });
+                }
+
                 return row;
             };
 
             const wb = XLSX.utils.book_new();
-            if (gitamUsers.length) XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(gitamUsers.map(formatUserForSheet)), "Gitam");
-            if (nonGitamUsers.length) XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(nonGitamUsers.map(formatUserForSheet)), "Non-Gitam");
 
-            XLSX.writeFile(wb, "Users_Loaded_Export.xlsx");
+            if (gitamUsers.length) {
+                const gitamData = gitamUsers.map(formatUserForSheet);
+                XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(gitamData), "Gitam");
+            }
+
+            if (nonGitamUsers.length) {
+                const nonGitamData = nonGitamUsers.map(formatUserForSheet);
+                XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(nonGitamData), "Non-Gitam");
+            }
+
+            XLSX.writeFile(wb, `Users_Export_Full_${new Date().toISOString().split('T')[0]}.xlsx`);
+            alert("Export Complete!");
+
         } catch (e) {
-            console.error(e);
-            alert("Export failed");
+            console.error("Export failed:", e);
+            alert("Export failed. Check console for details.");
+        } finally {
+            setProcessing(false);
         }
     };
 
@@ -572,7 +657,7 @@ export default function UserManagement() {
                         <div className="flex flex-col md:flex-row gap-4">
                             <div className="flex-1 flex gap-2">
                                 <input
-                                    placeholder="Search by email..."
+                                    placeholder="Search by name or email..."
                                     className="flex-1 bg-white/5 border border-white/10 p-3 rounded-lg text-pramana-cream placeholder-white/20 focus:outline-none focus:border-pramana-gold transition"
                                     value={filter}
                                     onChange={e => setFilter(e.target.value)}

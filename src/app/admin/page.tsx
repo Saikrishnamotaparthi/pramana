@@ -68,7 +68,6 @@ export default function AdminDashboard() {
                     return isNaN(d.getTime()) ? null : d;
                 };
 
-                // --- AGGRESSIVE OPTIMIZATION FOR QUOTA SAVING ---
                 try {
                     // 1. Total Users & Gitam Users
                     const usersRef = collection(db, "users");
@@ -79,40 +78,68 @@ export default function AdminDashboard() {
                     const gitamUsers = gitamUsersSnap.data().count;
                     const publicUsers = totalUsers - gitamUsers;
 
-                    // 2. Passes Stats (Using Count)
+                    // 2. Fetch ALL Active Passes for Accurate Stats
+                    // We need to iterate to check EMAIL DOMAIN for strict categorization
                     const passesRef = collection(db, "passes_issued");
+                    const activePassesQuery = query(passesRef, where("status", "==", "active"));
 
-                    // Sold (Active)
-                    const soldSnap = await getCountFromServer(query(passesRef, where("status", "==", "active")));
-                    const passesSold = soldSnap.data().count;
+                    // We also need revenue, which traditionally comes from config * sold. 
+                    // But active passes give us exact count. We can multiply by price from config.
 
-                    // Checked In
-                    const checkedInSnap = await getCountFromServer(query(passesRef, where("admitted", "==", true)));
-                    const checkedIn = checkedInSnap.data().count;
+                    const [activePassesSnap, passesConfigSnap] = await Promise.all([
+                        getDocs(activePassesQuery),
+                        getDocs(collection(db, "passes_config"))
+                    ]);
 
-                    // Day 1 & Day 2 Attendance
-                    const day1Snap = await getCountFromServer(query(passesRef, where("entryLogs", "array-contains", "day1")));
-                    const d1Total = day1Snap.data().count;
+                    // Map Pass Prices
+                    const priceMap: Record<string, number> = {};
+                    passesConfigSnap.forEach(d => {
+                        const data = d.data();
+                        priceMap[d.id] = data.price || 0;
+                    });
 
-                    const day2Snap = await getCountFromServer(query(passesRef, where("entryLogs", "array-contains", "day2")));
-                    const d2Total = day2Snap.data().count;
-
-                    // 3. Revenue & Pass Categories
-                    const passesConfigSnap = await getDocs(collection(db, "passes_config"));
                     let revenue = 0;
+                    let passesSold = 0;
                     let gitamSold = 0;
                     let publicSold = 0;
+                    let checkedIn = 0; // Total admitted
 
-                    passesConfigSnap.forEach(doc => {
+                    // Granular Day Stats
+                    const d1Stats = { gitam: 0, nonGitam: 0, total: 0 };
+                    const d2Stats = { gitam: 0, nonGitam: 0, total: 0 };
+
+                    activePassesSnap.forEach(doc => {
                         const data = doc.data();
-                        const sold = data.sold || 0;
-                        revenue += (data.price || 0) * sold;
+                        passesSold++;
 
-                        // Categorize Sales
-                        if (data.category === 'gitam' || data.name?.toLowerCase().includes('gitam')) {
-                            gitamSold += sold;
+                        // Revenue
+                        if (data.passId && priceMap[data.passId]) {
+                            revenue += priceMap[data.passId];
+                        }
+
+                        // Categorize by Domain
+                        const email = (data.issuedToEmail || "").toLowerCase();
+                        const isGitam = email.endsWith('@gitam.edu') || email.endsWith('@gitam.in') || email.endsWith('@student.gitam.edu');
+
+                        if (isGitam) {
+                            gitamSold++;
                         } else {
-                            publicSold += sold;
+                            publicSold++;
+                        }
+
+                        // Total Checked In (Admitted flag - reliable?)
+                        if (data.admitted) checkedIn++;
+
+                        // Granular Attendance
+                        if (data.entryLogs && Array.isArray(data.entryLogs)) {
+                            if (data.entryLogs.includes('day1')) {
+                                d1Stats.total++;
+                                if (isGitam) d1Stats.gitam++; else d1Stats.nonGitam++;
+                            }
+                            if (data.entryLogs.includes('day2')) {
+                                d2Stats.total++;
+                                if (isGitam) d2Stats.gitam++; else d2Stats.nonGitam++;
+                            }
                         }
                     });
 
@@ -145,8 +172,8 @@ export default function AdminDashboard() {
                         totalUsers,
                         gitamUsers,
                         publicUsers,
-                        day1: { gitam: 0, nonGitam: 0, total: d1Total },
-                        day2: { gitam: 0, nonGitam: 0, total: d2Total },
+                        day1: d1Stats,
+                        day2: d2Stats,
                         recentSales,
                         dailyTrends: [], // Disabled
                         maxTrend: 1
