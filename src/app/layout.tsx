@@ -24,9 +24,24 @@ const garamond = EB_Garamond({
 
 export const metadata: Metadata = {
   title: "PRAMANA26 - The Ultimate Event",
-  description: "Secure ticketing and entry management system",
+  description: "Pramana'26 is the Annual Techno-Cultural Fest of GITAM Hyderabad. Experience the biggest college fest in Hyderabad with technology, culture, and entertainment.",
   verification: {
-    google: "f72Uf8FCj_W1lOrReUDKXzKcUOv1ZYKSTyvg4FVnUto",
+    google: "f72Uf8FCj_W1lOrReUDKXzKcUOv1ZYKSTyvg4FVUto",
+  },
+  keywords: [
+    "pramana", "pramana26", "gitam", "gitam hyderabad", "fest", "student", "event",
+    "techno cultural fest", "biggest college fest in hyderabad", "best fest in hyderabad",
+    "tech", "cultural", "entertainment", "music", "dance", "workshops", "hackathon",
+    "telangana", "hyderabad events"
+  ],
+  authors: [{ name: "Gitam University" }],
+  openGraph: {
+    title: "PRAMANA26 - The Ultimate Event",
+    description: "Secure ticketing and entry management system for Pramana 2026",
+    url: "https://pramana.gitam.edu", // Replace with actual URL if different
+    siteName: "Pramana26",
+    locale: "en_US",
+    type: "website",
   },
 
 };
