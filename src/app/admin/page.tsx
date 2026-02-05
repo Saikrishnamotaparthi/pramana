@@ -45,13 +45,18 @@ export default function AdminDashboard() {
     });
 
     useEffect(() => {
-        if (!loading && (!user || (user.role !== 'admin' && user.role !== 'superadmin' && user.role !== 'view_admin' && user.role !== 'marketing_admin' && user.role !== 'ppass_admin'))) {
+        if (!loading && (!user || (user.role !== 'admin' && user.role !== 'superadmin' && user.role !== 'view_admin' && user.role !== 'marketing_admin' && user.role !== 'ppass_admin' && user.role !== 'cul_admin'))) {
             router.push("/");
             return;
         }
 
         if (user?.role === 'ppass_admin') {
             router.replace("/issue-pass");
+            return;
+        }
+
+        if (user?.role === 'cul_admin') {
+            router.replace("/admin/culturals");
             return;
         }
 

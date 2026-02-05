@@ -2,57 +2,53 @@ rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
     
-    // Helper functions
+    // Helper function to get user role safely
     function getUserRole() {
-       return get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role;
+       let userDoc = get(/databases/$(database)/documents/users/$(request.auth.uid));
+       return userDoc != null ? userDoc.data.role : null;
     }
 
-    function isSuperAdmin() {
-      return request.auth != null && getUserRole() == 'superadmin';
-    }
-    
-    function isAdmin() {
-      return request.auth != null && getUserRole() in ['admin', 'superadmin'];
-    }
-    
     function isViewAdmin() {
-      return request.auth != null && getUserRole() in ['view_admin', 'admin', 'superadmin', 'entry_admin', 'marketing_admin'];
+      let role = getUserRole();
+      return role in ['view_admin', 'admin', 'superadmin', 'entry_admin', 'marketing_admin'];
     }
 
-    function isMarketingAdmin() {
-      return request.auth != null && getUserRole() == 'marketing_admin';
+    // Helper for specific admin writes
+    function isAdminOrSuper() {
+      let role = getUserRole();
+      return role == 'admin' || role == 'superadmin';
     }
     
     function isOwner(userId) {
       return request.auth != null && request.auth.uid == userId;
     }
 
-    // Users
+    // Users Collection
     match /users/{userId} {
       allow read: if isOwner(userId) || isViewAdmin();
-      allow write: if isOwner(userId) || isSuperAdmin(); // Only Super Admin can change roles/write other user docs
+      allow write: if isOwner(userId) || isAdminOrSuper();
     }
     
-    // Config (Read: Public (or user?), Write: Admin)
+    // Config
     match /config/{document=**} {
       allow read: if true;
-      allow write: if isAdmin();
+      allow write: if isAdminOrSuper();
     }
     
     // Passes Config
     match /passes_config/{passId} {
       allow read: if true;
-      allow write: if isAdmin(); // View Admin cannot write
+      allow write: if isAdminOrSuper();
     }
     
     // Coupons 
     match /coupons/{couponId} {
       allow read: if true;
-      allow write: if isAdmin(); // View Admin cannot write
+      allow write: if isAdminOrSuper();
     }
     
     function isPpassAdmin() {
-      return request.auth != null && getUserRole() == 'ppass_admin';
+      return getUserRole() == 'ppass_admin';
     }
 
     // Passes Issued
@@ -62,13 +58,41 @@ service cloud.firestore {
         resource.data.issuedToEmail == request.auth.token.email || 
         isViewAdmin() || isPpassAdmin()
       );
-      allow write: if isAdmin() || isPpassAdmin(); 
+      allow write: if isAdminOrSuper() || isPpassAdmin(); 
     }
 
-    // Referral Codes (Read: Auth Users, Write: Admin or Marketing Admin)
+    // Cultural Events & Registrations
+    match /culturals/{userId} {
+      // Allow reading the user profile doc
+      // Explicitly allow cul_admin
+      allow read: if request.auth != null && (request.auth.uid == userId || isViewAdmin() || getUserRole() == 'cul_admin');
+      allow write: if request.auth != null && request.auth.uid == userId;
+      
+      // Subcollection: Registrations
+      match /registrations/{regId} {
+         allow read: if request.auth != null && (request.auth.uid == userId || isViewAdmin() || getUserRole() == 'cul_admin');
+         allow create: if request.auth != null &&(request.auth.uid == userId || isViewAdmin()); 
+         allow update: if isViewAdmin() || getUserRole() == 'cul_admin';
+         allow delete: if isAdminOrSuper();
+      }
+    }
+    
+    // Collection Group Query for 'registrations'
+    // This is crucial for the Admin Panel to see ALL registrations
+    match /{path=**}/registrations/{regId} {
+      allow read: if isViewAdmin() || getUserRole() == 'cul_admin';
+    }
+
+    // Settings Collection (Payment Links)
+    match /settings/{document=**} {
+      allow read: if true;
+      allow write: if isAdminOrSuper();
+    }
+
+    // Referral Codes
     match /referral_codes/{codeId} {
       allow read: if request.auth != null;
-      allow write: if isAdmin() || isMarketingAdmin();
+      allow write: if isAdminOrSuper() || getUserRole() == 'marketing_admin';
     }
   }
 }

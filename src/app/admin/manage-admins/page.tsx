@@ -117,7 +117,8 @@ export default function ManageAdmins() {
                                                 ${u.role === 'superadmin' ? 'bg-purple-900/40 text-purple-400 border-purple-500/30' :
                                                         u.role === 'admin' ? 'bg-blue-900/40 text-blue-400 border-blue-500/30' :
                                                             u.role === 'view_admin' ? 'bg-yellow-900/40 text-yellow-400 border-yellow-500/30' :
-                                                                u.role === 'marketing_admin' ? 'bg-orange-900/40 text-orange-400 border-orange-500/30' : 'bg-gray-800 text-gray-400 border-gray-600'}`}>
+                                                                u.role === 'marketing_admin' ? 'bg-orange-900/40 text-orange-400 border-orange-500/30' :
+                                                                    u.role === 'cul_admin' ? 'bg-pink-900/40 text-pink-400 border-pink-500/30' : 'bg-gray-800 text-gray-400 border-gray-600'}`}>
                                                     {u.role.replace('_', ' ')}
                                                 </span>
                                             </td>
@@ -143,6 +144,10 @@ export default function ManageAdmins() {
                                                         <button onClick={() => handleRoleUpdate(u.uid, 'ppass_admin')}
                                                             className={`px-3 py-1.5 text-xs font-bold rounded-lg transition ${u.role === 'ppass_admin' ? 'bg-white/5 text-gray-500 cursor-not-allowed' : 'bg-cyan-900/30 text-cyan-400 hover:bg-cyan-900/50 border border-cyan-500/30'}`}>
                                                             PPASS Admin
+                                                        </button>
+                                                        <button onClick={() => handleRoleUpdate(u.uid, 'cul_admin')}
+                                                            className={`px-3 py-1.5 text-xs font-bold rounded-lg transition ${u.role === 'cul_admin' ? 'bg-white/5 text-gray-500 cursor-not-allowed' : 'bg-pink-900/30 text-pink-400 hover:bg-pink-900/50 border border-pink-500/30'}`}>
+                                                            Cultural Admin
                                                         </button>
                                                         <button onClick={() => handleRoleUpdate(u.uid, 'user')}
                                                             className="px-3 py-1.5 text-xs font-bold rounded-lg bg-red-900/30 text-red-400 hover:bg-red-900/50 border border-red-500/30 transition">
@@ -209,6 +214,12 @@ export default function ManageAdmins() {
                                                 className="bg-cyan-600/20 text-cyan-400 border border-cyan-500/30 hover:bg-cyan-600/30 px-3 py-1 rounded text-sm font-bold transition"
                                             >
                                                 Physical Pass Admin
+                                            </button>
+                                            <button
+                                                onClick={() => { handleRoleUpdate(foundUser.uid, 'cul_admin'); setShowAddModal(false); }}
+                                                className="bg-pink-600/20 text-pink-400 border border-pink-500/30 hover:bg-pink-600/30 px-3 py-1 rounded text-sm font-bold transition"
+                                            >
+                                                Cultural Admin
                                             </button>
                                         </div>
                                     </div>

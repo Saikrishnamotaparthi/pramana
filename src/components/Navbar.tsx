@@ -8,27 +8,32 @@ export default function Navbar() {
     const { user, signInWithGoogle, logout, loading } = useAuth();
     const pathname = usePathname();
 
-    // Hide Navbar on Landing Page
-    if (pathname === "/") return null;
+    // Hide Navbar on specific routes
+    if (pathname === '/' || pathname === '/culturals') return null;
 
     return (
         <nav className="border-b border-white/10 bg-black/50 backdrop-blur-md px-6 py-4 sticky top-0 z-50">
             <div className="mx-auto flex max-w-7xl items-center justify-between">
                 <div className="flex items-center gap-8">
                     <Link
-                        href={user && (user.role === 'admin' || user.role === 'superadmin' || user.role === 'view_admin') ? "/admin" : user?.role === 'ppass_admin' ? "/issue-pass" : "/dashboard"}
+                        href={pathname.startsWith("/culturals") ? "/culturals" : user && (user.role === 'admin' || user.role === 'superadmin' || user.role === 'view_admin' || user.role === 'cul_admin') ? "/admin" : user?.role === 'ppass_admin' ? "/issue-pass" : "/dashboard"}
                         className="text-xl font-cinzel font-bold tracking-widest text-pramana-gold"
                     >
                         PRAMANA26
                     </Link>
                     <div className="hidden md:flex gap-8">
-                        {user && user.role === 'user' && (
+                        {user && user.role === 'user' && !pathname.startsWith("/culturals") && (
                             <Link href="/dashboard" className="text-sm font-medium text-pramana-cream/80 hover:text-pramana-gold transition">
                                 Dashboard
                             </Link>
                         )}
+                        {user && user.role === 'user' && pathname.startsWith("/culturals") && (
+                            <Link href="/culturals/dashboard" className="text-sm font-medium text-pramana-cream/80 hover:text-pramana-gold transition">
+                                My Culturals
+                            </Link>
+                        )}
                         {/* Link removed as per user request */}
-                        {user && (user.role === 'admin' || user.role === 'superadmin' || user.role === 'view_admin') && (
+                        {user && (user.role === 'admin' || user.role === 'superadmin' || user.role === 'view_admin' || user.role === 'cul_admin') && (
                             <Link href="/admin" className="text-sm font-medium text-pramana-cream/80 hover:text-pramana-gold transition">
                                 Admin Portal
                             </Link>
@@ -38,6 +43,9 @@ export default function Navbar() {
                                 Issue Pass
                             </Link>
                         )}
+                        <Link href="/culturals" className={`text-sm font-medium transition ${pathname.startsWith("/culturals") ? "text-pramana-gold" : "text-pramana-cream/80 hover:text-pramana-gold"}`}>
+                            Culturals
+                        </Link>
                     </div>
                 </div>
 
@@ -53,8 +61,12 @@ export default function Navbar() {
                             <button
                                 onClick={async () => {
                                     await logout();
-                                    // Force redirect to home after logout
-                                    window.location.href = "/";
+                                    // Redirect based on current section
+                                    if (pathname.startsWith("/culturals")) {
+                                        window.location.href = "/culturals";
+                                    } else {
+                                        window.location.href = "/";
+                                    }
                                 }}
                                 className="rounded border border-pramana-gold/30 px-4 py-2 text-sm font-medium text-pramana-cream hover:bg-pramana-gold/10 transition-colors"
                             >

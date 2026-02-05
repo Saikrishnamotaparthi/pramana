@@ -13,11 +13,12 @@ import {
     LogOut,
     Menu,
     X,
-    ScanLine
+    ScanLine,
+    Music
 } from "lucide-react";
 import { useState } from "react";
 import { useAuth } from "@/hooks/useAuth";
-import { canAccessBulkIssue, canManageAdmins, isMarketingAdmin, isPpassAdmin } from "@/utils/rbac";
+import { canAccessBulkIssue, canManageAdmins, isMarketingAdmin, isPpassAdmin, isCulturalAdmin } from "@/utils/rbac";
 
 const links = [
     { href: "/admin", label: "Dashboard", icon: LayoutDashboard },
@@ -29,7 +30,9 @@ const links = [
     { href: "/admin/users", label: "User Management", icon: Users },
     { href: "/admin/manage-admins", label: "Admins", icon: Shield },
     { href: "/admin/scan-pass", label: "Scan Pass", icon: ScanLine },
+    { href: "/admin/culturals", label: "Cultural Events", icon: Music },
     { href: "/issue-pass", label: "Physical Issue", icon: Printer },
+    { href: "/admin/settings", label: "Settings", icon: ClipboardList },
 
 ];
 
@@ -84,6 +87,11 @@ export default function AdminSidebar() {
                 {/* Navigation */}
                 <nav className="flex-1 p-3 space-y-2 overflow-y-auto scrollbar-hide">
                     {links.filter(link => {
+                        // Cultural Admin Restrictions - ONLY Culturals
+                        if (isCulturalAdmin(user)) {
+                            return link.href === '/admin/culturals';
+                        }
+
                         // PPASS Admin Restrictions
                         if (isPpassAdmin(user)) {
                             return link.href === '/issue-pass';
