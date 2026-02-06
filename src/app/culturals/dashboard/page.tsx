@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { useAuth } from "@/hooks/useAuth";
-import { db, getUserRegistrations, CulturalRegistrationData } from "@/lib/culturals"; // Ensure correct imports
+import { getUserRegistrations, CulturalRegistrationData } from "@/lib/culturals"; // Ensure correct imports
 // Removed unused firebase imports that are now handled in the lib
 import { Loader2, CheckCircle, AlertCircle, Clock, Music, Mic, Users, Trophy } from "lucide-react";
 import Link from "next/link";
