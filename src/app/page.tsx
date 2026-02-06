@@ -313,9 +313,9 @@ export default function LandingPage() {
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             {[
-              { title: "Tech Challenges", cat: "Innovation", img: "/uploads/tech-poster.jpg", desc: "Hackathons, coding battles, and robotics showcases." },
-              { title: "Cultural Battles", cat: "Expression", img: "/uploads/cultural-poster.jpg", desc: "Dance, Music, and Drama competitions on the grandest stage." },
-              { title: "Pro Nights", cat: "Celebration", img: "/uploads/pro-poster.jpg", desc: "Star-studded performances and DJ nights to end the days high." }
+              { title: "Tech Challenges", cat: "Innovation", img: "/uploads/tech-poster.jpg", desc: "Hackathons, coding battles, and robotics showcases.", link: "#" },
+              { title: "Cultural Battles", cat: "Expression", img: "/uploads/cultural-poster.jpg", desc: "Dance, Music, and Drama competitions on the grandest stage.", link: "/culturals" },
+              { title: "Pro Nights", cat: "Celebration", img: "/uploads/pro-poster.jpg", desc: "Star-studded performances and DJ nights to end the days high.", link: "#" }
             ].map((item, i) => (
               <motion.div
                 key={i}
@@ -325,18 +325,20 @@ export default function LandingPage() {
                 transition={{ delay: i * 0.1 }}
                 className="group relative h-[450px] overflow-hidden bg-[#111] border border-white/5 hover:border-pramana-gold/30 transition-all duration-500 rounded-sm"
               >
-                <div className="absolute inset-0 bg-cover bg-center transition-transform duration-1000 group-hover:scale-110 opacity-50 group-hover:opacity-70" style={{ backgroundImage: `url('${item.img}')` }}></div>
-                <div className="absolute inset-0 bg-gradient-to-t from-black via-black/50 to-transparent"></div>
+                <Link href={item.link} className="block w-full h-full">
+                  <div className="absolute inset-0 bg-cover bg-center transition-transform duration-1000 group-hover:scale-110 opacity-50 group-hover:opacity-70" style={{ backgroundImage: `url('${item.img}')` }}></div>
+                  <div className="absolute inset-0 bg-gradient-to-t from-black via-black/50 to-transparent"></div>
 
-                <div className="absolute top-6 right-6">
-                  <span className="text-[10px] font-mono border border-white/20 px-3 py-1 rounded-full text-white/50 bg-black/50 backdrop-blur-md uppercase">{item.cat}</span>
-                </div>
+                  <div className="absolute top-6 right-6">
+                    <span className="text-[10px] font-mono border border-white/20 px-3 py-1 rounded-full text-white/50 bg-black/50 backdrop-blur-md uppercase">{item.cat}</span>
+                  </div>
 
-                <div className="absolute bottom-0 left-0 p-10 transform translate-y-4 group-hover:translate-y-0 transition-transform duration-500">
-                  <h3 className="text-3xl font-cinzel text-white mb-4 group-hover:text-pramana-gold transition-colors">{item.title}</h3>
-                  <div className="h-[1px] w-0 bg-pramana-gold group-hover:w-full transition-all duration-700 ease-out mb-4"></div>
-                  <p className="text-sm text-pramana-cream/70 leading-relaxed max-w-xs">{item.desc}</p>
-                </div>
+                  <div className="absolute bottom-0 left-0 p-10 transform translate-y-4 group-hover:translate-y-0 transition-transform duration-500">
+                    <h3 className="text-3xl font-cinzel text-white mb-4 group-hover:text-pramana-gold transition-colors">{item.title}</h3>
+                    <div className="h-[1px] w-0 bg-pramana-gold group-hover:w-full transition-all duration-700 ease-out mb-4"></div>
+                    <p className="text-sm text-pramana-cream/70 leading-relaxed max-w-xs">{item.desc}</p>
+                  </div>
+                </Link>
               </motion.div>
             ))}
           </div>
