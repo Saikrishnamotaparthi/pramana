@@ -5,7 +5,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { RegistrationField } from "@/types";
 import { doc, updateDoc, getDoc, runTransaction } from "firebase/firestore";
 import { db } from "@/lib/firebase";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { ArrowRight, Check, X } from "lucide-react";
 
 // Placeholder schema if none exists in DB
@@ -20,6 +20,7 @@ const DEFAULT_FIELDS: RegistrationField[] = [
 export default function RegistrationForm() {
     const { user, loading } = useAuth();
     const router = useRouter();
+    const searchParams = useSearchParams();
     const [fields, setFields] = useState<RegistrationField[]>([]);
     const [formData, setFormData] = useState<Record<string, string>>({});
     const [submitting, setSubmitting] = useState(false);
@@ -145,7 +146,8 @@ export default function RegistrationForm() {
             }
 
             // Redirect
-            window.location.href = "/dashboard";
+            const returnUrl = searchParams.get('returnUrl');
+            window.location.href = returnUrl || "/dashboard";
         } catch (error: any) {
             console.error("Error submitting registration", error);
             alert(error.message || "Failed to register. Please try again.");

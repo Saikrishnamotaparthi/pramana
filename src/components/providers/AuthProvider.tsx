@@ -45,7 +45,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
                     if (dbUser.role === 'superadmin' && !pathname.startsWith('/admin') && pathname !== '/entry') {
                         router.push("/admin");
                     } else if (!dbUser.isRegistered && pathname !== "/register") {
-                        router.push("/register");
+                        router.push(pathname !== "/" ? `/register?returnUrl=${encodeURIComponent(pathname)}` : "/register");
                     }
                 } else {
                     // New user
@@ -69,7 +69,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
                     if (isSuperAdmin) {
                         router.push("/admin");
                     } else if (pathname !== "/register") {
-                        router.push("/register");
+                        router.push(pathname !== "/" ? `/register?returnUrl=${encodeURIComponent(pathname)}` : "/register");
                     }
                 }
             } else {
@@ -90,7 +90,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
             // 1. Unregistered Users -> Restriction
             if (!user.isRegistered && pathname !== "/register") {
-                router.replace("/register");
+                router.replace(pathname !== "/" ? `/register?returnUrl=${encodeURIComponent(pathname)}` : "/register");
                 return;
             }
 

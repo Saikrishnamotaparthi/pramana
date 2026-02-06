@@ -376,7 +376,7 @@ export default function CulturalsPage() {
                             <div className="inline-block bg-gradient-to-r from-transparent via-white/10 to-transparent p-[1px] rounded-full mb-2">
                                 <div className="bg-black/50 backdrop-blur-md rounded-full px-8 py-2">
                                     <p className="text-3xl md:text-5xl text-pramana-gold font-bold font-playfair italic">
-                                        ₹36,000+
+                                        ₹30,000+
                                     </p>
                                 </div>
                             </div>
@@ -448,6 +448,9 @@ export default function CulturalsPage() {
                         </div>
                         <p className="flex items-center justify-center md:justify-end gap-2 text-pramana-gold/80 text-sm font-mono">
                             <Mail className="w-4 h-4" /> pramana.hyd@gitam.edu
+                        </p>
+                        <p className="flex items-center justify-center md:justify-end gap-2 text-pramana-gold/80 text-sm font-mono">
+                            <Mail className="w-4 h-4" /> kalakriti_hyd@gitam.in
                         </p>
                     </div>
                 </div>
