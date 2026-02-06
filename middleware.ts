@@ -15,7 +15,7 @@ export function middleware(request: NextRequest) {
 
     // 2. Strict Route Protection
     // Whitelist public routes. Block everything else.
-    const publicRoutes = ['/', '/login', '/signup', '/register', '/tickets'];
+    const publicRoutes = ['/', '/login', '/signup', '/register', '/tickets', '/culturals'];
     const isPublic = publicRoutes.some(route => pathname === route || pathname.startsWith(route + '/'));
 
     if (!isLoggedIn && !isPublic) {

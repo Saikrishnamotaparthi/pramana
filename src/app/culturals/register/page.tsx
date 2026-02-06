@@ -5,9 +5,9 @@ import { useSearchParams, useRouter } from "next/navigation";
 import { useAuth } from "@/hooks/useAuth";
 import { motion } from "framer-motion";
 import { Upload, CheckCircle, AlertCircle, ArrowLeft, Loader2 } from "lucide-react";
-import { saveCulturalRegistration } from "@/lib/culturals";
+import { saveCulturalRegistration, getUserRegistrations, invalidateUserRegistrationsCache } from "@/lib/culturals";
 import { db } from "@/lib/firebase";
-import { collection, getDocs, query, where, doc, getDoc } from "firebase/firestore";
+import { doc, getDoc } from "firebase/firestore"; // Removing unused imports
 import Image from "next/image";
 import Link from "next/link";
 
@@ -72,14 +72,12 @@ function RegisterForm() {
         if (!user) return;
         const fetchExisting = async () => {
             try {
-                // Use the new subcollection path: culturals/{userId}/registrations
-                const q = query(collection(db, "culturals", user.uid, "registrations"));
-                const snapshot = await getDocs(q);
-                const data = snapshot.docs.map(doc => ({
-                    competitionId: doc.data().competitionId,
-                    category: doc.data().category
+                const data = await getUserRegistrations(user.uid);
+                const exRegs = data.map((d: any) => ({
+                    competitionId: d.competitionId,
+                    category: d.category
                 }));
-                setExistingRegistrations(data);
+                setExistingRegistrations(exRegs);
             } catch (error) {
                 console.error("Error fetching existing registrations:", error);
             }
@@ -171,6 +169,10 @@ function RegisterForm() {
                 category,
                 teamName: teamName || undefined,
             }, file);
+
+            // Invalidate cache so dashboard refetches data
+            invalidateUserRegistrationsCache(user.uid);
+
             setSuccess(true);
         } catch (err: any) {
             console.error("Submission error:", err);

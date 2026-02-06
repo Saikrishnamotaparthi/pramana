@@ -2,18 +2,16 @@
 
 import { useState, useEffect } from "react";
 import { useAuth } from "@/hooks/useAuth";
-import { db } from "@/lib/firebase";
-import { collection, query, where, getDocs, orderBy } from "firebase/firestore";
+import { db, getUserRegistrations, CulturalRegistrationData } from "@/lib/culturals"; // Ensure correct imports
+// Removed unused firebase imports that are now handled in the lib
 import { Loader2, CheckCircle, AlertCircle, Clock, Music, Mic, Users, Trophy } from "lucide-react";
 import Link from "next/link";
 import { motion } from "framer-motion";
 
-interface CulturalRegistration {
+interface CulturalRegistration extends CulturalRegistrationData {
     id: string;
-    competitionId: string;
-    category: string;
-    status: "pending" | "approved" | "rejected";
     createdAt: any;
+    status: "pending" | "approved" | "rejected"; // Ensure status is part of the type if it comes from backend
 }
 
 // Update competitions object to include images and rulebook
@@ -51,17 +49,8 @@ export default function CulturalDashboard() {
 
         const fetchRegistrations = async () => {
             try {
-                // Modified to fetch from subcollection: culturals/{userId}/registrations
-                const q = query(
-                    collection(db, "culturals", user.uid, "registrations"),
-                    orderBy("createdAt", "desc")
-                );
-                const snapshot = await getDocs(q);
-                const data = snapshot.docs.map(doc => ({
-                    id: doc.id,
-                    ...doc.data()
-                })) as CulturalRegistration[];
-                setRegistrations(data);
+                const data = await getUserRegistrations(user.uid);
+                setRegistrations(data as CulturalRegistration[]);
             } catch (error) {
                 console.error("Error fetching registrations:", error);
             } finally {
