@@ -295,6 +295,9 @@ export default function RegistrationForm() {
                         </label>
                         <input
                             type="text"
+                            name="referralCode"
+                            autoComplete="off"
+                            onInvalid={(e: any) => e.preventDefault()}
                             className={`bg-black/50 border ${referralError ? 'border-red-500' : 'border-white/10'} text-white p-4 rounded-xl focus:outline-none focus:border-pramana-gold focus:ring-1 focus:ring-pramana-gold transition-all placeholder:text-white/20 text-center text-xl font-mono tracking-widest uppercase`}
                             placeholder="CODE123"
                             value={referralCode}
@@ -308,6 +311,7 @@ export default function RegistrationForm() {
 
                     <div className="space-y-3">
                         <button
+                            type="button"
                             onClick={handleReferralSubmit}
                             disabled={submitting || !referralCode}
                             className="w-full bg-pramana-gold text-black py-4 rounded-xl font-bold font-cinzel text-lg tracking-widest hover:bg-yellow-500 transition-all disabled:opacity-50 disabled:cursor-not-allowed shadow-[0_0_20px_rgba(184,134,11,0.2)]"
