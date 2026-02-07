@@ -185,6 +185,22 @@ sudo nginx -t
 sudo systemctl restart nginx
 ```
 
+### Step 4: Maintenance Page Configuration (Optional)
+To serve a maintenance page when the application is stopped (e.g., during updates), add this to your Nginx configuration inside the `server` block:
+
+```nginx
+    # Serve maintenance page when the app is down (502 Bad Gateway)
+    error_page 502 =502 /maintenance.html;
+
+    location = /maintenance.html {
+        root /var/www/payment-web/public;
+        internal;
+    }
+```
+
+This ensures that whenever PM2 stops the app (causing a 502 error from Nginx), the user sees the `maintenance.html` page instead of the default Nginx error page.
+
+
 ---
 
 ## 6. (Optional) SSL Certificate with Certbot
@@ -251,6 +267,22 @@ pm2 stop payment-web
 # 2. (Optional) Stop the web server completely
 sudo systemctl stop nginx
 ```
+
+### ➤ Maintenance Mode
+If you have configured the **Maintenance Page** (Step 4 in Configuration), follow these steps to toggle maintenance mode.
+
+**To Enable Maintenance Mode:**
+Stopping the app will automatically show the maintenance page.
+```bash
+pm2 stop payment-web
+```
+
+**To Disable Maintenance Mode (Go Live):**
+Starting the app will remove the maintenance page and show the actual website.
+```bash
+pm2 start payment-web
+```
+
 
 ### ➤ How to RESTART (Update)
 If you made code changes or the site is stuck:

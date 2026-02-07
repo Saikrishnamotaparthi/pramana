@@ -1,0 +1,373 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Under Maintenance | Pramana</title>
+    <link rel="icon" href="maintenance_favicon.png" type="image/png">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700&family=Playfair+Display:ital,wght@0,400;1,400&family=Inter:wght@300;400&display=swap');
+
+        :root {
+            --gold-primary: #D4AF37;
+            --gold-secondary: #B8860B;
+            --gold-glow: rgba(212, 175, 55, 0.25);
+            --black-bg: #050505;
+            --grid-color: rgba(212, 175, 55, 0.08);
+            --text-color: #F5F5DC;
+            --glass-bg: rgba(20, 20, 20, 0.7);
+            --glass-border: rgba(212, 175, 55, 0.2);
+        }
+
+        body {
+            background-color: var(--black-bg);
+            margin: 0;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            overflow-x: hidden;
+            /* Prevent horizontal scroll */
+            font-family: 'Playfair Display', serif;
+            position: relative;
+        }
+
+        /* --- Dynamic Background --- */
+        .bg-grid {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image:
+                linear-gradient(var(--grid-color) 1px, transparent 1px),
+                linear-gradient(90deg, var(--grid-color) 1px, transparent 1px);
+            background-size: 40px 40px;
+            z-index: -3;
+            perspective: 1000px;
+            transform: scale(1.1);
+            mask-image: radial-gradient(circle at center, black 40%, transparent 90%);
+            -webkit-mask-image: radial-gradient(circle at center, black 40%, transparent 90%);
+        }
+
+        .bg-shape {
+            position: absolute;
+            border: 1px solid var(--gold-secondary);
+            opacity: 0.15;
+            z-index: -2;
+            pointer-events: none;
+        }
+
+        .shape-circle {
+            width: 700px;
+            height: 700px;
+            border-radius: 50%;
+            border: 1px dashed var(--gold-secondary);
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            animation: rotate 60s linear infinite;
+        }
+
+        .shape-square {
+            width: 500px;
+            height: 500px;
+            border: 1px solid var(--gold-secondary);
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%) rotate(45deg);
+            opacity: 0.08;
+        }
+
+        .ambient-light {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            background: radial-gradient(circle at 50% 50%, rgba(20, 20, 20, 0.6) 0%, rgba(5, 5, 5, 1) 90%);
+            z-index: -1;
+        }
+
+        /* --- Main Content --- */
+        .container {
+            text-align: center;
+            z-index: 10;
+            padding: 3rem 4rem;
+            background: var(--glass-bg);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid var(--glass-border);
+            border-radius: 24px;
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.6), inset 0 0 0 1px rgba(255, 255, 255, 0.05);
+            animation: fadeUp 1s ease-out;
+            width: 90%;
+            max-width: 500px;
+            position: relative;
+            overflow: hidden;
+            margin: 20px;
+        }
+
+        .container::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 50%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+            transform: skewX(-25deg);
+            animation: shine 6s infinite;
+        }
+
+        .mascot-container {
+            margin-bottom: 1.5rem;
+            position: relative;
+        }
+
+        .mascot-glow {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 200px;
+            height: 200px;
+            background: radial-gradient(circle, var(--gold-glow) 0%, transparent 70%);
+            border-radius: 50%;
+            z-index: -1;
+            filter: blur(20px);
+        }
+
+        .mascot {
+            max-width: 280px;
+            width: 100%;
+            height: auto;
+            filter: drop-shadow(0 10px 20px rgba(0, 0, 0, 0.4));
+            animation: float 4s ease-in-out infinite;
+        }
+
+        h1 {
+            font-family: 'Cinzel', serif;
+            font-size: 2.8rem;
+            margin: 0 0 0.5rem 0;
+            background: linear-gradient(135deg, #FFFDE4 0%, #D4AF37 50%, #B8860B 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            text-shadow: 0 2px 10px rgba(184, 134, 11, 0.3);
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            line-height: 1.2;
+        }
+
+        h2 {
+            font-family: 'Inter', sans-serif;
+            font-size: 0.9rem;
+            letter-spacing: 4px;
+            color: var(--gold-primary);
+            text-transform: uppercase;
+            margin-top: 0;
+            margin-bottom: 1.5rem;
+            opacity: 0.8;
+            border-bottom: 1px solid var(--glass-border);
+            display: inline-block;
+            padding-bottom: 5px;
+        }
+
+        p {
+            font-size: 1.1rem;
+            color: rgba(245, 245, 220, 0.7);
+            line-height: 1.6;
+            margin: 0;
+            font-family: 'Inter', sans-serif;
+            font-weight: 300;
+        }
+
+        /* Button */
+        .btn-instagram {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            margin-top: 2rem;
+            padding: 0.8rem 2.5rem;
+            background: rgba(212, 175, 55, 0.05);
+            border: 1px solid var(--gold-secondary);
+            color: var(--gold-primary);
+            font-family: 'Inter', sans-serif;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            text-decoration: none;
+            font-size: 0.9rem;
+            border-radius: 50px;
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            backdrop-filter: blur(5px);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .btn-instagram::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+            transition: left 0.5s;
+        }
+
+        .btn-instagram:hover {
+            background: var(--gold-secondary);
+            color: #000;
+            box-shadow: 0 0 30px rgba(184, 134, 11, 0.6);
+            transform: translateY(-5px) scale(1.05);
+            border-color: #FFD700;
+        }
+
+        .btn-instagram:hover::before {
+            left: 100%;
+        }
+
+        .btn-icon {
+            width: 20px;
+            height: 20px;
+            fill: currentColor;
+            transition: transform 0.4s ease;
+        }
+
+        .btn-instagram:hover .btn-icon {
+            transform: rotate(360deg) scale(1.2);
+        }
+
+        .insta-text {
+            font-family: 'Inter', sans-serif;
+            font-size: 0.85rem;
+            color: rgba(245, 245, 220, 0.5);
+            margin-top: 1rem;
+            letter-spacing: 1px;
+            opacity: 0;
+            animation: fadeUp 1s ease-out 0.5s forwards;
+        }
+
+        /* --- Animations --- */
+        @keyframes float {
+
+            0%,
+            100% {
+                transform: translateY(0);
+            }
+
+            50% {
+                transform: translateY(-10px);
+            }
+        }
+
+        @keyframes rotate {
+            from {
+                transform: translate(-50%, -50%) rotate(0deg);
+            }
+
+            to {
+                transform: translate(-50%, -50%) rotate(360deg);
+            }
+        }
+
+        @keyframes fadeUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes shine {
+
+            0%,
+            100% {
+                left: -100%;
+                opacity: 0;
+            }
+
+            50% {
+                opacity: 0.5;
+            }
+
+            100% {
+                left: 200%;
+                opacity: 0;
+            }
+        }
+
+        /* --- Responsive Design --- */
+        @media (max-width: 600px) {
+            .container {
+                padding: 2rem 1.5rem;
+                width: 85%;
+            }
+
+            h1 {
+                font-size: 2rem;
+            }
+
+            h2 {
+                font-size: 0.75rem;
+                letter-spacing: 2px;
+            }
+
+            p {
+                font-size: 0.95rem;
+            }
+
+            .mascot {
+                max-width: 200px;
+            }
+
+            .shape-circle {
+                width: 90vw;
+                height: 90vw;
+            }
+
+            .shape-square {
+                width: 70vw;
+                height: 70vw;
+            }
+
+            .bg-grid {
+                background-size: 20px 20px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="bg-grid"></div>
+    <div class="bg-shape shape-circle"></div>
+    <div class="bg-shape shape-square"></div>
+    <div class="ambient-light"></div>
+
+    <div class="container">
+        <div class="mascot-container">
+            <div class="mascot-glow"></div>
+            <img src="maintenance_mascot.png" alt="Pramana Builder" class="mascot">
+        </div>
+
+        <h2>System Upgrade in Progress</h2>
+        <h1>Pramana</h1>
+        <p>We are currently enhancing our platform to serve you better.<br>Please expect a brief downtime.</p>
+
+        <a href="https://www.instagram.com/pramana_2026.gitam/" target="_blank" class="btn-instagram">
+            <svg class="btn-icon" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                <path
+                    d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.069-4.85.069-3.204 0-3.584-.012-4.849-.069-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z" />
+            </svg>
+            Follow Us
+        </a>
+        <div class="insta-text">Check our Instagram, something is cooking there!</div>
+    </div>
+</body>
+
+</html>
