@@ -139,10 +139,13 @@ export default function RegistrationForm() {
                 body: formDataToSend // auto-sets Content-Type to multipart/form-data
             });
 
-            const result = await response.json();
+            const result = await response.json().catch(() => null);
 
             if (!response.ok) {
-                throw new Error(result.error || "Registration failed");
+                if (response.status === 413) {
+                    throw new Error("File too large. Please upload an image smaller than 5MB.");
+                }
+                throw new Error(result?.error || `Registration failed (${response.status})`);
             }
 
             // Redirect
@@ -300,9 +303,13 @@ export default function RegistrationForm() {
                             onInvalid={(e: any) => e.preventDefault()}
                             className={`bg-black/50 border ${referralError ? 'border-red-500' : 'border-white/10'} text-white p-4 rounded-xl focus:outline-none focus:border-pramana-gold focus:ring-1 focus:ring-pramana-gold transition-all placeholder:text-white/20 text-center text-xl font-mono tracking-widest uppercase`}
                             placeholder="CODE123"
+                            spellCheck="false"
+                            autoCorrect="off"
                             value={referralCode}
                             onChange={(e) => {
-                                setReferralCode(e.target.value.toUpperCase());
+                                // Only allow A-Z and 0-9
+                                const cleanValue = e.target.value.toUpperCase().replace(/[^A-Z0-9]/g, '');
+                                setReferralCode(cleanValue);
                                 setReferralError("");
                             }}
                         />

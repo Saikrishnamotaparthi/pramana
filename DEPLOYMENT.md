@@ -157,8 +157,16 @@ Replace `your-domain.com` with your actual domain or server IP.
 ```nginx
 server {
     listen 80;
-    server_name your-domain.com www.your-domain.com; # Or use text: _ for default
+    server_name pramana.gitam.edu www.pramana.gitam.edu;
+    root /var/www/payment-web/public; # Point root to public folder
+    client_max_body_size 10M; # Allow larger file uploads (e.g. 5MB images)
 
+    # 1. Serve static assets (images, fonts, favicon) directly
+    location ~* \.(jpg|jpeg|png|gif|ico|css|js|svg)$ {
+        try_files $uri @nextjs;
+    }
+
+    # 2. Everything else is proxied to Next.js
     location / {
         proxy_pass http://localhost:3000;
         proxy_http_version 1.1;
@@ -166,6 +174,23 @@ server {
         proxy_set_header Connection 'upgrade';
         proxy_set_header Host $host;
         proxy_cache_bypass $http_upgrade;
+    }
+
+    # 3. Fallback to Next.js if asset missing
+    location @nextjs {
+        proxy_pass http://localhost:3000;
+        proxy_http_version 1.1;
+        proxy_set_header Upgrade $http_upgrade;
+        proxy_set_header Connection 'upgrade';
+        proxy_set_header Host $host;
+        proxy_cache_bypass $http_upgrade;
+    }
+
+    # 4. Maintenance Page Handler (502 Gateway Error)
+    error_page 502 = @maintenance;
+
+    location @maintenance {
+        rewrite ^ /maintenance.html break;
     }
 }
 ```
@@ -282,6 +307,15 @@ Starting the app will remove the maintenance page and show the actual website.
 ```bash
 pm2 start payment-web
 ```
+
+### ❓ Troubleshooting Maintenance Mode
+If you stop the app (`pm2 stop payment-web`) but don't see the maintenance page:
+
+1.  **Check Nginx Config:** Ensure you added the `error_page 502` block from **Step 4** to your Nginx config file (`/etc/nginx/sites-available/payment-web`).
+2.  **Test Config:** Run `sudo nginx -t` to check for syntax errors.
+3.  **Restart Nginx:** Run `sudo systemctl restart nginx` to apply changes.
+4.  **Verify Path:** Ensure `maintenance.html` exists at `/var/www/payment-web/public/maintenance.html`.
+
 
 
 ### ➤ How to RESTART (Update)
