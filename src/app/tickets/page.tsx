@@ -24,14 +24,14 @@ export default function TicketsPage() {
                     // 1. Standard Passes
                     const qPasses = query(collection(db, "passes_config"));
                     const snapPasses = await getDocs(qPasses);
-                    const standardPasses = snapPasses.docs.map(d => ({ ...d.data(), id: d.id, isBulk: false })) as PassConfig[];
+                    const standardPasses = snapPasses.docs.map(d => ({ ...d.data(), id: d.id, isBulk: false })) as unknown as PassConfig[];
 
                     // 2. Bulk Passes
                     const qBulk = query(collection(db, "bulk_pass_configs"));
                     const snapBulk = await getDocs(qBulk);
                     const bulkPasses = snapBulk.docs.map(d => ({ ...d.data(), id: d.id, isBulk: true, category: 'all' })) as unknown as PassConfig[];
 
-                    const all = [...standardPasses.filter(p => p.active !== false), ...bulkPasses.filter(p => p.status !== 'inactive')];
+                    const all = [...standardPasses.filter(p => p.active !== false), ...bulkPasses.filter(p => (p as any).status !== 'inactive')];
                     setPasses(all);
                 } catch (error) {
                     console.error("Error fetching passes:", error);
