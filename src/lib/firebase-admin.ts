@@ -50,8 +50,9 @@ if (admin.apps.length) {
     } as unknown as FirebaseFirestore.Firestore;
 
     adminAuth = {
+        verifyIdToken: throwInitError,
         getUser: throwInitError,
-        // ...
+        listUsers: throwInitError,
     } as unknown as admin.auth.Auth;
 }
 

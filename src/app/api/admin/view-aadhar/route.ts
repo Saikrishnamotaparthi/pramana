@@ -20,14 +20,20 @@ export async function GET(req: NextRequest) {
         }
 
         const token = authHeader.split("Bearer ")[1];
+        let decodedToken;
         try {
-            const decodedToken = await adminAuth.verifyIdToken(token);
-            // Optional: Check if user is admin. For now, assuming any authenticated user hitting this admin route is protected by frontend routing, 
-            // but for true security we should check custom claims or admin list.
-            // Let's rely on valid token for now as per MVP, but ideally check admin.
+            decodedToken = await adminAuth.verifyIdToken(token);
         } catch (authError) {
-            console.error("Auth Token Verification Failed", authError);
+            console.error("[View Aadhar] Token Verification Failed", authError);
             return NextResponse.json({ error: "Unauthorized: Invalid Token" }, { status: 401 });
+        }
+
+        // Verify Admin Role
+        const callerSnap = await adminDb.collection("users").doc(decodedToken.uid).get();
+        const callerData = callerSnap.data();
+        if (callerData?.role !== 'admin' && callerData?.role !== 'superadmin') {
+            console.error(`[View Aadhar] Forbidden access attempt by ${decodedToken.email}`);
+            return NextResponse.json({ error: "Forbidden: Admin access required" }, { status: 403 });
         }
 
         // 2. Get User Data to find file path
@@ -37,15 +43,24 @@ export async function GET(req: NextRequest) {
         }
 
         const userData = userDoc.data();
-        const filePath = userData?.registrationData?.aadharFilePath;
+        let filePath = userData?.registrationData?.aadharFilePath;
 
         if (!filePath) {
             return NextResponse.json({ error: "Aadhar file not found for this user" }, { status: 404 });
         }
 
+        // Path Normalization for Linux
+        if (process.platform !== 'win32') {
+            filePath = filePath.replace(/\\/g, '/');
+            if (filePath.includes(':')) {
+                filePath = filePath.split(':').pop();
+            }
+        }
+
         // 3. Check if file exists on server
         if (!existsSync(filePath)) {
-            return NextResponse.json({ error: "File missing on server storage" }, { status: 404 });
+            console.error(`[View Aadhar] File missing at: ${filePath}`);
+            return NextResponse.json({ error: `File missing on server storage: ${filePath}` }, { status: 404 });
         }
 
         // 4. Read and Serve File

@@ -46,8 +46,9 @@ export async function POST(req: NextRequest) {
         const bytes = await screenshotFile.arrayBuffer();
         const buffer = Buffer.from(bytes);
 
-        // Create directory
-        const uploadDir = join(process.cwd(), "secure_uploads", "bulk_receipts");
+        // Create directory (ensure it's relative)
+        const uploadRelPath = join("secure_uploads", "bulk_receipts");
+        const uploadDir = join(process.cwd(), uploadRelPath);
         if (!existsSync(uploadDir)) {
             await mkdir(uploadDir, { recursive: true });
         }
@@ -55,22 +56,21 @@ export async function POST(req: NextRequest) {
         // Save file
         // Sanitize email for filename
         const safeEmail = mainUserEmail.replace(/[^a-zA-Z0-9]/g, "_");
-        const fileName = `${safeEmail}_${Date.now()}_receipt.jpg`; // Assuming jpg or using extension from file
+        const fileName = `${safeEmail}_${Date.now()}_receipt.jpg`;
         const filePath = join(uploadDir, fileName);
+        const relativeFilePath = join(uploadRelPath, fileName);
 
         await writeFile(filePath, buffer);
 
         // 3. Create Request in "bulk_pass_requests"
-        // Update: Do NOT merge mainUserEmail into memberEmails.
-        // The Admin UI treats them separately (Main vs Group Members).
-        // If we merge them, the Main User appears twice in the list (once as header, once as member).
+        // ...
         const allEmails = memberEmails;
 
         const requestData = {
             mainUserEmail,
             passConfigId: passId,
             memberEmails: allEmails,
-            screenshotPath: filePath, // Store path instead of URL
+            screenshotPath: relativeFilePath,
             status: 'pending',
             submittedAt: FieldValue.serverTimestamp()
         };
