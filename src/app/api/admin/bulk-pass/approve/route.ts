@@ -49,18 +49,19 @@ export async function POST(req: NextRequest) {
             });
 
             // Issue Passes
-            // Emails are already normalized in submit, but we normalize again to be safe
-            const emails = (requestData.memberEmails || []).map((e: string) => e.toLowerCase().trim());
+            // Combine main user and group members
+            const mainUser = (requestData.mainUserEmail || "").toLowerCase().trim();
+            const additionalMembers = (requestData.memberEmails || []).map((e: string) => e.toLowerCase().trim());
+            const allRecipients = [...new Set([mainUser, ...additionalMembers])].filter(Boolean);
 
-            // Add main user if not in list? (Submit logic adds main user to memberEmails)
-            // If strictly relying on memberEmails:
+            const pricePerPerson = config.price / allRecipients.length;
 
-            for (const email of emails) {
+            for (const email of allRecipients) {
                 const newPassRef = adminDb.collection("passes_issued").doc();
                 t.set(newPassRef, {
                     passId: requestData.passConfigId,
                     name: config.name,
-                    price: config.price / emails.length, // Split or full?
+                    price: pricePerPerson,
                     issuedToEmail: email,
                     purchaseDate: FieldValue.serverTimestamp(),
                     status: 'active',
