@@ -42,6 +42,17 @@ export interface PassConfig {
     paymentLink?: string;
 }
 
+export interface BulkPassConfig {
+    id: string;
+    name: string;
+    memberCount: number;
+    price: number; // Selling Price
+    costPrice: number; // For discount calc
+    paymentLink: string;
+    status: 'active' | 'inactive' | 'coming_soon';
+    isBulk: true; // Discriminator
+}
+
 export interface Coupon {
     code: string;
     discountType: 'amount' | 'percentage';
@@ -52,4 +63,3 @@ export interface Coupon {
     used: number;
     active: boolean;
 }
-

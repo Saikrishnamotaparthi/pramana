@@ -10,5 +10,6 @@ service firebase.storage {
       allow write: if request.auth != null && request.auth.uid == userId;
       allow read: if request.auth != null && (request.auth.uid == userId || request.auth.token.role in ['admin', 'superadmin', 'view_admin']);
     }
+
   }
 }

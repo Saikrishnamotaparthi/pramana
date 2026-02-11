@@ -13,6 +13,7 @@ import TicketTemplate from "@/components/TicketTemplate";
 
 interface IssuedPass {
     id: string;
+    passId?: string;
     passName: string;
     bookingId: string;
     qrCode: string;
@@ -34,6 +35,7 @@ export default function DashboardPage() {
     const { user, loading } = useAuth();
     const router = useRouter();
     const [myPasses, setMyPasses] = useState<IssuedPass[]>([]);
+    const [bulkRequests, setBulkRequests] = useState<any[]>([]);
     const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
     const [fetching, setFetching] = useState(true);
     const [qrUrls, setQrUrls] = useState<Record<string, string>>({});
@@ -88,9 +90,10 @@ export default function DashboardPage() {
                     }
 
                     // 2. Fetch Passes
+                    const email = user.email?.toLowerCase().trim();
                     const q = query(
                         collection(db, "passes_issued"),
-                        where("issuedToEmail", "==", user.email)
+                        where("issuedToEmail", "==", email)
                     );
                     const snap = await getDocs(q);
                     const passes = snap.docs.map(doc => ({ id: doc.id, ...doc.data() })) as IssuedPass[];
@@ -98,6 +101,28 @@ export default function DashboardPage() {
                     // Sort locally by date desc
                     passes.sort((a, b) => new Date(b.purchaseDate).getTime() - new Date(a.purchaseDate).getTime());
                     setMyPasses(passes);
+
+                    // 3. Fetch Bulk Requests (Main User OR Member)
+                    // We need to fetch both to show status to everyone involved
+                    const requestsRef = collection(db, "bulk_pass_requests");
+                    const q1 = query(requestsRef, where("mainUserEmail", "==", email));
+                    const q2 = query(requestsRef, where("memberEmails", "array-contains", email));
+
+                    const [snap1, snap2] = await Promise.all([getDocs(q1), getDocs(q2)]);
+                    const reqsMap = new Map();
+
+                    snap1.docs.forEach(d => reqsMap.set(d.id, { id: d.id, ...d.data() }));
+                    snap2.docs.forEach(d => reqsMap.set(d.id, { id: d.id, ...d.data() }));
+
+                    // Calculate owned configs from passes
+                    const ownedConfigIds = new Set(passes.map(p => p.passId).filter(Boolean));
+
+                    setBulkRequests(Array.from(reqsMap.values()).filter((r: any) => {
+                        if (r.status === 'approved') return false;
+                        // Hide rejected if user has a valid pass for this config
+                        if (r.status === 'rejected' && ownedConfigIds.has(r.passConfigId)) return false;
+                        return true;
+                    }));
 
                     // Generate QRs
                     const urls: Record<string, string> = {};
@@ -219,6 +244,46 @@ export default function DashboardPage() {
                                 <Link href="/register" className="whitespace-nowrap bg-red-600/20 text-red-400 border border-red-500/50 px-6 py-2.5 rounded-lg font-bold hover:bg-red-600 hover:text-white transition-all duration-300 shadow-[0_0_20px_rgba(239,68,68,0.2)] hover:shadow-[0_0_30px_rgba(239,68,68,0.5)]">
                                     Complete Profile &rarr;
                                 </Link>
+                            </div>
+                        </div>
+                    )}
+
+                    {/* Bulk Requests Section */}
+                    {bulkRequests.length > 0 && (
+                        <div className="animate-stagger-2 mb-8">
+                            <h2 className="text-xl font-cinzel font-bold text-white flex items-center gap-3 mb-6">
+                                <span className="text-pramana-gold">📋</span> Bulk Pass Requests
+                            </h2>
+                            <div className="grid gap-4">
+                                {bulkRequests.map(req => (
+                                    <div key={req.id} className="glass-panel p-6 rounded-2xl border border-white/10 flex flex-col md:flex-row justify-between items-center gap-4">
+                                        <div>
+                                            <div className="flex items-center gap-3 mb-1">
+                                                <h3 className="font-bold text-white">Bulk Pass Request</h3>
+                                                <span className={`px-2 py-0.5 rounded text-[10px] uppercase font-bold border ${req.status === 'pending' ? 'bg-yellow-500/10 text-yellow-500 border-yellow-500/20' :
+                                                    req.status === 'approved' ? 'bg-green-500/10 text-green-500 border-green-500/20' :
+                                                        'bg-red-500/10 text-red-500 border-red-500/20'
+                                                    }`}>
+                                                    {req.status}
+                                                </span>
+                                            </div>
+                                            <p className="text-sm text-pramana-cream/60">
+                                                Submitted by: <span className="text-white">{req.mainUserEmail}</span> • {new Date(req.submittedAt?.toDate()).toLocaleDateString()}
+                                            </p>
+                                            {req.status === 'rejected' && req.rejectReason && (
+                                                <div className="mt-2 p-2 bg-red-900/20 border border-red-500/30 rounded text-red-300 text-sm">
+                                                    <strong>Reason:</strong> {req.rejectReason}
+                                                </div>
+                                            )}
+                                        </div>
+                                        {req.status === 'pending' && (
+                                            <div className="flex items-center gap-2 text-yellow-500/60 text-sm bg-yellow-500/5 px-4 py-2 rounded-full border border-yellow-500/10">
+                                                <div className="animate-pulse h-2 w-2 rounded-full bg-yellow-500"></div>
+                                                Awaiting Admin Verification
+                                            </div>
+                                        )}
+                                    </div>
+                                ))}
                             </div>
                         </div>
                     )}

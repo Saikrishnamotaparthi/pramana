@@ -32,6 +32,7 @@ const links = [
     { href: "/admin/scan-pass", label: "Scan Pass", icon: ScanLine },
     { href: "/admin/culturals", label: "Cultural Events", icon: Music },
     { href: "/issue-pass", label: "Physical Issue", icon: Printer },
+    { href: "/admin/bulk-passes", label: "Bulk Passes", icon: Users },
     { href: "/admin/settings", label: "Settings", icon: ClipboardList },
 
 ];
@@ -103,6 +104,7 @@ export default function AdminSidebar() {
                         }
 
                         if (link.href === '/admin/bulk-issue') return canAccessBulkIssue(user);
+                        if (link.href === '/admin/bulk-passes') return user?.role === 'admin' || user?.role === 'superadmin';
                         if (link.href === '/admin/manage-admins') return canManageAdmins(user);
                         return true;
                     }).map((link) => {
