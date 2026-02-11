@@ -20,6 +20,31 @@ export async function POST(req: NextRequest) {
         const registrationData = JSON.parse(registrationDataString);
         const userRef = adminDb.collection("users").doc(uid);
 
+        // CLEANUP: Check for and remove any "Shadow" accounts (created by Bulk Issue) for this email
+        // This prevents duplicate users (one real, one "Not Registered Yet") in Admin Dashboard.
+        const email = registrationData.email;
+        if (email) {
+            try {
+                const shadowQuery = await adminDb.collection("users")
+                    .where("email", "==", email)
+                    .where("shadowAccount", "==", true)
+                    .get();
+
+                if (!shadowQuery.empty) {
+                    console.log(`Found ${shadowQuery.size} shadow account(s) for ${email}. Cleaning up...`);
+                    const batch = adminDb.batch();
+                    shadowQuery.docs.forEach(doc => {
+                        batch.delete(doc.ref);
+                    });
+                    await batch.commit();
+                    console.log("Shadow accounts deleted.");
+                }
+            } catch (cleanupError) {
+                console.error("Warning: Failed to cleanup shadow accounts:", cleanupError);
+                // We don't block registration if cleanup fails, just log it.
+            }
+        }
+
         // Handle File Upload
         if (aadharFile) {
             const bytes = await aadharFile.arrayBuffer();
