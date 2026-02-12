@@ -7,9 +7,10 @@ export async function GET(req: NextRequest) {
     try {
         const { searchParams } = new URL(req.url);
         const regId = searchParams.get("regId");
+        const userId = searchParams.get("userId");
 
-        if (!regId) {
-            return NextResponse.json({ error: "Missing Registration ID" }, { status: 400 });
+        if (!regId || !userId) {
+            return NextResponse.json({ error: "Missing Registration ID or User ID" }, { status: 400 });
         }
 
         // 1. Verify Authentication (Admin Only)
@@ -28,7 +29,14 @@ export async function GET(req: NextRequest) {
         }
 
         // 2. Get Registration Data
-        const docSnap = await adminDb.collection("cultural_registrations").doc(regId).get();
+        // Fix: Use correct path culturals/{userId}/registrations/{regId}
+        const docSnap = await adminDb
+            .collection("culturals")
+            .doc(userId)
+            .collection("registrations")
+            .doc(regId)
+            .get();
+
         if (!docSnap.exists) {
             return NextResponse.json({ error: "Registration not found" }, { status: 404 });
         }
