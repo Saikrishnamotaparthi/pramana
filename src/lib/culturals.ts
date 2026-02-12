@@ -6,6 +6,7 @@ export interface CulturalRegistrationData {
     name: string;
     email: string;
     phone: string;
+    dob: string;
     college: string;
     competitionId: string;
     category: string;
@@ -24,6 +25,7 @@ export const saveCulturalRegistration = async (data: CulturalRegistrationData, f
         formData.append("name", data.name);
         formData.append("email", data.email);
         formData.append("phone", data.phone);
+        formData.append("dob", data.dob);
         formData.append("college", data.college);
         formData.append("competitionId", data.competitionId);
         formData.append("category", data.category);

@@ -13,6 +13,7 @@ export async function POST(req: NextRequest) {
         const name = formData.get("name") as string;
         const email = formData.get("email") as string;
         const phone = formData.get("phone") as string;
+        const dob = formData.get("dob") as string;
         const college = formData.get("college") as string;
         const competitionId = formData.get("competitionId") as string;
         const category = formData.get("category") as string;
@@ -49,6 +50,7 @@ export async function POST(req: NextRequest) {
             name,
             email,
             phone,
+            dob,
             college,
             updatedAt: FieldValue.serverTimestamp()
         }, { merge: true });

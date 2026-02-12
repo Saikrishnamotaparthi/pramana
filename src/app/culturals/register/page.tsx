@@ -24,7 +24,7 @@ const competitions = {
         categories: [
             { name: "Solo", price: "200" },
             { name: "Duo/Trio", price: "500" },
-            { name: "Band", price: "1500" }
+            { name: "Band", price: "1200" }
         ]
     },
     "raw-and-real": {
@@ -45,6 +45,9 @@ function RegisterForm() {
     const [selectedComp, setSelectedComp] = useState<keyof typeof competitions | "">(competitionId || "");
     const [category, setCategory] = useState("");
     const [phone, setPhone] = useState("");
+    const [dob, setDob] = useState("");
+    const [age, setAge] = useState<number | null>(null);
+    const [isAgeValid, setIsAgeValid] = useState(false);
     const [college, setCollege] = useState("");
     const [teamName, setTeamName] = useState("");
     const [file, setFile] = useState<File | null>(null);
@@ -54,6 +57,31 @@ function RegisterForm() {
     const [paymentDone, setPaymentDone] = useState(false);
 
     const [existingRegistrations, setExistingRegistrations] = useState<{ competitionId: string, category: string }[]>([]);
+
+    // Calculate age and validate whenever DOB changes
+    useEffect(() => {
+        if (dob) {
+            const birthDate = new Date(dob);
+            const today = new Date();
+            let calculatedAge = today.getFullYear() - birthDate.getFullYear();
+            const m = today.getMonth() - birthDate.getMonth();
+            if (m < 0 || (m === 0 && today.getDate() < birthDate.getDate())) {
+                calculatedAge--;
+            }
+            setAge(calculatedAge);
+
+            // Validate Age (16 - 25 years)
+            if (calculatedAge >= 16 && calculatedAge <= 25) {
+                setIsAgeValid(true);
+                setError(""); // Clear any previous error related to age
+            } else {
+                setIsAgeValid(false);
+            }
+        } else {
+            setAge(null);
+            setIsAgeValid(false);
+        }
+    }, [dob]);
 
     useEffect(() => {
         if (competitionId && competitions[competitionId]) {
@@ -142,8 +170,13 @@ function RegisterForm() {
         e.preventDefault();
         setError("");
 
-        if (!selectedComp || !category || !phone || !college || !file) {
+        if (!selectedComp || !category || !phone || !dob || !college || !file) {
             setError("Please fill all fields and upload the payment screenshot.");
+            return;
+        }
+
+        if (!isAgeValid) {
+            setError("You must be between 16 and 25 years old to register.");
             return;
         }
 
@@ -164,6 +197,7 @@ function RegisterForm() {
                 name: user.displayName || "Unknown",
                 email: user.email,
                 phone,
+                dob,
                 college,
                 competitionId: selectedComp,
                 category,
@@ -291,6 +325,23 @@ function RegisterForm() {
                         />
                     </div>
                     <div className="space-y-2">
+                        <div className="flex justify-between items-center">
+                            <label className="text-xs text-pramana-cream/50 uppercase">Date of Birth</label>
+                            {age !== null && (
+                                <span className={`text-xs font-bold ${isAgeValid ? 'text-green-500' : 'text-red-500'}`}>
+                                    Age: {age} {isAgeValid ? "" : "(Must be 16-25)"}
+                                </span>
+                            )}
+                        </div>
+                        <input
+                            type="date"
+                            value={dob}
+                            onChange={(e) => setDob(e.target.value)}
+                            className="w-full bg-transparent border border-white/20 rounded p-3 text-white focus:border-pramana-gold focus:outline-none [color-scheme:dark]"
+                            required
+                        />
+                    </div>
+                    <div className="space-y-2">
                         <label className="text-xs text-pramana-cream/50 uppercase">University / College</label>
                         <input
                             type="text"
@@ -378,7 +429,7 @@ function RegisterForm() {
 
                 <button
                     type="submit"
-                    disabled={uploading}
+                    disabled={uploading || !isAgeValid}
                     className="w-full py-4 bg-pramana-gold text-black font-cinzel font-bold text-lg rounded-full hover:bg-white transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
                 >
                     {uploading && <Loader2 className="animate-spin w-5 h-5" />}

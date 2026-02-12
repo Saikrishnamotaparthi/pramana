@@ -93,7 +93,7 @@ export default function CulturalsPage() {
             categories: [
                 { name: "Solo", price: "200" },
                 { name: "Duo/Trio", price: "500" },
-                { name: "Band", price: "1500" }
+                { name: "Band", price: "1200" }
             ],
             ruleBookLink: "/culturals/off-the-record-rulebook.pdf",
         },
