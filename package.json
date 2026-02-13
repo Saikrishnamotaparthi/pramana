@@ -17,7 +17,7 @@
     "html5-qrcode": "^2.3.8",
     "lucide-react": "^0.560.0",
     "mime-types": "^3.0.2",
-    "next": "16.0.8",
+    "next": "^16.1.6",
     "nodemailer": "^7.0.11",
     "qrcode": "^1.5.4",
     "react": "19.2.1",
