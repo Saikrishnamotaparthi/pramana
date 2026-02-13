@@ -16,7 +16,8 @@ import {
     updateDoc,
     increment,
     writeBatch,
-    getCountFromServer
+    getCountFromServer,
+    deleteDoc
 } from "firebase/firestore";
 import { UserProfile, RegistrationField } from "@/types";
 import AdminSidebar from "@/components/AdminSidebar";
@@ -290,7 +291,7 @@ export default function UserManagement() {
         results.forEach(snap => {
             snap.forEach(d => {
                 const data = d.data();
-                if (data.issuedToEmail) map[data.issuedToEmail] = data;
+                if (data.issuedToEmail) map[data.issuedToEmail] = { id: d.id, ...data };
             });
         });
 
@@ -321,7 +322,7 @@ export default function UserManagement() {
             const newPassesMap: Record<string, any> = {};
             passSnap.forEach(d => {
                 const data = d.data();
-                if (data.issuedToEmail) newPassesMap[data.issuedToEmail] = data;
+                if (data.issuedToEmail) newPassesMap[data.issuedToEmail] = { id: d.id, ...data };
             });
             setPassesIssued(prev => ({ ...prev, ...newPassesMap }));
 
@@ -507,6 +508,35 @@ export default function UserManagement() {
             setShowAadharModal(false);
         } finally {
             setLoadingAadhar(false);
+        }
+    };
+
+    const handleRevokePass = async (userEmail: string, passDocId: string, passConfigId: string) => {
+        if (!confirm("Are you sure you want to REVOKE this pass? This will delete the pass record and cannot be undone.")) return;
+        setProcessing(true);
+        try {
+            // 1. Delete Pass Record
+            await deleteDoc(doc(db, "passes_issued", passDocId));
+
+            // 2. Decrement Sold Count
+            if (passConfigId) {
+                const passConfigRef = doc(db, "passes_config", passConfigId);
+                await updateDoc(passConfigRef, { sold: increment(-1) });
+            }
+
+            // 3. Update Local State
+            setPassesIssued(prev => {
+                const newState = { ...prev };
+                delete newState[userEmail];
+                return newState;
+            });
+
+            alert("Pass revoked successfully.");
+        } catch (error) {
+            console.error("Error revoking pass:", error);
+            alert("Failed to revoke pass.");
+        } finally {
+            setProcessing(false);
         }
     };
 
@@ -775,6 +805,15 @@ export default function UserManagement() {
                                                             className="bg-blue-600/80 text-white px-3 py-1.5 rounded text-xs font-bold hover:bg-blue-600 shadow-lg shadow-blue-900/20 transition"
                                                         >
                                                             Issue
+                                                        </button>
+                                                    )}
+                                                    {pass && canIssuePasses(user) && (
+                                                        <button
+                                                            onClick={() => handleRevokePass(u.email, pass.id, pass.passId)}
+                                                            className="bg-red-600/20 text-red-500 border border-red-600/30 px-3 py-1.5 rounded text-xs font-bold hover:bg-red-600/30 transition"
+                                                            title="Revoke and Delete Pass"
+                                                        >
+                                                            Revoke
                                                         </button>
                                                     )}
                                                     <button

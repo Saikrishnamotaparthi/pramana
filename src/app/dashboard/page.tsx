@@ -1,15 +1,14 @@
 "use client";
 
-import { useEffect, useState, useRef } from "react";
+import { useEffect, useState } from "react";
 import { useAuth } from "@/hooks/useAuth";
 import { db } from "@/lib/firebase";
 import { collection, query, where, getDocs, doc, getDoc } from "firebase/firestore";
 import Link from "next/link";
 import QRCode from "qrcode";
 import { useRouter } from "next/navigation";
-import Image from "next/image";
 import { downloadTicket } from "@/utils/downloadTicket";
-import TicketTemplate from "@/components/TicketTemplate";
+import Image from "next/image";
 
 interface IssuedPass {
     id: string;
@@ -44,7 +43,6 @@ export default function DashboardPage() {
 
     // Ticket Downloading Logic
     const [downloadingPassId, setDownloadingPassId] = useState<string | null>(null);
-    // Removed refs as we use the standalone utility now
 
     useEffect(() => {
         if (!loading && user) {
@@ -62,7 +60,7 @@ export default function DashboardPage() {
             const fetchData = async () => {
                 setFetching(true);
                 try {
-                    // 0. Pre-load Banner as Base64 to ensure html2canvas captures it
+                    // 0. Pre-load Banner
                     try {
                         const response = await fetch('/ticket-banner.png');
                         const blob = await response.blob();
@@ -102,8 +100,7 @@ export default function DashboardPage() {
                     passes.sort((a, b) => new Date(b.purchaseDate).getTime() - new Date(a.purchaseDate).getTime());
                     setMyPasses(passes);
 
-                    // 3. Fetch Bulk Requests (Main User OR Member)
-                    // We need to fetch both to show status to everyone involved
+                    // 3. Fetch Bulk Requests
                     const requestsRef = collection(db, "bulk_pass_requests");
                     const q1 = query(requestsRef, where("mainUserEmail", "==", email));
                     const q2 = query(requestsRef, where("memberEmails", "array-contains", email));
@@ -114,12 +111,10 @@ export default function DashboardPage() {
                     snap1.docs.forEach(d => reqsMap.set(d.id, { id: d.id, ...d.data() }));
                     snap2.docs.forEach(d => reqsMap.set(d.id, { id: d.id, ...d.data() }));
 
-                    // Calculate owned configs from passes
+                    // Filter
                     const ownedConfigIds = new Set(passes.map(p => p.passId).filter(Boolean));
-
                     setBulkRequests(Array.from(reqsMap.values()).filter((r: any) => {
                         if (r.status === 'approved') return false;
-                        // Hide rejected if user has a valid pass for this config
                         if (r.status === 'rejected' && ownedConfigIds.has(r.passConfigId)) return false;
                         return true;
                     }));
@@ -146,17 +141,14 @@ export default function DashboardPage() {
     if (loading || fetching) return (
         <div className="min-h-screen flex items-center justify-center bg-black text-pramana-gold">
             <div className="flex flex-col items-center gap-4">
-                <div className="animate-spin h-12 w-12 border-4 border-pramana-gold border-t-transparent rounded-full shadow-[0_0_20px_rgba(184,134,11,0.5)]"></div>
-                <div className="text-sm font-cinzel tracking-widest animate-pulse">LOADING DASHBOARD</div>
+                <div className="h-12 w-12 border-2 border-pramana-gold border-t-transparent rounded-full animate-spin"></div>
             </div>
         </div>
     );
 
     if (!user) return null;
 
-    // Helper to trigger download
     const handleDownloadTicket = async (passId: string) => {
-        console.log("Starting download process for:", passId);
         setDownloadingPassId(passId);
         try {
             const pass = myPasses.find(p => p.id === passId);
@@ -166,7 +158,7 @@ export default function DashboardPage() {
                 pass,
                 user: { displayName: user.displayName },
                 qrCodeUrl: qrUrls[passId],
-                bannerUrl: bannerBase64 // Use the base64 we preloaded, or fallback to url if needed
+                bannerUrl: bannerBase64
             });
 
         } catch (error) {
@@ -177,275 +169,192 @@ export default function DashboardPage() {
         }
     };
 
-    // Find the pass object that is currently being downloaded to render in the hidden template
-    // We keep this variable if we want to show a visual modal, but we removed the hidden capture div.
-    const activeDownloadPass = myPasses.find(p => p.id === downloadingPassId);
-
     const isRegistrationComplete = userProfile?.isRegistered || (userProfile?.phone && userProfile?.college);
 
     return (
-        <div className="flex min-h-screen bg-pramana-black text-pramana-cream font-playfair selection:bg-pramana-gold selection:text-black">
-            {/* Visible Ticket Template Modal for Generation - Visual Feedback Only */}
-            {/* Visible Ticket Template Modal for Generation - Visual Feedback Only */}
-            {activeDownloadPass && user && (
-                <div className="fixed inset-0 z-[9999] bg-black/90 backdrop-blur-sm flex flex-col items-center justify-center p-4">
-                    <div className="text-pramana-gold font-cinzel text-xl mb-4 animate-pulse">
-                        Minting Your Royal Pass...
-                    </div>
+        <div className="flex min-h-screen bg-black text-pramana-cream font-playfair selection:bg-pramana-gold selection:text-black relative overflow-x-hidden">
 
-                    {/* Simple Spinner instead of Old Template */}
-                    <div className="relative w-24 h-24">
-                        <div className="absolute inset-0 border-4 border-pramana-gold/30 rounded-full"></div>
-                        <div className="absolute inset-0 border-4 border-pramana-gold border-t-transparent rounded-full animate-spin"></div>
-                        <div className="absolute inset-0 flex items-center justify-center">
-                            <span className="text-2xl">⚜️</span>
+            {/* Mascot Background Integration */}
+            <div className="fixed bottom-0 right-0 z-0 pointer-events-none opacity-20 md:opacity-40 w-[180px] h-[180px] md:w-[500px] md:h-[500px]">
+                <Image
+                    src="/royal_mascot_v3.png"
+                    alt="Mascot"
+                    fill
+                    className="object-contain object-bottom-right"
+                />
+            </div>
+
+            {/* Background */}
+            <div className="fixed inset-0 pointer-events-none z-0">
+                <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(184,134,11,0.05),transparent_40%)]"></div>
+            </div>
+
+            <main className="w-full max-w-6xl mx-auto px-4 md:px-6 py-8 md:py-12 relative z-10 space-y-8 md:space-y-12">
+
+                {/* Header Section */}
+                <header className="flex flex-col md:flex-row justify-between items-center md:items-end gap-6 animate-fade-in-down border-b border-pramana-gold/20 pb-6 md:pb-8">
+                    <div className="flex items-center gap-4 md:gap-6 text-center md:text-left">
+                        <div className="relative w-16 h-16 md:w-24 md:h-24 flex-shrink-0">
+                            <Image
+                                src="/pramana-logo.png"
+                                alt="Pramana Logo"
+                                fill
+                                className="object-contain"
+                            />
                         </div>
-                    </div>
-
-                    <div className="mt-8 text-white/50 text-sm font-mono">
-                        Please wait while we secure your entry token.
-                    </div>
-                </div>
-            )}
-
-            {/* Reusing Admin container style for consistent futuristic background */}
-            <main className="admin-page-container">
-                <div className="container mx-auto max-w-6xl pb-20 space-y-12">
-
-                    {/* Header Section */}
-                    <header className="flex flex-col md:flex-row justify-between items-end gap-6 border-b border-white/10 pb-8 animate-stagger-1">
                         <div>
-                            <p className="text-pramana-gold font-bold tracking-widest text-xs uppercase mb-2">Authenticated User</p>
-                            <h1 className="text-4xl md:text-5xl font-cinzel font-bold text-transparent bg-clip-text bg-gradient-to-r from-pramana-gold via-white to-pramana-gold neon-text-gold">
-                                My Dashboard
+                            <p className="text-pramana-gold font-bold tracking-widest text-xs md:text-sm uppercase mb-1 md:mb-2">My Dashboard</p>
+                            <h1 className="text-3xl md:text-5xl font-cinzel font-bold text-white mb-1 md:mb-2">
+                                Welcome, {user.displayName?.split(' ')[0]}
                             </h1>
-                            <p className="text-pramana-cream/60 mt-2 font-playfair text-lg">Welcome back, <span className="text-white">{user.displayName}</span></p>
+                            <p className="text-pramana-cream/60 font-playfair text-base md:text-lg">Manage your passes and profile.</p>
                         </div>
-                        <div className="flex items-center gap-3 bg-white/5 px-4 py-2 rounded-full border border-white/10 backdrop-blur-sm">
-                            <div className="h-2 w-2 rounded-full bg-green-500 animate-pulse shadow-[0_0_10px_#22c55e]"></div>
-                            <span className="text-xs font-mono text-pramana-cream/50 uppercase">System Online</span>
-                        </div>
-                    </header>
+                    </div>
+                </header>
 
-                    {/* Registration Check - Glass Card */}
-                    {!isRegistrationComplete && (
-                        <div className="glass-panel p-1 rounded-2xl animate-stagger-2 relative overflow-hidden group">
-                            <div className="absolute inset-0 bg-red-900/10 animate-pulse"></div>
-                            <div className="bg-black/40 p-6 rounded-xl flex flex-col md:flex-row justify-between items-center gap-6 relative z-10">
-                                <div className="flex items-center gap-4">
-                                    <div className="h-12 w-12 rounded-full bg-red-500/20 flex items-center justify-center text-red-400 border border-red-500/30 text-xl shadow-[0_0_15px_rgba(239,68,68,0.3)]">
-                                        !
-                                    </div>
-                                    <div>
-                                        <h3 className="font-bold text-red-400 font-cinzel text-lg">Registration Incomplete</h3>
-                                        <p className="text-sm text-pramana-cream/70">Complete your profile to unlock full event access and features.</p>
-                                    </div>
-                                </div>
-                                <Link href="/register" className="whitespace-nowrap bg-red-600/20 text-red-400 border border-red-500/50 px-6 py-2.5 rounded-lg font-bold hover:bg-red-600 hover:text-white transition-all duration-300 shadow-[0_0_20px_rgba(239,68,68,0.2)] hover:shadow-[0_0_30px_rgba(239,68,68,0.5)]">
-                                    Complete Profile &rarr;
-                                </Link>
+                {/* Registration Check */}
+                {!isRegistrationComplete && (
+                    <div className="bg-red-900/10 border border-red-500/20 p-6 rounded flex flex-col md:flex-row justify-between items-center gap-6 animate-fade-in-up">
+                        <div className="flex items-center gap-4">
+                            <div className="h-10 w-10 rounded-full bg-red-500/10 flex items-center justify-center text-red-500 text-lg border border-red-500/20">!</div>
+                            <div>
+                                <h3 className="font-bold text-red-400 font-cinzel text-lg">Action Required</h3>
+                                <p className="text-sm text-red-100/60">Complete your profile to unlock full event access.</p>
                             </div>
                         </div>
-                    )}
+                        <Link href="/register" className="px-6 py-3 bg-red-500/10 hover:bg-red-500 hover:text-white border border-red-500/30 rounded text-red-400 font-bold transition-all text-sm uppercase tracking-wider">
+                            Complete Profile
+                        </Link>
+                    </div>
+                )}
 
-                    {/* Bulk Requests Section */}
-                    {bulkRequests.length > 0 && (
-                        <div className="animate-stagger-2 mb-8">
-                            <h2 className="text-xl font-cinzel font-bold text-white flex items-center gap-3 mb-6">
-                                <span className="text-pramana-gold">📋</span> Bulk Pass Requests
-                            </h2>
-                            <div className="grid gap-4">
-                                {bulkRequests.map(req => (
-                                    <div key={req.id} className="glass-panel p-6 rounded-2xl border border-white/10 flex flex-col md:flex-row justify-between items-center gap-4">
-                                        <div>
-                                            <div className="flex items-center gap-3 mb-1">
-                                                <h3 className="font-bold text-white">Bulk Pass Request</h3>
-                                                <span className={`px-2 py-0.5 rounded text-[10px] uppercase font-bold border ${req.status === 'pending' ? 'bg-yellow-500/10 text-yellow-500 border-yellow-500/20' :
-                                                    req.status === 'approved' ? 'bg-green-500/10 text-green-500 border-green-500/20' :
-                                                        'bg-red-500/10 text-red-500 border-red-500/20'
-                                                    }`}>
-                                                    {req.status}
-                                                </span>
-                                            </div>
-                                            <p className="text-sm text-pramana-cream/60">
-                                                Submitted by: <span className="text-white">{req.mainUserEmail}</span> • {new Date(req.submittedAt?.toDate()).toLocaleDateString()}
-                                            </p>
-                                            {req.status === 'rejected' && req.rejectReason && (
-                                                <div className="mt-2 p-2 bg-red-900/20 border border-red-500/30 rounded text-red-300 text-sm">
-                                                    <strong>Reason:</strong> {req.rejectReason}
+                {/* Bulk Requests Section */}
+                {bulkRequests.length > 0 && (
+                    <div className="animate-fade-in-up">
+                        <h2 className="text-xl font-cinzel font-bold text-white flex items-center gap-3 mb-6">
+                            <span className="text-pramana-gold">📋</span> Bulk Requests
+                        </h2>
+                        <div className="grid gap-4">
+                            {bulkRequests.map(req => (
+                                <div key={req.id} className="bg-black border border-white/10 p-6 rounded flex flex-col md:flex-row justify-between items-center gap-4 hover:border-pramana-gold/30 transition-colors">
+                                    <div>
+                                        <div className="flex items-center gap-3 mb-1">
+                                            <h3 className="font-bold text-white">{req.name || 'Group Request'}</h3>
+                                            <span className={`px-2 py-0.5 rounded text-[10px] uppercase font-bold border ${req.status === 'pending' ? 'bg-yellow-500/10 text-yellow-500 border-yellow-500/20' :
+                                                req.status === 'approved' ? 'bg-green-500/10 text-green-500 border-green-500/20' :
+                                                    'bg-red-500/10 text-red-500 border-red-500/20'
+                                                }`}>
+                                                {req.status}
+                                            </span>
+                                        </div>
+                                        <p className="text-sm text-pramana-cream/40">
+                                            {new Date(req.submittedAt?.toDate()).toLocaleDateString()}
+                                        </p>
+                                    </div>
+                                    <div className="text-right">
+                                        <p className="text-xs uppercase tracking-widest text-pramana-cream/40 mb-1">Members</p>
+                                        <p className="text-xl font-bold text-white">{req.memberEmails?.length + 1}</p>
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+                )}
+
+                {/* Passes Section */}
+                <div className="animate-fade-in-up" style={{ animationDelay: '100ms' }}>
+                    <div className="flex justify-between items-end mb-8">
+                        <h2 className="text-2xl font-cinzel font-bold text-white flex items-center gap-3">
+                            <span className="text-pramana-gold">🎟️</span> My Passes
+                        </h2>
+                    </div>
+
+                    {myPasses.length === 0 ? (
+                        <div className="bg-black/50 border border-dashed border-pramana-gold/30 rounded-xl p-16 text-center relative overflow-hidden group">
+                            {/* Highlighted Note */}
+                            <div className="absolute top-0 inset-x-0 bg-gradient-to-b from-pramana-gold/10 to-transparent h-32 pointer-events-none"></div>
+
+                            <div className="relative z-10">
+                                <div className="w-16 h-16 border border-pramana-gold/20 rounded-full flex items-center justify-center mx-auto mb-6 text-2xl text-pramana-gold">❖</div>
+                                <h3 className="text-xl font-cinzel font-bold text-white mb-2">No Passes Found</h3>
+                                <p className="text-pramana-cream/50 mb-8 max-w-sm mx-auto">Your journey begins here. Browse available passes.</p>
+                                <Link href="/tickets" className="inline-block px-8 py-3 bg-pramana-gold text-black font-bold rounded hover:bg-white transition-colors font-cinzel text-sm uppercase tracking-wider shadow-[0_0_20px_rgba(184,134,11,0.2)]">
+                                    View Tickets
+                                </Link>
+
+                                {/* Important Note - Highlighted */}
+                                <div className="mt-12 p-6 border border-pramana-gold/40 bg-pramana-gold/5 rounded relative max-w-2xl mx-auto shadow-[0_0_30px_-5px_rgba(184,134,11,0.1)]">
+                                    <div className="absolute -top-3 left-1/2 -translate-x-1/2 px-4 py-1 bg-black border border-pramana-gold text-pramana-gold text-[10px] font-bold uppercase tracking-widest">
+                                        Pass Verification
+                                    </div>
+                                    <p className="text-pramana-cream/80 text-sm leading-relaxed">
+                                        Passes usually appear within <strong>5-7 working days</strong> after payment verification.
+                                        <br />If you have paid but don't see your pass after 7 days, please fill out the <a href="https://forms.gle/mRA8r8CFUV8FyadY7" target="_blank" className="text-pramana-gold underline hover:text-white transition-colors font-bold">Support Form</a>.
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                    ) : (
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                            {myPasses.map(pass => (
+                                <div key={pass.id} className="bg-black border border-pramana-gold/20 rounded-xl overflow-hidden hover:shadow-[0_0_30px_rgba(184,134,11,0.15)] transition-all duration-300 hover:-translate-y-1 group">
+
+                                    {/* Card Header */}
+                                    <div className="bg-[#050505] p-6 border-b border-pramana-gold/10 relative overflow-hidden">
+                                        <div className="absolute top-0 right-0 w-24 h-24 border border-pramana-gold/5 rounded-full -translate-y-1/2 translate-x-1/2"></div>
+                                        <div className="relative z-10">
+                                            <span className="inline-block px-2 py-1 bg-pramana-gold/10 rounded text-[10px] font-bold uppercase tracking-widest text-pramana-gold mb-3 border border-pramana-gold/20">Official Pass</span>
+                                            <h3 className="text-xl font-cinzel font-bold text-white leading-tight">{pass.passName}</h3>
+                                        </div>
+                                    </div>
+
+                                    {/* QR Section */}
+                                    <div className="p-8 flex flex-col items-center justify-center bg-black">
+                                        <div className="bg-white p-3 rounded shadow-lg mb-6 group-hover:scale-105 transition-transform duration-300 border-2 border-pramana-gold/50">
+                                            {showQR ? (
+                                                qrUrls[pass.id] ? (
+                                                    <img src={qrUrls[pass.id]} alt="QR" className="w-48 h-48 object-contain mix-blend-multiply" />
+                                                ) : (
+                                                    <div className="w-48 h-48 bg-gray-100 animate-pulse rounded flex items-center justify-center text-gray-400 text-xs">Generating...</div>
+                                                )
+                                            ) : (
+                                                <div className="w-48 h-48 bg-gray-100 rounded flex flex-col items-center justify-center text-gray-400 gap-2">
+                                                    <span className="text-3xl opacity-30">🔒</span>
+                                                    <span className="text-[10px] uppercase font-bold tracking-widest">QR Coming Soon</span>
                                                 </div>
                                             )}
                                         </div>
-                                        {req.status === 'pending' && (
-                                            <div className="flex items-center gap-2 text-yellow-500/60 text-sm bg-yellow-500/5 px-4 py-2 rounded-full border border-yellow-500/10">
-                                                <div className="animate-pulse h-2 w-2 rounded-full bg-yellow-500"></div>
-                                                Awaiting Admin Verification
-                                            </div>
-                                        )}
+
+                                        <button
+                                            onClick={() => handleDownloadTicket(pass.id)}
+                                            disabled={downloadingPassId === pass.id || !showQR}
+                                            className="px-6 py-2 border border-pramana-gold text-pramana-gold font-bold uppercase tracking-widest text-xs rounded hover:bg-pramana-gold hover:text-black transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                                        >
+                                            {downloadingPassId === pass.id ? 'Downloading...' : 'Download Ticket ↓'}
+                                        </button>
                                     </div>
-                                ))}
-                            </div>
+
+                                    {/* Footer Stats */}
+                                    <div className="border-t border-white/5 p-4 grid grid-cols-2 divide-x divide-white/10 bg-white/[0.02]">
+                                        <div className="text-center">
+                                            <p className="text-[9px] uppercase tracking-widest text-pramana-cream/40 mb-1">Day 1</p>
+                                            <p className={`font-bold text-sm ${pass.entryLogs?.includes('day1') ? 'text-green-500' : 'text-white/40'}`}>
+                                                {pass.entryLogs?.includes('day1') ? 'Entered' : '-'}
+                                            </p>
+                                        </div>
+                                        <div className="text-center">
+                                            <p className="text-[9px] uppercase tracking-widest text-pramana-cream/40 mb-1">Day 2</p>
+                                            <p className={`font-bold text-sm ${pass.entryLogs?.includes('day2') ? 'text-green-500' : 'text-white/40'}`}>
+                                                {pass.entryLogs?.includes('day2') ? 'Entered' : '-'}
+                                            </p>
+                                        </div>
+                                    </div>
+                                </div>
+                            ))}
                         </div>
                     )}
-
-                    {/* Passes Section */}
-                    <div className="animate-stagger-3">
-                        <div className="flex justify-between items-end mb-8">
-                            <div>
-                                <h2 className="text-2xl font-cinzel font-bold text-white flex items-center gap-3">
-                                    <span className="text-pramana-gold text-3xl">❖</span> My Passes
-                                </h2>
-                                <div className="h-1 w-20 bg-gradient-to-r from-pramana-gold to-transparent mt-2 rounded-full"></div>
-                            </div>
-                            {myPasses.length > 0 && <span className="text-pramana-cream/40 font-mono text-xs">{myPasses.length} Active Pass(es)</span>}
-                        </div>
-
-
-
-                        {myPasses.length === 0 ? (
-                            <>
-                                <div className="glass-panel p-16 rounded-3xl text-center flex flex-col items-center justify-center border-dashed border-white/10 group hover:border-pramana-gold/30 transition-all duration-500">
-                                    <div className="h-24 w-24 bg-white/5 rounded-full flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-500 ring-1 ring-white/10 group-hover:ring-pramana-gold/50">
-                                        <span className="text-4xl opacity-50 grayscale group-hover:grayscale-0 transition-all duration-500">🎟️</span>
-                                    </div>
-                                    <h3 className="text-2xl font-bold text-white font-cinzel mb-2">No Passes Found</h3>
-                                    <p className="text-pramana-cream/50 mb-8 max-w-md">Your adventure hasn't started yet. Purchase a pass to unlock the experience.</p>
-                                    <Link
-                                        href="/tickets"
-                                        className="relative group overflow-hidden px-8 py-3 bg-pramana-gold text-black font-bold rounded-full font-cinzel shadow-[0_0_20px_rgba(184,134,11,0.3)] hover:shadow-[0_0_40px_rgba(184,134,11,0.6)] transition-all duration-300"
-                                    >
-                                        <span className="relative z-10">Purchase Passes</span>
-                                        <div className="absolute inset-0 bg-white/30 transform -skew-x-12 translate-x-[-150%] group-hover:translate-x-[150%] transition-transform duration-700 ease-in-out"></div>
-                                    </Link>
-                                </div>
-
-                                <div className="relative overflow-hidden rounded-2xl mt-8 mb-8 border border-yellow-500/30 bg-gradient-to-b from-yellow-900/10 to-black/60 shadow-[0_0_30px_rgba(234,179,8,0.1)] group">
-                                    {/* Decorative Elements */}
-                                    <div className="absolute top-0 right-0 w-64 h-64 bg-yellow-500/5 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2 pointer-events-none group-hover:bg-yellow-500/10 transition-colors duration-700"></div>
-                                    <div className="absolute bottom-0 left-0 w-48 h-48 bg-yellow-500/5 rounded-full blur-2xl translate-y-1/3 -translate-x-1/3 pointer-events-none"></div>
-
-                                    <div className="relative z-10 p-6 md:p-8 flex flex-col md:flex-row gap-8 items-center md:items-start text-center md:text-left">
-                                        {/* Icon Section */}
-                                        <div className="flex-shrink-0">
-                                            <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-yellow-500/20 to-black border border-yellow-500/30 flex items-center justify-center shadow-[0_0_15px_rgba(234,179,8,0.2)] group-hover:scale-105 transition-transform duration-500">
-                                                <span className="text-3xl animate-pulse">📢</span>
-                                            </div>
-                                        </div>
-
-                                        {/* Text Section */}
-                                        <div className="flex-1">
-                                            <h4 className="text-xl font-cinzel font-bold text-yellow-500 mb-4 flex items-center justify-center md:justify-start gap-3">
-                                                <span>Important Note</span>
-                                                <div className="h-px flex-1 bg-gradient-to-r from-yellow-500/50 to-transparent max-w-[100px]"></div>
-                                            </h4>
-
-                                            <p className="text-pramana-cream/80 text-lg leading-7 mb-6 font-sans">
-                                                After successful payment, your passes will be reflected on your dashboard only after verification. This process may take <span className="text-white font-semibold border-b border-yellow-500/30 pb-0.5">5–7 working days</span>. <br className="hidden md:block" />
-                                                Kindly cooperate in the meantime and consider the confirmation email received from G-EVENTS as the primary proof of payment.
-                                            </p>
-
-                                            {/* Button Section */}
-                                            <div>
-                                                <a
-                                                    href="https://forms.gle/mRA8r8CFUV8FyadY7"
-                                                    target="_blank"
-                                                    rel="noopener noreferrer"
-                                                    className="group/btn relative inline-flex items-center gap-3 px-6 py-2.5 bg-gradient-to-r from-yellow-600/10 to-transparent border border-yellow-500/30 hover:border-yellow-500/80 rounded-lg transition-all duration-300 hover:shadow-[0_0_20px_rgba(234,179,8,0.15)] hover:bg-yellow-600/20"
-                                                >
-                                                    <span className="text-yellow-200 group-hover/btn:text-white text-xs font-bold uppercase tracking-widest transition-colors">
-                                                        Report an Issue
-                                                    </span>
-                                                    <span className="bg-yellow-500/10 p-1 rounded group-hover/btn:bg-yellow-500 group-hover/btn:text-black transition-all duration-300 transform group-hover/btn:rotate-[-45deg]">
-                                                        <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M14 5l7 7m0 0l-7 7m7-7H3" /></svg>
-                                                    </span>
-                                                </a>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </>
-                        ) : (
-                            <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-8">
-                                {myPasses.map(pass => (
-                                    <div key={pass.id} className="group relative perspective">
-                                        {/* Holographic Card Effect */}
-                                        <div className="glass-panel rounded-3xl overflow-hidden transition-all duration-500 group-hover:transform group-hover:-translate-y-2 group-hover:shadow-[0_20px_40px_rgba(0,0,0,0.5)] border-white/10 group-hover:border-pramana-gold/40 relative z-10">
-
-                                            {/* Digital Noise Overlay */}
-                                            <div className="absolute inset-0 opacity-5 pointer-events-none mix-blend-overlay"></div>
-
-                                            {/* Pass Header */}
-                                            <div className="bg-gradient-to-br from-gray-900 to-black p-6 relative border-b border-white/5">
-                                                <div className="absolute top-0 right-0 w-32 h-32 bg-pramana-gold/10 rounded-full blur-[50px] pointer-events-none"></div>
-                                                <div className="flex justify-between items-start mb-2">
-                                                    <span className="px-2 py-1 rounded text-[10px] font-bold uppercase tracking-widest bg-pramana-gold/10 text-pramana-gold border border-pramana-gold/20">
-                                                        Official Access
-                                                    </span>
-                                                    <div className="h-8 w-8 rounded-full border border-white/10 flex items-center justify-center">
-                                                        <span className="text-xs">⚜️</span>
-                                                    </div>
-                                                </div>
-                                                <h3 className="font-cinzel font-bold text-2xl text-white mb-1 group-hover:text-pramana-gold transition-colors">{pass.passName}</h3>
-                                                <p className="text-xs text-green-400 font-mono tracking-wider">CONFIRMED</p>
-                                            </div>
-
-                                            {/* QR Section */}
-                                            <div className="p-8 flex flex-col items-center bg-black/40 relative">
-                                                {/* Scanning Line Animation */}
-                                                <div className="absolute top-0 left-0 w-full h-[2px] bg-pramana-gold/50 shadow-[0_0_15px_#b8860b] transform translate-y-[-10px] group-hover:animate-scan opacity-0 group-hover:opacity-100 transition-opacity"></div>
-
-                                                <div className="bg-white p-3 rounded-xl shadow-[0_0_30px_rgba(255,255,255,0.1)] mb-6 transition-transform duration-300 group-hover:scale-105">
-                                                    {showQR ? (
-                                                        qrUrls[pass.id] ? (
-                                                            <img src={qrUrls[pass.id]} alt="QR" className="w-48 h-48 object-contain mix-blend-multiply" />
-                                                        ) : (
-                                                            <div className="w-48 h-48 bg-slate-100 animate-pulse rounded-lg flex items-center justify-center text-slate-300">Generating...</div>
-                                                        )
-                                                    ) : (
-                                                        <div className="w-48 h-48 bg-slate-100 rounded-lg flex flex-col items-center justify-center text-slate-400 gap-2">
-                                                            <span className="text-4xl opacity-50">🔒</span>
-                                                            <span className="text-xs font-bold uppercase tracking-widest text-center">QR Coming Soon</span>
-                                                        </div>
-                                                    )}
-                                                </div>
-
-                                                <button
-                                                    onClick={() => handleDownloadTicket(pass.id)}
-                                                    disabled={downloadingPassId === pass.id || !showQR}
-                                                    className="flex items-center gap-2 text-xs font-bold text-pramana-cream/60 hover:text-white transition-colors uppercase tracking-widest group/btn disabled:opacity-50 disabled:cursor-not-allowed"
-                                                >
-                                                    {!showQR ? (
-                                                        <span>QR Coming Soon</span>
-                                                    ) : downloadingPassId === pass.id ? (
-                                                        <><span>GENERATING...</span><div className="animate-spin h-3 w-3 border-2 border-white border-t-transparent rounded-full"></div></>
-                                                    ) : (
-                                                        <><span>Download Ticket</span><span className="group-hover/btn:translate-y-1 transition-transform">↓</span></>
-                                                    )}
-                                                </button>
-                                            </div>
-
-                                            {/* Status Footer */}
-                                            <div className="p-4 bg-white/5 border-t border-white/5 grid grid-cols-2 divide-x divide-white/10">
-                                                <div className="px-2 text-center flex flex-col justify-center">
-                                                    <p className="text-[9px] md:text-[10px] uppercase text-pramana-cream/40 tracking-widest mb-1">Day 1 Access</p>
-                                                    <div className={`text-xs md:text-sm font-bold ${pass.entryLogs?.includes('day1') ? 'text-green-400' : 'text-white/60'}`}>
-                                                        {pass.entryLogs?.includes('day1') ? '✓ IN' : '-'}
-                                                    </div>
-                                                </div>
-                                                <div className="px-2 text-center flex flex-col justify-center">
-                                                    <p className="text-[9px] md:text-[10px] uppercase text-pramana-cream/40 tracking-widest mb-1">Day 2 Access</p>
-                                                    <div className={`text-xs md:text-sm font-bold ${pass.entryLogs?.includes('day2') ? 'text-blue-400' : 'text-white/60'}`}>
-                                                        {pass.entryLogs?.includes('day2') ? '✓ IN' : '-'}
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                ))}
-                            </div>
-                        )}
-                    </div>
                 </div>
+
             </main>
         </div>
     );

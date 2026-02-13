@@ -104,7 +104,7 @@ export default function PassManagement() {
     const resetForm = () => {
         setShowForm(false);
         setEditingId(null);
-        setFormData({ type: 'single', active: true, status: 'available', groupSize: 1, showRemaining: true, category: 'all', paymentLink: '' });
+        setFormData({ type: 'single', active: true, status: 'available', groupSize: 1, showRemaining: true, category: 'all', paymentLink: '', liveDate: '', endDate: '', showDeadline: false, scheduleEnabled: false });
     };
 
     const toggleActive = async (id: string, current: boolean) => {
@@ -120,15 +120,34 @@ export default function PassManagement() {
     const isViewOnly = user?.role === 'view_admin';
 
     // Helper to render status badge
-    const StatusBadge = ({ status }: { status: string }) => {
+    const StatusBadge = ({ status, liveDate, endDate, scheduleEnabled }: { status: string, liveDate?: string, endDate?: string, scheduleEnabled?: boolean }) => {
+        let displayStatus = status;
         let colorClass = 'bg-gray-100 text-gray-800';
-        if (status === 'available') colorClass = 'bg-green-100 text-green-800';
-        else if (status === 'sold_out') colorClass = 'bg-red-100 text-red-800';
-        else if (status === 'coming_soon') colorClass = 'bg-yellow-100 text-yellow-800';
+        let isExpired = false;
+
+        if (scheduleEnabled) {
+            const now = new Date();
+            const isLive = liveDate ? now >= new Date(liveDate) : true;
+            isExpired = endDate ? now > new Date(endDate) : false;
+
+            if (status === 'coming_soon' && isLive) {
+                displayStatus = 'available';
+            }
+            if (isExpired) {
+                displayStatus = 'sold_out'; // Or 'expired'
+            }
+        }
+
+        if (displayStatus === 'available') colorClass = 'bg-green-100 text-green-800';
+        else if (displayStatus === 'sold_out') colorClass = 'bg-red-100 text-red-800';
+        else if (displayStatus === 'coming_soon') colorClass = 'bg-yellow-100 text-yellow-800';
 
         return (
             <span className={`px-2 py-1 text-xs rounded uppercase font-bold ${colorClass}`}>
-                {status.replace('_', ' ')}
+                {displayStatus.replace('_', ' ')}
+                {/* Optional: Add indicators for time-based overrides */}
+                {status === 'coming_soon' && displayStatus === 'available' && " (Live)"}
+                {isExpired && " (Ended)"}
             </span>
         );
     };
@@ -187,6 +206,33 @@ export default function PassManagement() {
                                             <input placeholder="https://..." className="w-full bg-black/50 border border-white/10 p-3 rounded-lg text-white focus:outline-none focus:border-pramana-gold transition"
                                                 onChange={e => setFormData({ ...formData, paymentLink: e.target.value })} value={formData.paymentLink || ''} />
                                         </div>
+                                        <div className="flex items-center gap-2 p-3 bg-white/5 rounded-lg border border-white/5 mb-4">
+                                            <input type="checkbox" id="scheduleEnabled" className="w-5 h-5 text-pramana-gold rounded focus:ring-pramana-gold bg-black/50 border-white/30"
+                                                checked={formData.scheduleEnabled || false} onChange={e => setFormData({ ...formData, scheduleEnabled: e.target.checked })} />
+                                            <label htmlFor="scheduleEnabled" className="text-sm font-medium text-pramana-cream font-bold">Enable Auto-Scheduling</label>
+                                        </div>
+
+                                        {formData.scheduleEnabled && (
+                                            <div className="grid grid-cols-2 gap-4 animate-fade-in-up">
+                                                <div>
+                                                    <label className="text-sm font-medium text-pramana-cream block mb-1">Live Date</label>
+                                                    <input type="datetime-local" className="w-full bg-black/50 border border-white/10 p-3 rounded-lg text-white focus:outline-none focus:border-pramana-gold transition scheme-dark"
+                                                        onChange={e => setFormData({ ...formData, liveDate: e.target.value })} value={formData.liveDate || ''} />
+                                                </div>
+                                                <div>
+                                                    <label className="text-sm font-medium text-pramana-cream block mb-1">End Date</label>
+                                                    <input type="datetime-local" className="w-full bg-black/50 border border-white/10 p-3 rounded-lg text-white focus:outline-none focus:border-pramana-gold transition scheme-dark"
+                                                        onChange={e => setFormData({ ...formData, endDate: e.target.value })} value={formData.endDate || ''} />
+                                                </div>
+                                            </div>
+                                        )}
+
+                                        <div className="flex items-center gap-2 p-3 bg-white/5 rounded-lg border border-white/5">
+                                            <input type="checkbox" id="showDeadline" className="w-5 h-5 text-pramana-gold rounded focus:ring-pramana-gold bg-black/50 border-white/30"
+                                                checked={formData.showDeadline || false} onChange={e => setFormData({ ...formData, showDeadline: e.target.checked })} />
+                                            <label htmlFor="showDeadline" className="text-sm font-medium text-pramana-cream">Show Deadline to User</label>
+                                        </div>
+
                                         <div className="grid grid-cols-2 gap-4">
                                             <div>
                                                 <label className="text-sm font-medium text-pramana-cream block mb-1">Type</label>
@@ -260,7 +306,7 @@ export default function PassManagement() {
                                                         <h3 className="text-lg font-bold text-pramana-gold group-hover:text-yellow-400 transition font-cinzel">{pass.name}</h3>
                                                         <p className="text-pramana-cream/60 text-xs mt-1">{pass.description}</p>
                                                     </div>
-                                                    <StatusBadge status={pass.status} />
+                                                    <StatusBadge status={pass.status} liveDate={pass.liveDate} endDate={pass.endDate} scheduleEnabled={pass.scheduleEnabled} />
                                                 </div>
 
                                                 <div className="pl-2 space-y-2 mb-6">

@@ -40,6 +40,10 @@ export interface PassConfig {
     showRemaining?: boolean;
     category?: 'all' | 'gitam' | 'non-gitam';
     paymentLink?: string;
+    liveDate?: string;
+    endDate?: string;
+    showDeadline?: boolean;
+    scheduleEnabled?: boolean;
 }
 
 export interface BulkPassConfig {

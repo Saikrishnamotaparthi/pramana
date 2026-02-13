@@ -4,7 +4,8 @@ import { useEffect, useState, Suspense } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import { useAuth } from "@/hooks/useAuth";
 import { db } from "@/lib/firebase";
-import { doc, getDoc, collection, getDocs, query, where } from "firebase/firestore";
+import { doc, getDoc } from "firebase/firestore";
+import Image from "next/image";
 
 function BulkCheckoutContent() {
     const searchParams = useSearchParams();
@@ -63,7 +64,6 @@ function BulkCheckoutContent() {
         }
     };
 
-    // --- Validation Logic ---
     // --- Validation Logic ---
     const validateEmail = async (email: string, index: number) => {
         if (!email || !email.includes('@')) {
@@ -152,61 +152,106 @@ function BulkCheckoutContent() {
     if (loading || !config) return <div className="min-h-screen bg-black flex items-center justify-center text-pramana-gold">Loading...</div>;
 
     return (
-        <div className="flex min-h-screen bg-pramana-black text-pramana-cream font-playfair">
-            <main className="w-full max-w-4xl mx-auto px-6 py-12">
-                <header className="mb-12 text-center animate-stagger-1">
-                    <h1 className="text-4xl font-cinzel font-bold text-transparent bg-clip-text bg-gradient-to-r from-pramana-gold to-white neon-text-gold">Bulk Access Checkout</h1>
-                    <p className="text-white/60 mt-2">Secure passes for your entire squad.</p>
+        <div className="flex min-h-screen bg-black text-pramana-cream font-playfair selection:bg-pramana-gold selection:text-black">
+
+            {/* Background */}
+            <div className="fixed inset-0 pointer-events-none z-0">
+                <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(184,134,11,0.05),transparent_60%)]"></div>
+            </div>
+
+            <main className="w-full max-w-4xl mx-auto px-6 py-12 relative z-10">
+
+                {/* Header with Logo */}
+                <header className="flex flex-col items-center mb-12 animate-fade-in-down">
+                    <div className="relative w-20 h-20 mb-6">
+                        <Image
+                            src="/pramana-logo.png"
+                            alt="Pramana Logo"
+                            fill
+                            className="object-contain"
+                        />
+                    </div>
+                    <p className="text-pramana-gold text-xs font-bold tracking-widest uppercase mb-2">Group Protocol</p>
+                    <h1 className="text-4xl md:text-5xl font-cinzel font-bold text-white mb-6">Bulk Checkout</h1>
+                    <div className="h-px w-24 bg-pramana-gold/30 mx-auto"></div>
                 </header>
 
-                <div className="glass-panel p-8 rounded-3xl border border-white/10 animate-stagger-2">
+                <div className="bg-[#050505] border border-pramana-gold/20 p-8 md:p-12 rounded-2xl shadow-[0_0_50px_-20px_rgba(184,134,11,0.1)] animate-fade-in-up">
                     {/* Progress */}
-                    <div className="flex items-center justify-center mb-10 gap-4">
-                        <div className={`w-10 h-10 rounded-full flex items-center justify-center font-bold transition-all ${step >= 1 ? 'bg-pramana-gold text-black' : 'bg-white/10 text-white/40'}`}>1</div>
-                        <div className={`h-1 w-20 rounded-full transition-all ${step >= 2 ? 'bg-pramana-gold' : 'bg-white/10'}`}></div>
-                        <div className={`w-10 h-10 rounded-full flex items-center justify-center font-bold transition-all ${step >= 2 ? 'bg-pramana-gold text-black' : 'bg-white/10 text-white/40'}`}>2</div>
+                    <div className="flex items-center justify-center mb-12 gap-6 relative">
+                        {/* Connecting Line */}
+                        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-40 h-[1px] bg-white/10 -z-10"></div>
+
+                        <div className={`relative flex flex-col items-center gap-2 group cursor-pointer ${step === 2 ? 'opacity-50 hover:opacity-100 transition-opacity' : ''}`} onClick={() => step === 2 && setStep(1)}>
+                            <div className={`w-10 h-10 rounded-full flex items-center justify-center font-cinzel font-bold text-sm transition-all duration-500 border ${step === 1 ? 'bg-pramana-gold border-pramana-gold text-black' : 'bg-black border-pramana-gold text-pramana-gold'}`}>1</div>
+                            <span className="text-[9px] uppercase tracking-widest font-bold text-pramana-gold">Payment</span>
+                        </div>
+
+                        <div className={`relative flex flex-col items-center gap-2 group`}>
+                            <div className={`w-10 h-10 rounded-full flex items-center justify-center font-cinzel font-bold text-sm transition-all duration-500 border ${step === 2 ? 'bg-pramana-gold border-pramana-gold text-black' : 'bg-white/5 border-white/10 text-white/30'}`}>2</div>
+                            <span className={`text-[9px] uppercase tracking-widest font-bold ${step === 2 ? 'text-pramana-gold' : 'text-white/30'}`}>Members</span>
+                        </div>
                     </div>
 
-                    <div className="mb-8 p-6 bg-white/5 rounded-2xl border border-white/10 flex justify-between items-center">
-                        <div>
-                            <h2 className="text-2xl font-cinzel font-bold text-white">{config.name}</h2>
-                            <p className="text-sm text-pramana-cream/60">{config.memberCount} Members Access</p>
+                    <div className="mb-10 p-6 bg-black border border-white/10 rounded flex flex-col md:flex-row justify-between items-center gap-6">
+                        <div className="text-center md:text-left">
+                            <h2 className="text-2xl font-cinzel font-bold text-white mb-1">{config.name}</h2>
+                            <p className="text-sm text-pramana-cream/60 flex items-center justify-center md:justify-start gap-2">
+                                <span className="w-1.5 h-1.5 rounded-full bg-pramana-gold"></span>
+                                {config.memberCount} Members Access
+                            </p>
                         </div>
-                        <div className="text-right">
-                            <p className="text-xs uppercase tracking-widest text-pramana-cream/40">Total Amount</p>
-                            <p className="text-3xl font-bold text-pramana-gold">₹{config.price}</p>
+                        <div className="text-center md:text-right">
+                            <p className="text-xs uppercase tracking-widest text-pramana-cream/40 mb-1">Total Amount</p>
+                            <p className="text-3xl font-cinzel font-bold text-pramana-gold">₹{config.price}</p>
                         </div>
                     </div>
 
                     {step === 1 && (
                         <div className="space-y-8 animate-fade-in">
-                            <div className="bg-blue-900/10 border border-blue-500/20 p-6 rounded-2xl">
-                                <h3 className="text-lg font-bold text-blue-400 mb-2">Instructions</h3>
-                                <ul className="list-disc list-inside text-sm text-blue-200/70 space-y-1">
-                                    <li>Click the link below to make the payment of <strong>₹{config.price}</strong> in G-events.</li>
-                                    <li>Take a clear screenshot of the successful transaction or confirmation mail of G-EVENTS.</li>
-                                    <li>Upload the screenshot here to proceed.</li>
-                                    <li>After uploading, add your {config.memberCount - 1} other mails correctly. (You cannot edit them after uploading).</li>
+                            <div className="bg-blue-900/10 border border-blue-500/20 p-6 rounded relative">
+                                <h3 className="text-sm font-bold text-blue-400 mb-4 font-cinzel uppercase tracking-wider flex items-center gap-2">
+                                    Payment Instructions
+                                </h3>
+                                <ul className="space-y-3 text-sm text-blue-100/70 leading-relaxed font-sans pl-2">
+                                    <li className="flex gap-3">
+                                        <span className="text-blue-400 font-bold">1.</span>
+                                        <span>Click link below to pay <strong>₹{config.price}</strong>.</span>
+                                    </li>
+                                    <li className="flex gap-3">
+                                        <span className="text-blue-400 font-bold">2.</span>
+                                        <span>Take screenshot of success.</span>
+                                    </li>
+                                    <li className="flex gap-3">
+                                        <span className="text-blue-400 font-bold">3.</span>
+                                        <span>Upload proof below.</span>
+                                    </li>
                                 </ul>
                             </div>
 
                             <a
                                 href={config.paymentLink}
                                 target="_blank"
-                                className="block w-full py-4 bg-white/10 hover:bg-white/20 border border-white/20 rounded-xl text-center font-bold text-white transition decoration-none"
+                                className="block w-full py-4 bg-white text-black hover:bg-pramana-gold transition-colors duration-300 rounded text-center font-bold text-sm tracking-widest uppercase shadow-lg hover:shadow-pramana-gold/20 font-cinzel"
                             >
-                                🔗 Open Payment Gateway
+                                Open Payment Gateway ↗
                             </a>
 
                             <div>
-                                <label className="block text-sm font-bold text-pramana-gold uppercase tracking-widest mb-4">Upload Payment Proof</label>
-                                <div className="border-2 border-dashed border-white/20 rounded-2xl p-8 text-center hover:border-pramana-gold/50 transition bg-black/20">
+                                <label className="block text-xs font-bold text-pramana-gold uppercase tracking-widest mb-4">Upload Payment Proof</label>
+                                <div className="group border border-dashed border-white/20 hover:border-pramana-gold/50 rounded-xl p-8 text-center transition-all bg-white/5 hover:bg-white/10">
                                     {screenshotFile ? (
-                                        <div className="text-green-400 flex flex-col items-center gap-2">
-                                            <span className="text-4xl">✅</span>
-                                            <p className="font-bold">File Selected</p>
-                                            <p className="text-xs text-white/60">{screenshotFile.name}</p>
-                                            <button onClick={() => setScreenshotFile(null)} className="text-xs underline text-white/40 hover:text-white mt-2">Remove & Re-upload</button>
+                                        <div className="flex flex-col items-center gap-4">
+                                            <div className="w-12 h-12 rounded-full bg-green-500/10 flex items-center justify-center text-green-500 text-xl border border-green-500/20">
+                                                ✓
+                                            </div>
+                                            <div>
+                                                <p className="font-bold text-white text-lg font-cinzel">File Uploaded</p>
+                                                <p className="text-xs text-white/50 mt-1 font-mono">{screenshotFile.name}</p>
+                                            </div>
+                                            <button onClick={() => setScreenshotFile(null)} className="text-xs px-4 py-2 rounded-full bg-white/5 hover:bg-white/10 text-white/60 hover:text-white transition-colors">
+                                                Change
+                                            </button>
                                         </div>
                                     ) : (
                                         <>
@@ -218,8 +263,12 @@ function BulkCheckoutContent() {
                                                 id="screenshot-upload"
                                             />
                                             <label htmlFor="screenshot-upload" className="cursor-pointer flex flex-col items-center gap-4">
-                                                <span className="text-4xl opacity-50">📤</span>
-                                                <span className="text-white/60">Click to upload screenshot</span>
+                                                <div className="w-12 h-12 rounded-full bg-white/5 flex items-center justify-center text-white/30 text-xl border border-white/5 group-hover:border-pramana-gold/30 transition-colors">
+                                                    +
+                                                </div>
+                                                <div className="space-y-1">
+                                                    <p className="text-white font-bold text-sm">Upload Screenshot</p>
+                                                </div>
                                             </label>
                                         </>
                                     )}
@@ -229,60 +278,65 @@ function BulkCheckoutContent() {
                             <button
                                 onClick={() => setStep(2)}
                                 disabled={!screenshotFile}
-                                className="w-full py-4 bg-pramana-gold text-black font-bold rounded-xl hover:bg-yellow-500 transition disabled:opacity-50 disabled:cursor-not-allowed"
+                                className="w-full py-4 bg-pramana-gold text-black font-bold rounded hover:bg-white transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed font-cinzel tracking-wider uppercase text-sm"
                             >
-                                Next: Add Members
+                                Proceed to Members
                             </button>
                         </div>
                     )}
 
                     {step === 2 && (
-                        <div className="space-y-6 animate-fade-in">
-                            <h3 className="text-xl font-cinzel font-bold text-white mb-6">Group Member Details</h3>
+                        <div className="space-y-8 animate-fade-in">
+                            <h3 className="text-xl font-cinzel font-bold text-white flex items-center gap-3 pb-4 border-b border-white/10">
+                                Member Details
+                            </h3>
 
                             {/* Main User (Fixed) */}
-                            <div className="p-4 bg-white/5 rounded-xl border border-white/10 opacity-60">
-                                <label className="block text-xs uppercase tracking-widest text-pramana-cream/40 mb-1">Member 1 (You)</label>
-                                <input disabled value={user?.email || ""} className="w-full bg-transparent text-white font-mono" />
+                            <div className="p-4 bg-white/5 rounded border border-white/10">
+                                <label className="block text-[10px] uppercase tracking-widest text-pramana-gold mb-2">Team Leader (You)</label>
+                                <input disabled value={user?.email || ""} className="w-full bg-transparent text-white font-mono text-sm border-none focus:outline-none opacity-70" />
                             </div>
 
                             {/* Additional Members */}
-                            {memberEmails.map((email, idx) => (
-                                <div key={idx} className="relative">
-                                    <label className="block text-xs uppercase tracking-widest text-pramana-cream/40 mb-1">Member {idx + 2}</label>
-                                    <div className="flex gap-2">
+                            <div className="grid gap-4">
+                                {memberEmails.map((email, idx) => (
+                                    <div key={idx} className="relative group">
+                                        <label className="block text-[10px] uppercase tracking-widest text-pramana-cream/40 mb-2 group-focus-within:text-pramana-gold transition-colors">Member {idx + 2}</label>
                                         <input
                                             value={email}
                                             onChange={(e) => handleEmailChange(idx, e.target.value)}
                                             onBlur={() => validateEmail(email, idx)}
-                                            placeholder="Enter registered email"
-                                            className={`flex-1 bg-white/5 border ${emailStatus[idx]?.status === 'invalid' || emailStatus[idx]?.status === 'has_pass' ? 'border-red-500/50' : 'border-white/10'} rounded-xl p-3 text-white focus:outline-none focus:border-pramana-gold transition`}
+                                            placeholder="Enter registered email address"
+                                            className={`w-full bg-black border ${emailStatus[idx]?.status === 'invalid' || emailStatus[idx]?.status === 'has_pass' ? 'border-red-500/50' : 'border-white/10'} rounded p-4 text-white placeholder-white/20 focus:outline-none focus:border-pramana-gold transition-all`}
                                         />
+                                        {emailStatus[idx] && (
+                                            <div className={`text-xs mt-2 flex items-center gap-2 ${emailStatus[idx].status === 'valid' ? 'text-pramana-gold' :
+                                                    emailStatus[idx].status === 'registered' ? 'text-green-500' :
+                                                        'text-red-500'
+                                                }`}>
+                                                <span className={`w-1.5 h-1.5 rounded-full ${emailStatus[idx].status === 'registered' ? 'bg-green-500' :
+                                                        emailStatus[idx].status === 'valid' ? 'bg-pramana-gold' : 'bg-red-500'
+                                                    }`}></span>
+                                                {emailStatus[idx].message}
+                                            </div>
+                                        )}
                                     </div>
-                                    {emailStatus[idx] && (
-                                        <p className={`text-xs mt-1 absolute right-0 -bottom-5 ${emailStatus[idx].status === 'valid' ? 'text-yellow-500/60' :
-                                            emailStatus[idx].status === 'registered' ? 'text-green-400' :
-                                                'text-red-400'
-                                            }`}>
-                                            {emailStatus[idx].message}
-                                        </p>
-                                    )}
-                                </div>
-                            ))}
+                                ))}
+                            </div>
 
                             <div className="pt-8 flex gap-4">
                                 <button
                                     onClick={() => setStep(1)}
-                                    className="flex-1 py-4 bg-white/5 text-white font-bold rounded-xl hover:bg-white/10 transition"
+                                    className="px-6 py-4 bg-white/5 text-white font-bold rounded hover:bg-white/10 transition border border-white/10 font-cinzel text-xs uppercase tracking-wider"
                                 >
                                     Back
                                 </button>
                                 <button
                                     onClick={handleSubmit}
                                     disabled={submitting}
-                                    className="flex-[2] py-4 bg-gradient-to-r from-pramana-gold to-yellow-600 text-black font-bold rounded-xl hover:shadow-[0_0_20px_rgba(184,134,11,0.4)] transition disabled:opacity-50"
+                                    className="flex-1 py-4 bg-pramana-gold text-black font-bold rounded hover:bg-white transition-all duration-300 disabled:opacity-50 font-cinzel text-xs uppercase tracking-wider"
                                 >
-                                    {submitting ? "Submitting..." : "Complete Request"}
+                                    {submitting ? "Processing..." : "Submit Request"}
                                 </button>
                             </div>
                         </div>
