@@ -21,7 +21,79 @@ interface IssuedPass {
     purchaseDate: string;
     entryLogs?: string[];
     issuedPhysical?: boolean;
+    passConfig?: any; // To store full config including dates
 }
+
+const PassDeadlineDisplay = ({ target }: { target: string }) => {
+    const [timeLeft, setTimeLeft] = useState<{ d: number, h: number, m: number, s: number } | null>(null);
+    const [isExpired, setIsExpired] = useState(false);
+
+    useEffect(() => {
+        const calculateTimeLeft = () => {
+            const difference = +new Date(target) - +new Date();
+            if (difference > 0) {
+                return {
+                    d: Math.floor(difference / (1000 * 60 * 60 * 24)),
+                    h: Math.floor((difference / (1000 * 60 * 60)) % 24),
+                    m: Math.floor((difference / 1000 / 60) % 60),
+                    s: Math.floor((difference / 1000) % 60),
+                };
+            }
+            return null;
+        };
+
+        const updateStatus = () => {
+            const t = calculateTimeLeft();
+            if (t) {
+                setTimeLeft(t);
+                setIsExpired(false);
+            } else {
+                setTimeLeft(null);
+                setIsExpired(+new Date(target) <= +new Date());
+            }
+        };
+
+        updateStatus();
+        const timer = setInterval(updateStatus, 1000);
+
+        return () => clearInterval(timer);
+    }, [target]);
+
+    const TimeBox = ({ val, label }: { val: number, label: string }) => (
+        <div className="flex flex-col items-center bg-black/80 border border-pramana-gold/30 px-2 py-1 rounded min-w-[2.5rem]">
+            <span className="text-xs font-cinzel font-bold text-pramana-gold">{val.toString().padStart(2, '0')}</span>
+            <span className="text-[8px] text-pramana-gold/50 uppercase tracking-wider">{label}</span>
+        </div>
+    );
+
+    if (isExpired) {
+        return (
+            <div className="mb-4 text-center">
+                <span className="text-[10px] font-bold uppercase tracking-widest text-red-500/70 block mb-1">Pass Closed</span>
+                <div className="flex gap-1.5 mt-2 justify-center">
+                    <TimeBox val={0} label="D" />
+                    <TimeBox val={0} label="H" />
+                    <TimeBox val={0} label="M" />
+                    <TimeBox val={0} label="S" />
+                </div>
+            </div>
+        );
+    }
+
+    if (!timeLeft) return null;
+
+    return (
+        <div className="mb-4 text-center">
+            <span className="text-[10px] font-bold uppercase tracking-widest text-red-500 block mb-1">Ends In</span>
+            <div className="flex gap-1.5 mt-2 justify-center">
+                <TimeBox val={timeLeft.d} label="D" />
+                <TimeBox val={timeLeft.h} label="H" />
+                <TimeBox val={timeLeft.m} label="M" />
+                <TimeBox val={timeLeft.s} label="S" />
+            </div>
+        </div>
+    );
+};
 
 interface UserProfile {
     phone?: string;
@@ -98,7 +170,30 @@ export default function DashboardPage() {
 
                     // Sort locally by date desc
                     passes.sort((a, b) => new Date(b.purchaseDate).getTime() - new Date(a.purchaseDate).getTime());
-                    setMyPasses(passes);
+
+                    // Enrich with Pass Config for Dates
+                    const passesWithConfig = await Promise.all(passes.map(async (p) => {
+                        if (p.passId) {
+                            try {
+                                const configRef = doc(db, "passes_config", p.passId);
+                                const configSnap = await getDoc(configRef);
+                                if (configSnap.exists()) {
+                                    return { ...p, passConfig: configSnap.data() };
+                                }
+                                // Try bulk config if not found
+                                const bulkConfigRef = doc(db, "bulk_pass_configs", p.passId);
+                                const bulkConfigSnap = await getDoc(bulkConfigRef);
+                                if (bulkConfigSnap.exists()) {
+                                    return { ...p, passConfig: bulkConfigSnap.data() };
+                                }
+                            } catch (e) {
+                                console.error("Error fetching pass config", e);
+                            }
+                        }
+                        return p;
+                    }));
+
+                    setMyPasses(passesWithConfig);
 
                     // 3. Fetch Bulk Requests
                     const requestsRef = collection(db, "bulk_pass_requests");
@@ -324,6 +419,11 @@ export default function DashboardPage() {
                                                 </div>
                                             )}
                                         </div>
+
+                                        {/* Countdown Timer */}
+                                        {pass.passConfig?.scheduleEnabled && pass.passConfig?.endDate && (
+                                            <PassDeadlineDisplay target={pass.passConfig.endDate} />
+                                        )}
 
                                         <button
                                             onClick={() => handleDownloadTicket(pass.id)}

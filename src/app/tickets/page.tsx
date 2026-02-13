@@ -10,8 +10,10 @@ import Image from "next/image";
 
 // --- Components ---
 
-const CountdownTarget = ({ target }: { target: string }) => {
+// PassDeadlineDisplay Component (replaces CountdownTarget for robustness)
+const PassDeadlineDisplay = ({ target }: { target: string }) => {
     const [timeLeft, setTimeLeft] = useState<{ d: number, h: number, m: number, s: number } | null>(null);
+    const [isExpired, setIsExpired] = useState(false);
 
     useEffect(() => {
         const calculateTimeLeft = () => {
@@ -27,15 +29,22 @@ const CountdownTarget = ({ target }: { target: string }) => {
             return null;
         };
 
-        setTimeLeft(calculateTimeLeft());
-        const timer = setInterval(() => {
-            setTimeLeft(calculateTimeLeft());
-        }, 1000);
+        const updateStatus = () => {
+            const t = calculateTimeLeft();
+            if (t) {
+                setTimeLeft(t);
+                setIsExpired(false);
+            } else {
+                setTimeLeft(null);
+                setIsExpired(+new Date(target) <= +new Date());
+            }
+        };
+
+        updateStatus();
+        const timer = setInterval(updateStatus, 1000);
 
         return () => clearInterval(timer);
     }, [target]);
-
-    if (!timeLeft) return null;
 
     const TimeBox = ({ val, label }: { val: number, label: string }) => (
         <div className="flex flex-col items-center bg-black/80 border border-pramana-gold/30 px-3 py-1.5 rounded min-w-[3.5rem]">
@@ -44,12 +53,31 @@ const CountdownTarget = ({ target }: { target: string }) => {
         </div>
     );
 
+    if (isExpired) {
+        return (
+            <div className="mt-2 text-center md:text-left">
+                <span className="text-[10px] font-bold uppercase tracking-widest text-red-500/70 block mb-1">Pass Closed</span>
+                <div className="flex gap-2 justify-center md:justify-start">
+                    <TimeBox val={0} label="Day" />
+                    <TimeBox val={0} label="Hr" />
+                    <TimeBox val={0} label="Min" />
+                    <TimeBox val={0} label="Sec" />
+                </div>
+            </div>
+        );
+    }
+
+    if (!timeLeft) return null;
+
     return (
-        <div className="flex gap-2 mt-3 justify-center md:justify-start">
-            <TimeBox val={timeLeft.d} label="Day" />
-            <TimeBox val={timeLeft.h} label="Hr" />
-            <TimeBox val={timeLeft.m} label="Min" />
-            <TimeBox val={timeLeft.s} label="Sec" />
+        <div className="mt-2 text-center md:text-left">
+            <span className="text-[10px] font-bold uppercase tracking-widest text-red-500 block mb-1">Ends In</span>
+            <div className="flex gap-2 justify-center md:justify-start">
+                <TimeBox val={timeLeft.d} label="Day" />
+                <TimeBox val={timeLeft.h} label="Hr" />
+                <TimeBox val={timeLeft.m} label="Min" />
+                <TimeBox val={timeLeft.s} label="Sec" />
+            </div>
         </div>
     );
 };
@@ -324,14 +352,11 @@ export default function TicketsPage() {
                                                     {pass.scheduleEnabled && isComingSoon && pass.liveDate && (
                                                         <div className="mt-2 text-center md:text-left">
                                                             <span className="text-[10px] font-bold uppercase tracking-widest text-pramana-gold block mb-1">Unlocks In</span>
-                                                            <CountdownTarget target={pass.liveDate} />
+                                                            <PassDeadlineDisplay target={pass.liveDate} />
                                                         </div>
                                                     )}
-                                                    {pass.scheduleEnabled && !isComingSoon && !isSoldOut && pass.showDeadline && pass.endDate && (
-                                                        <div className="mt-2 inline-flex items-center gap-2 text-xs font-bold text-red-400">
-                                                            <span className="w-1.5 h-1.5 rounded-full bg-red-500 animate-pulse"></span>
-                                                            Ends: {formatDate(pass.endDate)}
-                                                        </div>
+                                                    {pass.scheduleEnabled && !isComingSoon && pass.endDate && (
+                                                        <PassDeadlineDisplay target={pass.endDate} />
                                                     )}
                                                 </div>
                                             </div>
