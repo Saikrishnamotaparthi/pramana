@@ -44,6 +44,7 @@ export interface PassConfig {
     endDate?: string;
     showDeadline?: boolean;
     scheduleEnabled?: boolean;
+    order?: number;
 }
 
 export interface BulkPassConfig {
@@ -55,6 +56,7 @@ export interface BulkPassConfig {
     paymentLink: string;
     status: 'active' | 'inactive' | 'coming_soon';
     isBulk: true; // Discriminator
+    order?: number;
 }
 
 export interface Coupon {

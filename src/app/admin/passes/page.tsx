@@ -20,7 +20,8 @@ export default function PassManagement() {
         type: 'single',
         active: true,
         status: 'available',
-        groupSize: 1
+        groupSize: 1,
+        order: 0
     });
 
     const fetchPasses = async () => {
@@ -104,7 +105,8 @@ export default function PassManagement() {
     const resetForm = () => {
         setShowForm(false);
         setEditingId(null);
-        setFormData({ type: 'single', active: true, status: 'available', groupSize: 1, showRemaining: true, category: 'all', paymentLink: '', liveDate: '', endDate: '', showDeadline: false, scheduleEnabled: false });
+        setEditingId(null);
+        setFormData({ type: 'single', active: true, status: 'available', groupSize: 1, showRemaining: true, category: 'all', paymentLink: '', liveDate: '', endDate: '', showDeadline: false, scheduleEnabled: false, order: 0 });
     };
 
     const toggleActive = async (id: string, current: boolean) => {
@@ -199,6 +201,11 @@ export default function PassManagement() {
                                                 <label className="text-sm font-medium text-pramana-cream block mb-1">Quantity Limit</label>
                                                 <input type="number" placeholder="100" className="w-full bg-black/50 border border-white/10 p-3 rounded-lg text-white focus:outline-none focus:border-pramana-gold transition"
                                                     onChange={e => setFormData({ ...formData, limit: Number(e.target.value) })} value={formData.limit || ''} />
+                                            </div>
+                                            <div>
+                                                <label className="text-sm font-medium text-pramana-cream block mb-1">Display Order</label>
+                                                <input type="number" placeholder="0" className="w-full bg-black/50 border border-white/10 p-3 rounded-lg text-white focus:outline-none focus:border-pramana-gold transition"
+                                                    onChange={e => setFormData({ ...formData, order: Number(e.target.value) })} value={formData.order || 0} />
                                             </div>
                                         </div>
                                         <div>
@@ -317,6 +324,10 @@ export default function PassManagement() {
                                                     <div className="flex items-center justify-between text-sm">
                                                         <span className="text-pramana-cream/60">Sold</span>
                                                         <span className="font-bold text-pramana-cream">{pass.sold} <span className="text-pramana-cream/40 font-normal">/ {pass.limit}</span></span>
+                                                    </div>
+                                                    <div className="flex items-center justify-between text-sm">
+                                                        <span className="text-pramana-cream/60">Display Order</span>
+                                                        <span className="font-bold text-pramana-cream">#{pass.order || 0}</span>
                                                     </div>
                                                     <div className="flex items-center justify-between text-sm">
                                                         <span className="text-pramana-cream/60">Issued (Realtime)</span>
