@@ -290,13 +290,13 @@ export default function TicketsPage() {
                                 return { ...pass, isAvailable, isSoldOut, isComingSoon, sortWeight };
                             })
                             .sort((a, b) => {
-                                // Primary Sort: Explicit Order
+                                // Primary Sort: Status Priority
+                                if (a.sortWeight !== b.sortWeight) return a.sortWeight - b.sortWeight;
+
+                                // Secondary Sort: Explicit Order
                                 const orderA = a.order !== undefined ? a.order : 999;
                                 const orderB = b.order !== undefined ? b.order : 999;
-                                if (orderA !== orderB) return orderA - orderB;
-
-                                // Secondary Sort: Status Priority
-                                return a.sortWeight - b.sortWeight;
+                                return orderA - orderB;
                             })
                             .map((pass, idx) => {
                                 const formatDate = (dateStr: string) => new Date(dateStr).toLocaleString('en-GB', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit', hour12: true }).replace(',', '');
