@@ -136,6 +136,10 @@ export default function AdminDashboard() {
 
             activePassesSnap.forEach(doc => {
                 const data = doc.data();
+
+                // SKIP Excluded Passes (e.g. Admin Issued)
+                if (data.excludeFromStats) return;
+
                 passesSold++;
 
                 // Revenue
@@ -173,7 +177,7 @@ export default function AdminDashboard() {
             const recentSnap = await getDocs(query(passesRef, orderBy("purchaseDate", "desc"), limit(10)));
             const recentSales = recentSnap.docs
                 .map(d => d.data())
-                .filter(d => d.status === 'active')
+                .filter(d => d.status === 'active' && !d.excludeFromStats)
                 .slice(0, 5)
                 .map(data => ({
                     ...data,

@@ -106,21 +106,24 @@ export default function UserManagement() {
                 const usersRef = collection(db, "users");
                 const passesRef = collection(db, "passes_issued");
 
-                const [totalUsersSnap, totalPassesSnap, gitamSnap, registeredSnap] = await Promise.all([
+                const [totalUsersSnap, totalPassesSnap, gitamSnap, registeredSnap, excludedSnap] = await Promise.all([
                     getCountFromServer(usersRef),
                     getCountFromServer(passesRef),
                     getCountFromServer(query(usersRef, where("isGitamite", "==", true))),
-                    getCountFromServer(query(usersRef, where("isRegistered", "==", true)))
+                    getCountFromServer(query(usersRef, where("isRegistered", "==", true))),
+                    getCountFromServer(query(passesRef, where("excludeFromStats", "==", true)))
                 ]);
 
                 const totalUsers = totalUsersSnap.data().count;
                 const totalPasses = totalPassesSnap.data().count;
+                const excludedCount = excludedSnap.data().count;
+
                 const gitamUsers = gitamSnap.data().count;
                 const completedReg = registeredSnap.data().count;
 
                 setStats({
                     registered: totalUsers,
-                    passes: totalPasses,
+                    passes: totalPasses - excludedCount,
                     gitam: gitamUsers,
                     nonGitam: totalUsers - gitamUsers,
                     pending: totalUsers - completedReg
@@ -444,6 +447,7 @@ export default function UserManagement() {
                 qrCode,
                 status: 'active',
                 admitted: false,
+                excludeFromStats: true, // Auto-exclude from stats
                 purchaseDate: new Date().toISOString()
             });
 
@@ -457,13 +461,13 @@ export default function UserManagement() {
                 }
             }));
 
-            // 2. Update Sold Count
-            try {
-                const passConfigRef = doc(db, "passes_config", selectedPassId);
-                await updateDoc(passConfigRef, { sold: increment(1) });
-            } catch (e) {
-                console.error("Failed to increment sold count", e);
-            }
+            // 2. Update Sold Count (SKIPPED for Admin Issuance to exclude from stats)
+            // try {
+            //     const passConfigRef = doc(db, "passes_config", selectedPassId);
+            //     await updateDoc(passConfigRef, { sold: increment(1) });
+            // } catch (e) {
+            //     console.error("Failed to increment sold count", e);
+            // }
 
             if ((selectedUserForPass as any).referralCodeUsed) {
                 // Referral stats update (best effort)
@@ -518,8 +522,17 @@ export default function UserManagement() {
             // 1. Delete Pass Record
             await deleteDoc(doc(db, "passes_issued", passDocId));
 
-            // 2. Decrement Sold Count
-            if (passConfigId) {
+            // 2. Decrement Sold Count (Only if it wasn't excluded)
+            // We need to check if the pass was an "admin excluded" pass. 
+            // We check local state 'passesIssued' for the user.
+            const passData = passesIssued[userEmail];
+            // Safety check: keys match? passData.id might not be available in simple map structure if not enriched fully, 
+            // but enrichUsersWithPasses puts { id: d.id, ...data } in map.
+            // If passData.id matches passDocId (the one being deleted), check flag.
+
+            const isExcluded = passData?.id === passDocId && passData?.excludeFromStats;
+
+            if (passConfigId && !isExcluded) {
                 const passConfigRef = doc(db, "passes_config", passConfigId);
                 await updateDoc(passConfigRef, { sold: increment(-1) });
             }
