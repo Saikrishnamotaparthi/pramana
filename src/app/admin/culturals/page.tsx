@@ -2,8 +2,9 @@
 
 import { useState, useEffect } from "react";
 import { db, auth } from "@/lib/firebase";
-import { collection, query, orderBy, getDocs, Timestamp, doc, getDoc, collectionGroup } from "firebase/firestore";
-import { Loader2, Search, ExternalLink, ImageIcon } from "lucide-react";
+import { collection, query, orderBy, getDocs, Timestamp, doc, getDoc, collectionGroup, deleteDoc, updateDoc } from "firebase/firestore";
+import * as XLSX from "xlsx";
+import { Loader2, Search, ExternalLink, ImageIcon, Download } from "lucide-react";
 import AdminSidebar from "@/components/AdminSidebar";
 import { useAuth } from "@/hooks/useAuth";
 import { useRouter } from "next/navigation";
@@ -20,7 +21,7 @@ interface Registration {
     paymentScreenshotUrl?: string;
     userId: string;
     createdAt: Timestamp;
-    status?: "pending" | "approved" | "rejected";
+    status?: "pending" | "approved" | "rejected" | "deleted";
 }
 
 const formatDate = (timestamp: Timestamp) => {
@@ -76,7 +77,8 @@ export default function CulturalRegistrationsPage() {
                     ...doc.data()
                 })) as Registration[];
 
-                setRegistrations(data);
+                // Filter out soft-deleted registrations
+                setRegistrations(data.filter(r => r.status !== 'deleted'));
             } catch (error) {
                 console.error("Error fetching registrations:", error);
             } finally {
@@ -106,64 +108,52 @@ export default function CulturalRegistrationsPage() {
         return matchesSearch && matchesCompetition;
     });
 
-    const handleViewScreenshot = async (regId: string, userId: string) => {
-        try {
-            const token = await auth.currentUser?.getIdToken();
-            if (!token) {
-                alert("Authentication failed");
-                return;
-            }
+    const handleDelete = async (regId: string, userId: string, competitionId: string) => {
+        if (!confirm("Are you sure you want to delete this registration? This action cannot be undone.")) return;
 
-            const response = await fetch(`/api/admin/view-cultural-payment?regId=${regId}&userId=${userId}`, {
-                headers: { 'Authorization': `Bearer ${token}` }
+        try {
+            // Soft Delete: Update status to 'deleted'
+            await updateDoc(doc(db, "culturals", userId, "registrations", regId), {
+                status: "deleted"
             });
 
-            if (!response.ok) throw new Error("Failed to load image");
+            // Optional: You might want to update stats or other collections if needed
+            // For now, just removing from UI
+            setRegistrations(prev => prev.filter(r => r.id !== regId));
+            alert("Registration deleted successfully.");
 
-            const blob = await response.blob();
-            const url = URL.createObjectURL(blob);
-            window.open(url, '_blank');
-        } catch (error) {
-            console.error("Error viewing screenshot:", error);
-            alert("Error viewing screenshot. File might be missing.");
+        } catch (error: any) {
+            console.error("Delete error:", error);
+            alert("Failed to delete: " + error.message);
         }
     };
 
-    const handleApprove = async (reg: Registration) => {
-        if (!confirm(`Are you sure you want to approve ${reg.name}? This will send an email.`)) return;
+    const handleExport = () => {
+        if (!registrations.length) return;
 
-        try {
-            const token = await auth.currentUser?.getIdToken();
-            if (!token) return;
+        // Flatten data for Excel
+        const exportData = registrations.map(reg => ({
+            "Participant Name": reg.name,
+            "Email": reg.email,
+            "Phone": reg.phone,
+            "College": reg.college,
+            "Competition": reg.competitionId,
+            "Category": reg.category,
+            "Team Name": reg.teamName || "N/A",
+            "Status": reg.status || "pending",
+            "Registered At": reg.createdAt ? new Date(reg.createdAt.seconds * 1000).toLocaleString() : "N/A",
+            "Payment Screenshot": reg.paymentScreenshotUrl || "N/A",
+            "User ID": reg.userId,
+            "Registration ID": reg.id
+        }));
 
-            const response = await fetch("/api/admin/approve-cultural", {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                    "Authorization": `Bearer ${token}`
-                },
-                body: JSON.stringify({
-                    regId: reg.id,
-                    userId: reg.userId, // Send userId for correct path
-                    userName: reg.name,
-                    userEmail: reg.email,
-                    competitionName: reg.competitionId,
-                    category: reg.category
-                })
-            });
+        const ws = XLSX.utils.json_to_sheet(exportData);
+        const wb = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(wb, ws, "Registrations");
 
-            if (!response.ok) {
-                const data = await response.json();
-                throw new Error(data.error || "Approval failed");
-            }
-
-            alert("Approved successfully! Email sent.");
-            setRegistrations(prev => prev.map(r => r.id === reg.id ? { ...r, status: "approved" } : r));
-
-        } catch (error: any) {
-            console.error("Approval error:", error);
-            alert(error.message);
-        }
+        // Generate filename with date
+        const dateStr = new Date().toISOString().split('T')[0];
+        XLSX.writeFile(wb, `cultural_registrations_${dateStr}.xlsx`);
     };
 
     return (
@@ -177,6 +167,13 @@ export default function CulturalRegistrationsPage() {
                                 <h1 className="text-3xl font-bold font-cinzel text-transparent bg-clip-text bg-gradient-to-r from-pramana-gold to-white neon-text-gold">Cultural Registrations</h1>
                                 <p className="text-pramana-cream/60 mt-2 font-light">Manage entries for Natya Rasa, Off The Record, and Raw & Real</p>
                             </div>
+                            <button
+                                onClick={handleExport}
+                                className="flex items-center gap-2 bg-pramana-gold text-black px-4 py-2 rounded font-bold hover:bg-white transition-colors"
+                            >
+                                <Download size={18} />
+                                Export to Excel
+                            </button>
                         </div>
 
                         {/* Stats Dashboard */}
@@ -246,7 +243,7 @@ export default function CulturalRegistrationsPage() {
                                             <th className="px-6 py-4">Participant</th>
                                             <th className="px-6 py-4">Competition</th>
                                             <th className="px-6 py-4">Contact</th>
-                                            <th className="px-6 py-4">Screenshot</th>
+                                            {/* Screenshot Removed */}
                                             <th className="px-6 py-4">Status</th>
                                             <th className="px-6 py-4">Registered At</th>
                                             <th className="px-6 py-4">Actions</th>
@@ -272,14 +269,7 @@ export default function CulturalRegistrationsPage() {
                                                     <p>{reg.email}</p>
                                                     <p>{reg.phone}</p>
                                                 </td>
-                                                <td className="px-6 py-4">
-                                                    <button
-                                                        onClick={() => handleViewScreenshot(reg.id, reg.userId)}
-                                                        className="inline-flex items-center gap-2 text-blue-400 hover:text-blue-300 transition-colors bg-blue-500/10 px-3 py-1.5 rounded-full text-xs font-bold"
-                                                    >
-                                                        <ImageIcon className="w-3 h-3" /> View Image
-                                                    </button>
-                                                </td>
+                                                {/* Screenshot Data Removed */}
                                                 <td className="px-6 py-4">
                                                     <span className={`px-2 py-1 rounded text-xs font-bold uppercase ${reg.status === 'approved' ? 'bg-green-500/20 text-green-500' :
                                                         reg.status === 'rejected' ? 'bg-red-500/20 text-red-500' :
@@ -292,14 +282,12 @@ export default function CulturalRegistrationsPage() {
                                                     {formatDate(reg.createdAt)}
                                                 </td>
                                                 <td className="px-6 py-4">
-                                                    {(!reg.status || reg.status === 'pending') && (
-                                                        <button
-                                                            onClick={() => handleApprove(reg)}
-                                                            className="bg-green-600 text-white px-3 py-1.5 rounded hover:bg-green-500 transition-colors text-xs font-bold"
-                                                        >
-                                                            Approve
-                                                        </button>
-                                                    )}
+                                                    <button
+                                                        onClick={() => handleDelete(reg.id, reg.userId, reg.competitionId)}
+                                                        className="bg-red-600/20 text-red-500 border border-red-600/50 px-3 py-1.5 rounded hover:bg-red-600 hover:text-white transition-colors text-xs font-bold"
+                                                    >
+                                                        Delete
+                                                    </button>
                                                 </td>
                                             </tr>
                                         ))}

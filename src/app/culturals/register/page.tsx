@@ -5,7 +5,7 @@ import { useSearchParams, useRouter } from "next/navigation";
 import { useAuth } from "@/hooks/useAuth";
 import { motion } from "framer-motion";
 import { Upload, CheckCircle, AlertCircle, ArrowLeft, Loader2 } from "lucide-react";
-import { saveCulturalRegistration, getUserRegistrations, invalidateUserRegistrationsCache } from "@/lib/culturals";
+import { saveCulturalRegistration, getUserRegistrations, invalidateUserRegistrationsCache, getCompetitionCounts } from "@/lib/culturals";
 import { db } from "@/lib/firebase";
 import { doc, getDoc } from "firebase/firestore"; // Removing unused imports
 import Image from "next/image";
@@ -15,23 +15,23 @@ const competitions = {
     "natya-rasa": {
         title: "Natya Rasa",
         categories: [
-            { name: "Solo", price: "400" },
-            { name: "Crew", price: "900" }
+            { name: "Solo", price: "Free" },
+            { name: "Crew", price: "Free" }
         ]
     },
     "off-the-record": {
         title: "Off The Record",
         categories: [
-            { name: "Solo", price: "200" },
-            { name: "Duo/Trio", price: "500" },
-            { name: "Band", price: "1200" }
+            { name: "Solo", price: "Free" },
+            { name: "Duo/Trio", price: "Free" },
+            { name: "Band", price: "Free" }
         ]
     },
     "raw-and-real": {
         title: "Raw and Real",
         categories: [
-            { name: "Solo", price: "400" },
-            { name: "Crew", price: "900" }
+            { name: "Solo", price: "Free" },
+            { name: "Crew", price: "Free" }
         ]
     }
 };
@@ -50,13 +50,16 @@ function RegisterForm() {
     const [isAgeValid, setIsAgeValid] = useState(false);
     const [college, setCollege] = useState("");
     const [teamName, setTeamName] = useState("");
-    const [file, setFile] = useState<File | null>(null);
+    // const [file, setFile] = useState<File | null>(null); // Removed
     const [uploading, setUploading] = useState(false);
     const [error, setError] = useState("");
     const [success, setSuccess] = useState(false);
-    const [paymentDone, setPaymentDone] = useState(false);
+    const [whatsappLink, setWhatsappLink] = useState("");
 
     const [existingRegistrations, setExistingRegistrations] = useState<{ competitionId: string, category: string }[]>([]);
+    const [registrationStatus, setRegistrationStatus] = useState<Record<string, boolean>>({});
+    const [categoryLimits, setCategoryLimits] = useState<Record<string, number | undefined>>({}); // Store limits
+    const [categoryCounts, setCategoryCounts] = useState<Record<string, number>>({}); // Store current counts (simulated or fetched)
 
     // Calculate age and validate whenever DOB changes
     useEffect(() => {
@@ -106,12 +109,59 @@ function RegisterForm() {
                     category: d.category
                 }));
                 setExistingRegistrations(exRegs);
+
+                // Fetch global settings
+                const settingsRef = doc(db, "settings", "cultural");
+                const settingsSnap = await getDoc(settingsRef);
+                if (settingsSnap.exists()) {
+                    const data = settingsSnap.data();
+                    setRegistrationStatus({
+                        "natya-rasa": data["natya-rasa-open"] !== false,
+                        "off-the-record": data["off-the-record-open"] !== false,
+                        "raw-and-real": data["raw-and-real-open"] !== false
+                    });
+
+                    // Store limits
+                    setCategoryLimits({
+                        "natya-rasa-Solo": data["natya-rasa-Solo-limit"],
+                        "natya-rasa-Crew": data["natya-rasa-Crew-limit"],
+                        "off-the-record-Solo": data["off-the-record-Solo-limit"],
+                        "off-the-record-Duo/Trio": data["off-the-record-Duo/Trio-limit"],
+                        "off-the-record-Band": data["off-the-record-Band-limit"],
+                        "raw-and-real-Solo": data["raw-and-real-Solo-limit"],
+                        "raw-and-real-Crew": data["raw-and-real-Crew-limit"]
+                    });
+                }
+
+                // Fetch Counts (This is expensive to do for all, but for client-side validtion, we need it)
+                // We'll trust the server for strict enforcement, but for UI we can try to be helpful.
+                // Fetching ALL registrations is too much. 
+                // Let's just rely on the server error for "Full" if we can't easily get counts.
+                // OR: We can implement a counter in settings? No time to refactor everything to use counters.
+                // Compromise: We won't show "Full" aggressively on load unless we have data, 
+                // but we will handle the "Registration limit reached" error from API gracefully.
+                // Actually, the user asked to "automatically close registration".
+                // I'll leave the UI as "Open" but if the API returns limit error, I'll show it.
+                // Better: Let's fetch counts for the SELECTED competition when it changes.
+
             } catch (error) {
-                console.error("Error fetching existing registrations:", error);
+                console.error("Error fetching data:", error);
             }
         };
         fetchExisting();
     }, [user]);
+
+    // Effect to fetch counts when competition is selected
+    useEffect(() => {
+        if (!selectedComp) return;
+
+        const fetchCounts = async () => {
+            const counts = await getCompetitionCounts(selectedComp);
+            setCategoryCounts(counts);
+        };
+
+        fetchCounts();
+    }, [selectedComp]);
 
     const isRegistered = (compId: string, catName: string) => {
         return existingRegistrations.some(r => r.competitionId === compId && r.category === catName);
@@ -136,47 +186,22 @@ function RegisterForm() {
         );
     }
 
-    const handlePaymentRedirect = async () => {
-        try {
-            // Default URL in case fetching fails or doc doesn't exist
-            let targetUrl = "https://gevents.gitam.edu";
-
-            // Fetch dynamic URL from settings
-            const docRef = doc(db, "settings", "cultural");
-            const docSnap = await getDoc(docRef);
-
-            if (docSnap.exists()) {
-                const links = docSnap.data();
-                // Get link for current competition or fallback to previous behavior
-                if (selectedComp && links[selectedComp]) {
-                    targetUrl = links[selectedComp];
-                } else if (links.paymentUrl) {
-                    // Fallback to global if specific not found (backward compatibility)
-                    targetUrl = links.paymentUrl;
-                }
-            }
-
-            window.open(targetUrl, "_blank");
-            setPaymentDone(true);
-        } catch (error) {
-            console.error("Error fetching payment URL:", error);
-            // Fallback to default
-            window.open("https://gevents.gitam.edu", "_blank");
-            setPaymentDone(true);
-        }
-    };
-
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         setError("");
 
-        if (!selectedComp || !category || !phone || !dob || !college || !file) {
-            setError("Please fill all fields and upload the payment screenshot.");
+        if (!selectedComp || !category || !phone || !dob || !college) {
+            setError("Please fill all fields.");
             return;
         }
 
         if (!isAgeValid) {
             setError("You must be between 16 and 25 years old to register.");
+            return;
+        }
+
+        if (registrationStatus[selectedComp] === false) {
+            setError("Registration for this competition is currently closed.");
             return;
         }
 
@@ -192,7 +217,7 @@ function RegisterForm() {
 
         setUploading(true);
         try {
-            await saveCulturalRegistration({
+            const result = await saveCulturalRegistration({
                 userId: user.uid,
                 name: user.displayName || "Unknown",
                 email: user.email,
@@ -202,10 +227,14 @@ function RegisterForm() {
                 competitionId: selectedComp,
                 category,
                 teamName: teamName || undefined,
-            }, file);
+            });
 
             // Invalidate cache so dashboard refetches data
             invalidateUserRegistrationsCache(user.uid);
+
+            if (result.whatsappLink) {
+                setWhatsappLink(result.whatsappLink);
+            }
 
             setSuccess(true);
         } catch (err: any) {
@@ -224,8 +253,23 @@ function RegisterForm() {
                 </div>
                 <h2 className="text-3xl font-cinzel text-white">Registration Successful!</h2>
                 <p className="text-pramana-cream/60 max-w-md">
-                    Your details have been submitted. Our team will verify your payment and update your status shortly.
+                    Your registration has been approved.
                 </p>
+
+                {whatsappLink && (
+                    <div className="bg-green-600/20 border border-green-600/50 p-6 rounded-xl max-w-md w-full">
+                        <p className="text-green-400 text-sm font-bold uppercase tracking-widest mb-4">Join the WhatsApp Group</p>
+                        <a
+                            href={whatsappLink}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="block w-full py-3 bg-green-600 text-white font-bold rounded-lg hover:bg-green-500 transition-colors"
+                        >
+                            Join Group
+                        </a>
+                    </div>
+                )}
+
                 <Link
                     href="/culturals/dashboard"
                     className="px-8 py-3 bg-white/10 text-white hover:bg-white hover:text-black font-bold rounded-full transition-colors"
@@ -273,17 +317,24 @@ function RegisterForm() {
                         <div className="grid grid-cols-2 gap-4">
                             {competitions[selectedComp].categories.map((cat) => {
                                 const registered = isRegistered(selectedComp as string, cat.name);
+                                const limitKey = `${selectedComp}-${cat.name}`; // e.g., natya-rasa-Solo
+                                const limit = categoryLimits[limitKey];
+                                const count = categoryCounts[cat.name] || 0;
+                                const isFull = (typeof limit === 'number' && limit >= 0) && count >= limit;
+
                                 return (
                                     <div
                                         key={cat.name}
-                                        onClick={() => !registered && setCategory(cat.name)}
+                                        onClick={() => !registered && !isFull && setCategory(cat.name)}
                                         className={`
                                             relative p-4 rounded-lg flex flex-col items-center justify-center gap-2 transition-all border
                                             ${registered
                                                 ? 'bg-white/5 border-white/5 opacity-50 cursor-not-allowed'
-                                                : category === cat.name
-                                                    ? 'border-pramana-gold bg-pramana-gold/10 cursor-pointer'
-                                                    : 'border-white/10 hover:border-white/30 cursor-pointer'
+                                                : isFull
+                                                    ? 'bg-red-500/10 border-red-500/20 opacity-70 cursor-not-allowed'
+                                                    : category === cat.name
+                                                        ? 'border-pramana-gold bg-pramana-gold/10 cursor-pointer'
+                                                        : 'border-white/10 hover:border-white/30 cursor-pointer'
                                             }
                                         `}
                                     >
@@ -292,10 +343,20 @@ function RegisterForm() {
                                                 <CheckCircle className="w-4 h-4" />
                                             </div>
                                         )}
+                                        {isFull && !registered && (
+                                            <div className="absolute top-2 right-2 text-red-500">
+                                                <span className="text-xs font-bold uppercase">Full</span>
+                                            </div>
+                                        )}
                                         <span className="text-white font-bold">{cat.name}</span>
                                         <span className="text-pramana-gold text-lg">
-                                            {registered ? "Registered" : `₹${cat.price}`}
+                                            {registered ? "Registered" : isFull ? "Full" : cat.price}
                                         </span>
+                                        {typeof limit === 'number' && limit > 0 && !registered && !isFull && (
+                                            <span className="text-xs text-pramana-cream/40">
+                                                {count} / {limit} slots filled
+                                            </span>
+                                        )}
                                     </div>
                                 );
                             })}
@@ -366,59 +427,6 @@ function RegisterForm() {
                             />
                         </div>
                     )}
-                </div>
-
-                {/* 4. Payment */}
-                <div className="space-y-4 border-t border-white/10 pt-8">
-                    <div className="flex items-center justify-between">
-                        <label className="block text-sm text-pramana-gold uppercase tracking-widest font-bold">Payment</label>
-                        {category && (
-                            <span className="text-white font-mono">Amount to pay:
-                                <span className="text-pramana-gold font-bold ml-2">
-                                    ₹{competitions[selectedComp as keyof typeof competitions].categories.find(c => c.name === category)?.price}
-                                </span>
-                            </span>
-                        )}
-                    </div>
-
-                    <div className="bg-white/5 p-6 rounded-lg space-y-4">
-                        <p className="text-sm text-pramana-cream/70">
-                            1. Click the button below to pay via G Events.<br />
-                            2. Complete the payment.<br />
-                            3. Take a screenshot of the payment success screen.<br />
-                            4. Upload the screenshot here.
-                        </p>
-
-                        <button
-                            type="button"
-                            onClick={handlePaymentRedirect}
-                            className="w-full py-3 bg-blue-600/20 text-blue-400 border border-blue-600/50 rounded hover:bg-blue-600 hover:text-white transition-all font-bold"
-                        >
-                            Pay via G Events (External)
-                        </button>
-
-                        <div className="animate-fade-in pt-4">
-                            <label className="block text-xs uppercase text-pramana-cream/50 mb-2">Upload Payment Screenshot</label>
-                            <div className="relative border-2 border-dashed border-white/20 rounded-lg p-8 text-center hover:border-pramana-gold/50 transition-colors">
-                                <input
-                                    type="file"
-                                    accept="image/*"
-                                    onChange={(e) => setFile(e.target.files?.[0] || null)}
-                                    className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
-                                />
-                                {file ? (
-                                    <div className="text-pramana-gold flex items-center justify-center gap-2">
-                                        <CheckCircle className="w-5 h-5" /> {file.name}
-                                    </div>
-                                ) : (
-                                    <div className="text-white/40 flex flex-col items-center gap-2">
-                                        <Upload className="w-6 h-6" />
-                                        <span>Click to upload screenshot</span>
-                                    </div>
-                                )}
-                            </div>
-                        </div>
-                    </div>
                 </div>
 
                 {error && (

@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 import { useAuth } from "@/hooks/useAuth";
 import { getUserRegistrations, CulturalRegistrationData } from "@/lib/culturals"; // Ensure correct imports
 // Removed unused firebase imports that are now handled in the lib
-import { Loader2, CheckCircle, AlertCircle, Clock, Music, Mic, Users, Trophy } from "lucide-react";
+import { Loader2, CheckCircle, AlertCircle, Clock, Music, Mic, Users, Trophy, MessageCircle } from "lucide-react";
 import Link from "next/link";
 import { motion } from "framer-motion";
 
@@ -12,6 +12,7 @@ interface CulturalRegistration extends CulturalRegistrationData {
     id: string;
     createdAt: any;
     status: "pending" | "approved" | "rejected"; // Ensure status is part of the type if it comes from backend
+    whatsappLink?: string;
 }
 
 // Update competitions object to include images and rulebook
@@ -163,8 +164,27 @@ export default function CulturalDashboard() {
                                                         <span className="text-sm font-medium text-gray-300">{cat}</span>
 
                                                         {status === 'approved' ? (
-                                                            <div className="flex items-center gap-2 text-green-500 text-xs font-bold uppercase">
-                                                                <CheckCircle className="w-4 h-4" /> Approved
+                                                            <div className="flex flex-col items-end gap-2">
+                                                                <div className="flex items-center gap-2 text-green-500 text-xs font-bold uppercase">
+                                                                    <CheckCircle className="w-4 h-4" /> Approved
+                                                                </div>
+                                                                {(() => {
+                                                                    const reg = registrations.find(r => r.competitionId === key && r.category === cat);
+                                                                    if (reg?.whatsappLink) {
+                                                                        return (
+                                                                            <a
+                                                                                href={reg.whatsappLink}
+                                                                                target="_blank"
+                                                                                rel="noopener noreferrer"
+                                                                                className="flex items-center gap-1.5 text-[10px] bg-green-500/10 text-green-400 hover:bg-green-500/20 px-2 py-1.5 rounded border border-green-500/20 transition-all font-medium group/btn"
+                                                                            >
+                                                                                <MessageCircle className="w-3 h-3 group-hover/btn:scale-110 transition-transform" />
+                                                                                Join WhatsApp Group
+                                                                            </a>
+                                                                        );
+                                                                    }
+                                                                    return null;
+                                                                })()}
                                                             </div>
                                                         ) : status === 'pending' ? (
                                                             <div className="flex items-center gap-2 text-yellow-500 text-xs font-bold uppercase">

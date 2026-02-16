@@ -79,8 +79,8 @@ export default function CulturalsPage() {
             description: "Grace, expression, and rhythm converge in this celebration of dance. Unleash the artist within and mesmerize the audience with your classical moves.",
             image: "/culturals/natya-rasa.jpg",
             categories: [
-                { name: "Solo", price: "400" },
-                { name: "Crew", price: "900" }
+                { name: "Solo" },
+                { name: "Crew" }
             ],
             ruleBookLink: "/culturals/natya-rasa-rulebook.pdf",
         },
@@ -91,9 +91,9 @@ export default function CulturalsPage() {
             description: "Amplify the energy and let the music speak! A battleground for bands to showcase their raw talent and electrifying performances.",
             image: "/culturals/off-the-record.jpg",
             categories: [
-                { name: "Solo", price: "200" },
-                { name: "Duo/Trio", price: "500" },
-                { name: "Band", price: "1200" }
+                { name: "Solo" },
+                { name: "Duo/Trio" },
+                { name: "Band" }
             ],
             ruleBookLink: "/culturals/off-the-record-rulebook.pdf",
         },
@@ -104,8 +104,8 @@ export default function CulturalsPage() {
             description: "No filters, no edits, just pure talent. Show us what makes you unique in this open platform for raw expression.",
             image: "/culturals/raw-and-real.jpg",
             categories: [
-                { name: "Solo", price: "400" },
-                { name: "Crew", price: "900" }
+                { name: "Solo" },
+                { name: "Crew" }
             ],
             ruleBookLink: "/culturals/raw-and-real-rulebook.pdf",
         }
@@ -324,13 +324,18 @@ export default function CulturalsPage() {
                                             <p className="text-pramana-cream/60 text-sm leading-relaxed">{comp.description}</p>
                                         </div>
 
-                                        <div className="grid grid-cols-2 gap-3 mb-6">
+                                        <div className="grid grid-cols-2 gap-3 mb-2">
                                             {comp.categories.map((cat, idx) => (
-                                                <div key={idx} className="bg-black/40 border border-white/5 p-3 rounded-lg text-center backdrop-blur-sm">
-                                                    <div className="text-pramana-gold font-bold font-cinzel text-lg">₹{cat.price}</div>
-                                                    <div className="text-[10px] text-white/50 uppercase tracking-widest mt-1">{cat.name}</div>
+                                                <div key={idx} className="bg-black/40 border border-white/5 p-3 rounded-lg text-center backdrop-blur-sm flex items-center justify-center">
+                                                    <div className="text-white/80 font-cinzel text-sm font-bold uppercase tracking-wider">{cat.name}</div>
                                                 </div>
                                             ))}
+                                        </div>
+                                        <div className="flex justify-center mb-6">
+                                            <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-green-900/20 border border-green-500/20">
+                                                <div className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse"></div>
+                                                <span className="text-[10px] font-bold text-green-400 uppercase tracking-widest">Entry Free</span>
+                                            </div>
                                         </div>
 
                                         <div className="flex gap-3 mt-auto">

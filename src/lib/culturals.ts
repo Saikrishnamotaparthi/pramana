@@ -1,5 +1,5 @@
 import { db, storage } from "./firebase";
-import { collection, addDoc, serverTimestamp } from "firebase/firestore";
+import { collection, addDoc, serverTimestamp, collectionGroup, query, where, getCountFromServer } from "firebase/firestore";
 import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
 
 export interface CulturalRegistrationData {
@@ -16,7 +16,7 @@ export interface CulturalRegistrationData {
     userId: string;
 }
 
-export const saveCulturalRegistration = async (data: CulturalRegistrationData, file: File) => {
+export const saveCulturalRegistration = async (data: CulturalRegistrationData) => {
     try {
         console.log("Starting cultural registration (Server-Side)...", data);
 
@@ -30,21 +30,28 @@ export const saveCulturalRegistration = async (data: CulturalRegistrationData, f
         formData.append("competitionId", data.competitionId);
         formData.append("category", data.category);
         if (data.teamName) formData.append("teamName", data.teamName);
-        formData.append("paymentScreenshot", file);
+        // paymentScreenshot is no longer needed
 
         const response = await fetch("/api/culturals/register", {
             method: "POST",
             body: formData,
         });
 
-        const result = await response.json();
+        const text = await response.text();
+        let result;
+        try {
+            result = JSON.parse(text);
+        } catch (e) {
+            console.error("Server response was not JSON:", text);
+            throw new Error(`Server returned non-JSON response: ${response.status} ${response.statusText}`);
+        }
 
         if (!response.ok) {
             throw new Error(result.error || "Server registration failed");
         }
 
         console.log("Registration successful, ID:", result.id);
-        return { success: true, id: result.id };
+        return { success: true, id: result.id, whatsappLink: result.whatsappLink };
     } catch (error: any) {
         console.error("Error saving cultural registration:", error);
         throw new Error(error.message || "Unknown error occurred during registration");
@@ -53,7 +60,7 @@ export const saveCulturalRegistration = async (data: CulturalRegistrationData, f
 
 export const getUserRegistrations = async (userId: string) => {
     try {
-        const CACHE_KEY = `cultural_registrations_${userId}`;
+        const CACHE_KEY = `cultural_registrations_v2_${userId}`; // Changed key to invalidate old cache
         const cachedData = sessionStorage.getItem(CACHE_KEY);
 
         if (cachedData) {
@@ -74,10 +81,12 @@ export const getUserRegistrations = async (userId: string) => {
         );
 
         const snapshot = await getDocs(q);
-        const data = snapshot.docs.map(doc => ({
-            id: doc.id,
-            ...doc.data()
-        }));
+        const data = snapshot.docs
+            .map(doc => ({
+                id: doc.id,
+                ...doc.data()
+            }))
+            .filter((reg: any) => reg.status !== "deleted"); // Filter out soft-deleted registrations
 
         sessionStorage.setItem(CACHE_KEY, JSON.stringify(data));
         return data;
@@ -95,5 +104,20 @@ export const invalidateUserRegistrationsCache = (userId: string) => {
         console.log("Invalidated registration cache for", userId);
     } catch (error) {
         console.error("Error invalidating cache:", error);
+    }
+};
+
+export const getCompetitionCounts = async (competitionId: string) => {
+    try {
+        const response = await fetch(`/api/culturals/counts?competitionId=${competitionId}&t=${Date.now()}`);
+        if (!response.ok) {
+            const errorText = await response.text();
+            console.error("Server Error details:", errorText);
+            throw new Error(`Server responded with ${response.status}: ${errorText}`);
+        }
+        return await response.json();
+    } catch (error) {
+        console.error("Error getting counts:", error);
+        return {};
     }
 };
