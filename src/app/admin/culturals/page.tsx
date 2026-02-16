@@ -69,7 +69,9 @@ export default function CulturalRegistrationsPage() {
         const fetchRegistrations = async () => {
             try {
                 // Fetch from subcollection 'registrations' across all 'culturals' docs
-                const q = query(collectionGroup(db, "registrations"), orderBy("createdAt", "desc"));
+                // Fetch from subcollection 'registrations' across all 'culturals' docs
+                // REMOVED orderBy("createdAt") because it hides docs where createdAt is null/missing (legacy data)
+                const q = query(collectionGroup(db, "registrations"));
                 const querySnapshot = await getDocs(q);
 
                 const data = querySnapshot.docs.map(doc => ({
@@ -77,8 +79,16 @@ export default function CulturalRegistrationsPage() {
                     ...doc.data()
                 })) as Registration[];
 
-                // Filter out soft-deleted registrations
-                setRegistrations(data.filter(r => r.status !== 'deleted'));
+                // Filter out soft-deleted registrations AND sort by createdAt desc in JS
+                // Treating missing createdAt as recent or old? Usually old. 
+                setRegistrations(data
+                    .filter(r => r.status !== 'deleted')
+                    .sort((a, b) => {
+                        const timeA = a.createdAt?.seconds || 0;
+                        const timeB = b.createdAt?.seconds || 0;
+                        return timeB - timeA;
+                    })
+                );
             } catch (error) {
                 console.error("Error fetching registrations:", error);
             } finally {

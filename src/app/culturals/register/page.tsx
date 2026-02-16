@@ -352,11 +352,6 @@ function RegisterForm() {
                                         <span className="text-pramana-gold text-lg">
                                             {registered ? "Registered" : isFull ? "Full" : cat.price}
                                         </span>
-                                        {typeof limit === 'number' && limit > 0 && !registered && !isFull && (
-                                            <span className="text-xs text-pramana-cream/40">
-                                                {count} / {limit} slots filled
-                                            </span>
-                                        )}
                                     </div>
                                 );
                             })}

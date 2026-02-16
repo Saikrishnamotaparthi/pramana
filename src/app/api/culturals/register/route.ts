@@ -67,7 +67,7 @@ export async function POST(req: NextRequest) {
                         // But for "limits", usually it's small (e.g., 50 teams).
                         const activeRegsCount = regsSnapshot.docs.filter(d => {
                             const data = d.data();
-                            return data.status !== "deleted" && data.createdAt; // Match Admin logic
+                            return data.status !== "deleted"; // REVERTED: Include legacy records
                         }).length;
 
                         if (activeRegsCount >= limit) {

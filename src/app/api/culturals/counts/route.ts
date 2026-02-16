@@ -23,7 +23,7 @@ export async function GET(req: NextRequest) {
         snapshot.forEach(doc => {
             const data = doc.data();
             if (data.status === "deleted") return; // Skip deleted registrations
-            if (!data.createdAt) return; // Skip legacy/broken records (matches Admin Dashboard logic)
+            // if (!data.createdAt) return; // REVERTED: Include legacy records even if date is missing
 
             const cat = data.category;
             if (cat) {
