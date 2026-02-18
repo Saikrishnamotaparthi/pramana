@@ -17,7 +17,7 @@ export default function Navbar() {
                 <div className="flex items-center gap-8">
                     <Link
                         href={pathname.startsWith("/culturals") ? "/culturals" : user && (user.role === 'admin' || user.role === 'superadmin' || user.role === 'view_admin' || user.role === 'cul_admin') ? "/admin" : user?.role === 'ppass_admin' ? "/issue-pass" : "/dashboard"}
-                        className="text-xl font-cinzel font-bold tracking-widest text-pramana-gold"
+                        className="text-xl font-primary font-bold tracking-widest text-pramana-gold"
                     >
                         PRAMANA26
                     </Link>
@@ -55,7 +55,7 @@ export default function Navbar() {
                     ) : user ? (
                         <div className="flex items-center gap-4">
                             <div className="text-right hidden sm:block">
-                                <p className="text-sm font-playfair text-pramana-gold">{user.displayName}</p>
+                                <p className="text-sm font-tertiary text-pramana-gold">{user.displayName}</p>
                                 {user.isGitamite && <span className="text-[10px] uppercase font-bold text-black bg-pramana-gold px-1 rounded">Gitamite</span>}
                             </div>
                             <button

@@ -18,9 +18,13 @@ const config: Config = {
                 },
             },
             fontFamily: {
-                cinzel: ["Cinzel", "serif"],
-                playfair: ["Playfair Display", "serif"],
-                garamond: ["EB Garamond", "serif"],
+                primary: ["var(--font-arinza)", "serif"],
+                secondary: ["var(--font-higuen)", "serif"],
+                tertiary: ["var(--font-garamond)", "serif"],
+                // Aliases for migration
+                cinzel: ["var(--font-arinza)", "serif"],
+                playfair: ["var(--font-higuen)", "serif"],
+                garamond: ["var(--font-garamond)", "serif"],
             },
             backgroundImage: {
                 "gradient-radial": "radial-gradient(var(--tw-gradient-stops))",

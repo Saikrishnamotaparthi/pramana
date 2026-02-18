@@ -45,6 +45,7 @@ export interface PassConfig {
     showDeadline?: boolean;
     scheduleEnabled?: boolean;
     order?: number;
+    showOnLanding?: boolean;
 }
 
 export interface BulkPassConfig {
@@ -57,6 +58,7 @@ export interface BulkPassConfig {
     status: 'active' | 'inactive' | 'coming_soon';
     isBulk: true; // Discriminator
     order?: number;
+    showOnLanding?: boolean;
 }
 
 export interface Coupon {

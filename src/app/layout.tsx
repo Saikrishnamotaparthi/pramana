@@ -1,21 +1,25 @@
 import type { Metadata } from "next";
-import { Cinzel, Playfair_Display, EB_Garamond } from "next/font/google"; // Removed Inter
+import { EB_Garamond } from "next/font/google";
+import localFont from "next/font/local";
 import "./globals.css";
 import { AuthProvider } from "@/components/providers/AuthProvider";
 import Navbar from "@/components/Navbar";
 
-const cinzel = Cinzel({
-  subsets: ["latin"],
-  variable: "--font-cinzel",
+// Primary Font
+const arinza = localFont({
+  src: "../../public/fonts/Arinza Ligature.otf",
+  variable: "--font-arinza",
   display: "swap",
 });
 
-const playfair = Playfair_Display({
-  subsets: ["latin"],
-  variable: "--font-playfair",
+// Secondary Font
+const higuen = localFont({
+  src: "../../public/fonts/higuen.ttf",
+  variable: "--font-higuen",
   display: "swap",
 });
 
+// Tertiary Font
 const garamond = EB_Garamond({
   subsets: ["latin"],
   variable: "--font-garamond",
@@ -53,7 +57,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" suppressHydrationWarning>
-      <body className={`${cinzel.variable} ${playfair.variable} ${garamond.variable} font-playfair bg-pramana-black text-pramana-cream antialiased selection:bg-pramana-gold selection:text-black`}>
+      <body className={`${arinza.variable} ${higuen.variable} ${garamond.variable} font-tertiary bg-pramana-black text-pramana-cream antialiased selection:bg-pramana-gold selection:text-black`}>
         <AuthProvider>
           <Navbar />
           <main className="min-h-screen bg-pramana-black bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-gray-900 via-black to-black text-pramana-cream">

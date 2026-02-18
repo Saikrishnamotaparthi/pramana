@@ -119,7 +119,7 @@ export default function CulturalsPage() {
     ]
 
     return (
-        <div className="min-h-screen bg-[#050505] text-pramana-cream font-playfair selection:bg-pramana-gold selection:text-black overflow-x-hidden">
+        <div className="min-h-screen bg-[#050505] text-pramana-cream selection:bg-pramana-gold selection:text-black overflow-x-hidden">
 
             {/* --- HEADER --- */}
             <header className="fixed top-0 left-0 right-0 z-50 px-6 py-6 transition-all duration-300">

@@ -106,7 +106,7 @@ export default function PassManagement() {
         setShowForm(false);
         setEditingId(null);
         setEditingId(null);
-        setFormData({ type: 'single', active: true, status: 'available', groupSize: 1, showRemaining: true, category: 'all', paymentLink: '', liveDate: '', endDate: '', showDeadline: false, scheduleEnabled: false, order: 0 });
+        setFormData({ type: 'single', active: true, status: 'available', groupSize: 1, showRemaining: true, category: 'all', paymentLink: '', liveDate: '', endDate: '', showDeadline: false, scheduleEnabled: false, order: 0, showOnLanding: false });
     };
 
     const toggleActive = async (id: string, current: boolean) => {
@@ -277,9 +277,12 @@ export default function PassManagement() {
                                             <label htmlFor="active" className="text-sm font-medium text-pramana-cream">Make Active (Visible to users)</label>
                                         </div>
                                         <div className="flex items-center gap-2 p-3 bg-white/5 rounded-lg border border-white/5">
-                                            <input type="checkbox" id="showRemaining" className="w-5 h-5 text-pramana-gold rounded focus:ring-pramana-gold bg-black/50 border-white/30"
-                                                checked={formData.showRemaining || false} onChange={e => setFormData({ ...formData, showRemaining: e.target.checked })} />
                                             <label htmlFor="showRemaining" className="text-sm font-medium text-pramana-cream">Show Remaining Count</label>
+                                        </div>
+                                        <div className="flex items-center gap-2 p-3 bg-white/5 rounded-lg border border-white/5">
+                                            <input type="checkbox" id="showOnLanding" className="w-5 h-5 text-pramana-gold rounded focus:ring-pramana-gold bg-black/50 border-white/30"
+                                                checked={formData.showOnLanding || false} onChange={e => setFormData({ ...formData, showOnLanding: e.target.checked })} />
+                                            <label htmlFor="showOnLanding" className="text-sm font-medium text-pramana-cream">Show on Home Page (Live Passes)</label>
                                         </div>
                                         <div>
                                             <label className="text-sm font-medium text-pramana-cream block mb-1">Target Audience</label>

@@ -17,6 +17,7 @@ interface BulkPassConfig {
     paymentLink: string;
     status: 'active' | 'inactive' | 'coming_soon';
     features?: string[];
+    showOnLanding?: boolean;
 }
 
 interface BulkPassRequest {
@@ -45,7 +46,7 @@ export default function AdminBulkPassesPage() {
     const [isConfigModalOpen, setIsConfigModalOpen] = useState(false);
     const [editingConfig, setEditingConfig] = useState<BulkPassConfig | null>(null);
     const [formData, setFormData] = useState<Partial<BulkPassConfig>>({
-        name: "", memberCount: 4, price: 0, costPrice: 0, paymentLink: "", status: 'active'
+        name: "", memberCount: 4, price: 0, costPrice: 0, paymentLink: "", status: 'active', showOnLanding: false
     });
 
     const [rejectModalOpen, setRejectModalOpen] = useState(false);
@@ -129,7 +130,7 @@ export default function AdminBulkPassesPage() {
     };
 
     const resetForm = () => {
-        setFormData({ name: "", memberCount: 4, price: 0, costPrice: 0, paymentLink: "", status: 'active' });
+        setFormData({ name: "", memberCount: 4, price: 0, costPrice: 0, paymentLink: "", status: 'active', showOnLanding: false });
     };
 
     // --- Request Handlers ---
@@ -529,6 +530,11 @@ export default function AdminBulkPassesPage() {
                                     value={formData.paymentLink} onChange={e => setFormData({ ...formData, paymentLink: e.target.value })}
                                     placeholder="https://pages.razorpay.com/..."
                                 />
+                            </div>
+                            <div className="flex items-center gap-2 p-3 bg-white/5 rounded-lg border border-white/10 mt-4">
+                                <input type="checkbox" id="showOnLanding" className="w-5 h-5 text-pramana-gold rounded focus:ring-pramana-gold bg-black/50 border-white/30"
+                                    checked={formData.showOnLanding || false} onChange={e => setFormData({ ...formData, showOnLanding: e.target.checked })} />
+                                <label htmlFor="showOnLanding" className="text-sm font-medium text-pramana-cream">Show on Home Page (Live Passes)</label>
                             </div>
                         </div>
 
