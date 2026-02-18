@@ -419,7 +419,7 @@ export default function LandingPage() {
                   className="h-[350px] md:h-[450px] relative group overflow-hidden rounded-sm cursor-pointer"
                 >
                   <Image
-                    src="/uploads/artist-kasyap1.JPG"
+                    src="/uploads/artist-kasyap1.jpg"
                     alt="Kasyap"
                     fill
                     className="object-cover grayscale group-hover:grayscale-0 transition-all duration-700 ease-out group-hover:scale-105"
