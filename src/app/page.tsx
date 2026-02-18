@@ -256,7 +256,7 @@ export default function LandingPage() {
                   </div>
 
                   <div className="flex items-center gap-2 text-pramana-cream/60 font-secondary italic text-sm md:text-base tracking-wider mt-1 px-4 text-center">
-                    <MapPin className="w-3 h-3 text-pramana-gold inline-block" />
+                    <MapPin className="w-3 h-3 text-pramana-gold hidden md:inline-block" />
                     <span>GITAM(Deemed to be)University, Hyderabad</span>
                   </div>
                 </div>
@@ -419,7 +419,7 @@ export default function LandingPage() {
                   className="h-[350px] md:h-[450px] relative group overflow-hidden rounded-sm cursor-pointer"
                 >
                   <Image
-                    src="/uploads/artist-kasyap.jpg"
+                    src="/uploads/artist-kasyap.JPG"
                     alt="Kasyap"
                     fill
                     className="object-cover grayscale group-hover:grayscale-0 transition-all duration-700 ease-out group-hover:scale-105"
