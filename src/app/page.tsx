@@ -10,6 +10,9 @@ import { useState, useRef, useEffect } from "react";
 import { db } from "@/lib/firebase";
 import { collection, getDocs, query, where } from "firebase/firestore";
 import { PassConfig, BulkPassConfig } from "@/types";
+import SectionHeading from "@/components/SectionHeading";
+import AppFooter from "@/components/AppFooter";
+import LandingHeader from "@/components/LandingHeader";
 
 // --- ANIMATION VARIANTS ---
 
@@ -41,27 +44,7 @@ const Marquee = ({ children, direction = "left", speed = 20 }: { children: React
   );
 };
 
-const SectionHeading = ({ title, subtitle }: { title: string; subtitle: string }) => {
-  return (
-    <div className="mb-16 relative">
-      <motion.div
-        initial="hidden"
-        whileInView="visible"
-        viewport={{ once: true }}
-        variants={fadeUp}
-        className="flex flex-col gap-2"
-      >
-        <div className="flex items-center gap-4">
-          <div className="h-[1px] w-12 bg-pramana-gold"></div>
-          <span className="text-pramana-gold text-xs font-bold tracking-[0.3em] uppercase font-primary">{subtitle}</span>
-        </div>
-        <h2 className="text-4xl md:text-5xl font-primary font-bold text-white leading-tight">
-          {title}
-        </h2>
-      </motion.div>
-    </div>
-  );
-};
+
 
 export default function LandingPage() {
   const { user, signInWithGoogle, loading } = useAuth();
@@ -156,31 +139,8 @@ export default function LandingPage() {
     <div className="relative min-h-screen bg-[#050505] text-pramana-cream selection:bg-pramana-gold selection:text-black overflow-x-hidden">
 
       {/* --- HEADER --- */}
-      <header className="fixed top-0 left-0 right-0 z-50 px-6 py-6 transition-all duration-300">
-        <div className="max-w-7xl mx-auto flex justify-between items-center bg-black/50 backdrop-blur-xl border border-white/5 rounded-full px-6 py-3 shadow-2xl shadow-black/50">
-          {/* Left: GITAM Logo */}
-          <div className="w-32 h-10 md:w-40 md:h-12 relative opacity-90 hover:opacity-100 transition-opacity">
-            <Image src="/gitam-logo.png" alt="GITAM" fill className="object-contain object-left" sizes="(max-width: 768px) 128px, 160px" priority />
-          </div>
-
-          {/* Right: Actions */}
-          <div className="flex items-center gap-6">
-            <div className="hidden md:block w-32 relative h-10 opacity-80">
-              <Image src="/student-life-logo.png" alt="Student Life" fill className="object-contain" sizes="128px" />
-            </div>
-            <button
-              onClick={handleEntry}
-              disabled={isLoggingIn}
-              className="group relative px-6 py-2 bg-pramana-gold text-black rounded-full font-bold font-primary text-xs uppercase tracking-widest overflow-hidden disabled:opacity-70 disabled:cursor-not-allowed"
-            >
-              <span className="relative z-10 group-hover:text-white transition-colors duration-300">
-                {isLoggingIn ? "Processing..." : "Buy Passes"}
-              </span>
-              <div className="absolute inset-0 bg-white/20 transform translate-y-full group-hover:translate-y-0 transition-transform duration-300"></div>
-            </button>
-          </div>
-        </div>
-      </header>
+      {/* --- HEADER --- */}
+      <LandingHeader />
 
       {/* --- HERO SECTION --- */}
       {/* --- HERO SECTION --- */}
@@ -302,6 +262,52 @@ export default function LandingPage() {
 
         <div className="max-w-[1400px] mx-auto relative z-10 space-y-20 md:space-y-24">
           <SectionHeading title="Where Legends Take The Stage" subtitle="The Lineup" />
+
+          {/* DAY 0: The Grand Opening */}
+          <div className="relative group/day0">
+            {/* Background Watermark */}
+            <h3 className="absolute -top-10 -right-4 text-[80px] md:text-[150px] font-primary font-bold text-white/[0.03] select-none leading-none z-0 pointer-events-none text-right">
+              DAY 0
+            </h3>
+
+            <div className="relative z-10 grid grid-cols-1 md:grid-cols-12 gap-4 md:gap-5 items-start">
+              {/* Date Tag */}
+              <div className="md:col-span-12 flex items-center justify-end gap-3 mb-2 pr-1">
+                <span className="text-white/50 text-xs uppercase tracking-widest font-mono">February</span>
+                <span className="text-pramana-gold font-primary text-3xl">26</span>
+              </div>
+
+              {/* Auto Expo Card */}
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                className="md:col-start-3 md:col-span-8 h-[300px] md:h-[400px] relative group overflow-hidden rounded-sm cursor-pointer"
+              >
+                <Image
+                  src="/uploads/gallery-9.jpg"
+                  alt="Auto Expo"
+                  fill
+                  className="object-cover grayscale group-hover:grayscale-0 transition-all duration-700 ease-out group-hover:scale-105"
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-black via-black/30 to-transparent opacity-80 group-hover:opacity-60 transition-opacity duration-500"></div>
+
+                <div className="absolute bottom-0 left-0 p-6 md:p-10 w-full">
+                  <div className="overflow-hidden">
+                    <h4 className="text-3xl md:text-5xl font-primary text-white mb-2 transform translate-y-0 transition-transform duration-500">
+                      Auto Expo
+                    </h4>
+                  </div>
+                  <p className="text-pramana-gold text-base md:text-lg font-secondary italic tracking-wider opacity-80 group-hover:opacity-100 transition-opacity">
+                    The Grand Opening
+                  </p>
+                </div>
+
+                {/* Gold Border Highlight */}
+                <div className="absolute inset-0 border border-pramana-gold/0 group-hover:border-pramana-gold/50 transition-colors duration-500 pointer-events-none"></div>
+              </motion.div>
+            </div>
+          </div>
 
           {/* DAY 1: Asymmetrical "Headliner" Layout */}
           <div className="relative group/day1">
@@ -577,6 +583,57 @@ export default function LandingPage() {
         </section>
       )}
 
+      {/* --- ELITE COMPETITIONS SECTION --- */}
+      <section className="py-24 px-6 bg-[#050505] relative overflow-hidden">
+        {/* Background Gradients */}
+        <div className="absolute top-0 right-0 w-[400px] h-[400px] bg-purple-900/10 rounded-full blur-[120px] pointer-events-none"></div>
+        <div className="absolute bottom-0 left-0 w-[400px] h-[400px] bg-pramana-gold/5 rounded-full blur-[120px] pointer-events-none"></div>
+
+        <div className="max-w-7xl mx-auto relative z-10">
+          <SectionHeading title="Unleash Your Potential" subtitle="Elite Competitions" />
+
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mt-16">
+
+            {/* Cultural Battles Card */}
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              className="group relative h-[400px] rounded-2xl overflow-hidden border border-white/10 bg-white/5 hover:border-pramana-gold/50 transition-all duration-500"
+            >
+              {/* Background Image / Gradient */}
+              <div className="absolute inset-0 bg-gradient-to-b from-transparent via-black/60 to-black z-10"></div>
+              <div className="absolute inset-0 bg-[url('/uploads/cultural-poster.jpg')] bg-cover bg-center opacity-50 group-hover:scale-110 transition-transform duration-700"></div>
+
+              {/* Hover Glow */}
+              <div className="absolute inset-0 bg-pramana-gold/0 group-hover:bg-pramana-gold/10 transition-colors duration-500 z-10"></div>
+
+              {/* Content */}
+              <div className="absolute inset-0 p-8 flex flex-col justify-end z-20">
+                <div className="transform translate-y-4 group-hover:translate-y-0 transition-transform duration-500">
+                  <h3 className="text-3xl font-primary font-bold text-white mb-2">Cultural Battles</h3>
+                  <p className="text-pramana-cream/70 font-tertiary text-sm mb-6 line-clamp-3 group-hover:text-white transition-colors">
+                    Dance, Music, Drama, and more. Step into the spotlight and compete with the best.
+                  </p>
+
+                  <Link href="/culturals" className="inline-flex items-center gap-3 text-pramana-gold font-bold uppercase tracking-widest text-xs group-hover:text-white transition-colors">
+                    <span>View Details</span>
+                    <ArrowRight className="w-4 h-4 transform group-hover:translate-x-1 transition-transform" />
+                  </Link>
+                </div>
+              </div>
+            </motion.div>
+
+            {/* Placeholder for future competitions */}
+            {/* <div className="h-[400px] flex items-center justify-center border border-white/5 rounded-2xl bg-white/[0.02]">
+              <span className="text-white/20 font-mono uppercase tracking-widest text-xs">Coming Soon</span>
+            </div> */}
+
+          </div>
+
+        </div>
+      </section>
+
       {/* --- THREE DAYS. THREE VIBES. SECTION (Static Grid) --- */}
       <section className="py-24 px-6 relative overflow-hidden">
         {/* Background Elements */}
@@ -700,6 +757,56 @@ export default function LandingPage() {
         </div>
       </section>
 
+      {/* --- PEOPLE BEHIND BACKSTAGE (Redesigned) --- */}
+      <section className="py-32 bg-black relative overflow-hidden flex flex-col items-center justify-center min-h-[60vh]">
+        {/* Animated Background Layers */}
+        <div className="absolute inset-0 bg-[url('/noise.png')] opacity-[0.05] mix-blend-overlay"></div>
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-pramana-gold/5 rounded-full blur-[150px] animate-pulse"></div>
+
+        {/* Floating Particles/Orbs */}
+        <div className="absolute top-1/4 left-1/4 w-2 h-2 bg-pramana-gold/20 rounded-full blur-sm animate-bounce duration-[3s]"></div>
+        <div className="absolute bottom-1/3 right-1/4 w-3 h-3 bg-pramana-gold/10 rounded-full blur-md animate-bounce duration-[5s]"></div>
+
+        <div className="max-w-7xl mx-auto text-center relative z-10 px-6">
+
+          <motion.div
+            initial={{ opacity: 0, y: 30 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.8 }}
+            className="mb-8"
+          >
+            <span className="text-pramana-gold/80 font-mono text-sm tracking-[0.3em] uppercase mb-4 block">
+              The Unseen Forces
+            </span>
+            <h2 className="text-5xl md:text-8xl font-primary font-bold text-transparent bg-clip-text bg-gradient-to-b from-white via-white/80 to-white/20 tracking-tighter mb-6 relative">
+              ARCHITECTS <br className="md:hidden" />
+              <span className="text-pramana-gold font-serif italic">OF</span> CHAOS
+            </h2>
+            <p className="max-w-xl mx-auto text-white/40 font-tertiary text-lg leading-relaxed">
+              Orchestrating the grand spectacle from the shadows.
+            </p>
+          </motion.div>
+
+          <motion.div
+            initial={{ opacity: 0, scale: 0.9 }}
+            whileInView={{ opacity: 1, scale: 1 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.5, delay: 0.2 }}
+          >
+            <Link href="/team" className="group relative inline-flex items-center gap-4 px-8 py-4 bg-white/5 border border-white/10 rounded-full overflow-hidden hover:border-pramana-gold/50 hover:bg-white/10 transition-all duration-500">
+              <span className="relative z-10 text-white font-bold tracking-widest uppercase text-sm group-hover:text-pramana-gold transition-colors">
+                Reveal The Team
+              </span>
+              <div className="w-8 h-8 rounded-full bg-pramana-gold/20 flex items-center justify-center group-hover:bg-pramana-gold group-hover:text-black transition-all duration-500">
+                <ArrowRight className="w-4 h-4 -rotate-45 group-hover:rotate-0 transition-transform duration-500" />
+              </div>
+            </Link>
+          </motion.div>
+
+        </div>
+      </section>
+
       {/* --- GALLERY SLIDER --- */}
       <section className="py-24 bg-[#050505] overflow-hidden">
         <div className="max-w-7xl mx-auto px-6 mb-12">
@@ -764,67 +871,8 @@ export default function LandingPage() {
       </section>
 
       {/* --- FOOTER --- */}
-      <footer className="pt-24 pb-12 px-6 bg-[#020202] border-t border-white/5">
-        <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-4 gap-12 mb-16">
-          <div className="col-span-1 md:col-span-2 space-y-6">
-            <div className="w-32 relative h-10 opacity-60">
-              <Image src="/pramana-logo.png" alt="Pramana" fill className="object-contain object-left" sizes="128px" />
-            </div>
-            <p className="text-pramana-cream/60 max-w-sm font-tertiary leading-relaxed">
-              Experience the pulse of Hyderabad at the region's largest student festival. Where innovation meets tradition.
-            </p>
-            <div className="flex gap-4 pt-4">
-              {[
-                { Icon: Instagram, link: "https://www.instagram.com/pramana_2026.gitam/" },
-                { Icon: Linkedin, link: "https://www.linkedin.com/company/pramana26/" },
-                { Icon: Mail, link: "mailto:pramana.hyd@gitam.edu" }
-              ].map(({ Icon, link }, i) => (
-                <a key={i} href={link} target={link.startsWith('http') ? "_blank" : undefined} rel={link.startsWith('http') ? "noopener noreferrer" : undefined} className="w-10 h-10 rounded-full border border-white/10 flex items-center justify-center hover:bg-pramana-gold hover:border-pramana-gold hover:text-black transition-all duration-300">
-                  <Icon className="w-4 h-4" />
-                </a>
-              ))}
-            </div>
-          </div>
 
-          <div>
-            <h4 className="font-primary text-white font-bold mb-6 text-sm uppercase tracking-widest">Navigate</h4>
-            <ul className="space-y-4 text-sm text-pramana-cream/50 font-mono">
-              {['Buy Passes', 'Login', 'Schedule', 'Sponsors'].map((item) => (
-                <li key={item}>
-                  <button
-                    onClick={item === 'Buy Passes' || item === 'Login' ? handleEntry : undefined}
-                    className="hover:text-pramana-gold transition-colors text-left"
-                  >
-                    {item}
-                  </button>
-                </li>
-              ))}
-            </ul>
-          </div>
-
-          <div>
-            <h4 className="font-primary text-white font-bold mb-6 text-sm uppercase tracking-widest">Visit Us</h4>
-            <ul className="space-y-4 text-sm text-pramana-cream/50 font-tertiary">
-              <li className="flex items-start gap-3">
-                <MapPin className="w-4 h-4 mt-1 text-pramana-gold" />
-                <span>GITAM Deemed to be University,<br />Hyderabad Campus, Telangana</span>
-              </li>
-              <li className="flex items-start gap-3">
-                <Mail className="w-4 h-4 mt-1 text-pramana-gold" />
-                <span>pramana.hyd@gitam.edu</span>
-              </li>
-            </ul>
-          </div>
-        </div>
-
-        <div className="max-w-7xl mx-auto pt-8 border-t border-white/5 flex flex-col md:flex-row justify-between items-center gap-4 text-[10px] text-pramana-cream/30 font-mono uppercase tracking-widest">
-          <div>© 2026 PRAMANA. All rights reserved.</div>
-          <div className="flex gap-6">
-            <a href="#" className="hover:text-white transition-colors">Privacy</a>
-            <a href="#" className="hover:text-white transition-colors">Terms</a>
-          </div>
-        </div>
-      </footer>
+      <AppFooter />
 
     </div>
   );
