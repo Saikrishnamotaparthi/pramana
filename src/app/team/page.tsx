@@ -14,57 +14,57 @@ const teamData = [
     {
         category: "Leadership Panel",
         members: [
-            { name: "Adepu Suraj", image: "/team/1.jpg" },
-            { name: "Praneeth", image: "/team/4.jpg" },
-            { name: "Pradyumna", image: "/team/2.jpg" },
-            { name: "Sharan", image: "/team/3.jpg" },
+            { name: "Adepu Suraj", image: "/team/1.JPG" },
+            { name: "Praneeth", image: "/team/4.JPG" },
+            { name: "Pradyumna", image: "/team/2.JPG" },
+            { name: "Sharan", image: "/team/3.JPG" },
 
         ]
     },
     {
-        category: "Technology",
+        category: "Tech",
         members: [
-            { name: "Sai Krishna", image: "/team/5.1.jpg" },
-            { name: "Teja", image: "/team/6.jpg" },
+            { name: "Sai Krishna", image: "/team/5.1.JPG" },
+            { name: "Teja", image: "/team/6.JPG" },
         ]
     },
     {
         category: "Sponsorship",
         members: [
-            { name: "Siddharth Goud", image: "/team/7.jpg" },
-            { name: "Arvind", image: "/team/8.jpg" },
+            { name: "Siddharth Goud", image: "/team/7.JPG" },
+            { name: "Arvind", image: "/team/8.JPG" },
         ]
     },
     {
         category: "Finance",
         members: [
-            { name: "Anshul Rai", image: "/team/9.jpg" },
+            { name: "Anshul Rai", image: "/team/9.JPG" },
         ]
     },
     {
         category: "Food & Stalls",
         members: [
-            { name: "Riteesh Reddy", image: "/team/10.jpg" },
-            { name: "Rahul Reddy", image: "/team/11.jpg" },
-            { name: "Rahul", image: "/team/12.jpg" },
+            { name: "Riteesh Reddy", image: "/team/10.JPG" },
+            { name: "Rahul Reddy", image: "/team/11.JPG" },
+            { name: "Rahul", image: "/team/12.JPG" },
         ]
     },
     {
         category: "Culturals",
         members: [
-            { name: "Sahithi cholleti", image: "/team/13.jpg" },
+            { name: "Sahithi cholleti", image: "/team/13.JPG" },
         ]
     },
     {
         category: "Production",
         members: [
-            { name: "Jashwanth Thota", image: "/team/14.jpg" },
+            { name: "Jashwanth Thota", image: "/team/14.JPG" },
         ]
     },
     {
         category: "Backstage Operations",
         members: [
-            { name: "Ridhima Mamgain", image: "/team/15.jpg" },
+            { name: "Ridhima Mamgain", image: "/team/15.JPG" },
             { name: "Sanjana", image: "/team/16.jpeg" },
         ]
     },
@@ -78,20 +78,20 @@ const teamData = [
     {
         category: "Artist Management",
         members: [
-            { name: "Fareed", image: "/team/19.jpg" },
-            { name: "Sharaa Shaaz", image: "/team/20.jpg" },
+            { name: "Fareed", image: "/team/19.JPG" },
+            { name: "Sharaa Shaaz", image: "/team/20.JPG" },
         ]
     },
     {
         category: "Hospitality",
         members: [
-            { name: "Rishitha", image: "/team/21.jpg" },
+            { name: "Rishitha", image: "/team/21.JPG" },
         ]
     },
     {
         category: "Media",
         members: [
-            { name: "Rohan Sai", image: "/team/22.jpg" },
+            { name: "Rohan Sai", image: "/team/22.JPG" },
         ]
     },
     {
@@ -106,13 +106,13 @@ const teamData = [
         category: "Crowd Control",
         members: [
             { name: "Sravan", image: "/team/25.jpeg" },
-            { name: "Manikanta", image: "/team/26.jpg" },
+            { name: "Manikanta", image: "/team/26.JPG" },
         ]
     },
     {
         category: "Operations",
         members: [
-            { name: "Bhanu teja", image: "/team/27.jpg" },
+            { name: "Bhanu teja", image: "/team/27.JPG" },
             { name: "Sharmistha", image: "/team/28.jpeg" },
         ]
     },
@@ -125,28 +125,28 @@ const teamData = [
     {
         category: "Sustainability",
         members: [
-            { name: "Moksha chowdary", image: "/team/30.jpg" },
+            { name: "Moksha chowdary", image: "/team/30.JPG" },
         ]
     },
     {
         category: "Documentation",
         members: [
-            { name: "Sathvik", image: "/team/31.jpg" },
-            { name: "Diya Goyal", image: "/team/32.jpg" },
-            { name: "Justin Joy", image: "/team/33.jpg" },
+            { name: "Sathvik", image: "/team/31.JPG" },
+            { name: "Diya Goyal", image: "/team/32.JPG" },
+            { name: "Justin Joy", image: "/team/33.JPG" },
         ]
     },
     {
         category: "Graphic Design",
         members: [
-            { name: "Shreya Kondur", image: "/team/34.jpg" },
-            { name: "Nitish", image: "/team/35.jpg" },
+            { name: "Shreya Kondur", image: "/team/34.JPG" },
+            { name: "Nitish", image: "/team/35.JPG" },
         ]
     },
     {
         category: "Liaisoning",
         members: [
-            { name: "Arshiya", image: "/team/36.jpg" },
+            { name: "Arshiya", image: "/team/36.JPG" },
         ]
     },
 ];
