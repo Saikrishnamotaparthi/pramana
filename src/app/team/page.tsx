@@ -15,9 +15,10 @@ const teamData = [
         category: "Leadership Panel",
         members: [
             { name: "Adepu Suraj", image: "/team/1.jpg" },
+            { name: "Praneeth", image: "/team/4.jpg" },
             { name: "Pradyumna", image: "/team/2.jpg" },
             { name: "Sharan", image: "/team/3.jpg" },
-            { name: "Praneeth", image: "/team/4.jpg" },
+
         ]
     },
     {
