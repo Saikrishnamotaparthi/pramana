@@ -21,7 +21,9 @@ export default function AdminSettingsPage() {
         "off-the-record-Duo/Trio-limit": undefined,
         "off-the-record-Band-limit": undefined,
         "raw-and-real-Solo-limit": undefined,
-        "raw-and-real-Crew-limit": undefined
+        "raw-and-real-Crew-limit": undefined,
+        "food-stall-b-payment": "",
+        "food-stall-c-payment": ""
     });
     const [loading, setLoading] = useState(true);
     const [saving, setSaving] = useState(false);
@@ -47,8 +49,9 @@ export default function AdminSettingsPage() {
                         "off-the-record-Solo-limit": docSnap.data()["off-the-record-Solo-limit"],
                         "off-the-record-Duo/Trio-limit": docSnap.data()["off-the-record-Duo/Trio-limit"],
                         "off-the-record-Band-limit": docSnap.data()["off-the-record-Band-limit"],
-                        "raw-and-real-Solo-limit": docSnap.data()["raw-and-real-Solo-limit"],
                         "raw-and-real-Crew-limit": docSnap.data()["raw-and-real-Crew-limit"],
+                        "food-stall-b-payment": docSnap.data()["food-stall-b-payment"] || "",
+                        "food-stall-c-payment": docSnap.data()["food-stall-c-payment"] || "",
                     });
                 }
             } catch (error) {
@@ -109,7 +112,36 @@ export default function AdminSettingsPage() {
                             </div>
                         ) : (
                             <form onSubmit={handleSave} className="space-y-6">
-                                <div className="space-y-4">
+                                <div className="space-y-4 mb-8">
+                                    <h3 className="text-lg text-pramana-gold font-bold">Food Stall Payment Links</h3>
+                                    <div className="space-y-2">
+                                        <label className="text-sm uppercase tracking-widest text-pramana-gold/80 font-bold">
+                                            Category B Payment Link
+                                        </label>
+                                        <input
+                                            type="url"
+                                            value={links["food-stall-b-payment"]}
+                                            onChange={(e) => setLinks({ ...links, "food-stall-b-payment": e.target.value })}
+                                            placeholder="https://g-events.com/pay/..."
+                                            className="w-full bg-white/5 border border-white/10 rounded-lg p-4 text-white focus:border-pramana-gold focus:outline-none focus:ring-1 focus:ring-pramana-gold transition-all"
+                                        />
+                                    </div>
+
+                                    <div className="space-y-2">
+                                        <label className="text-sm uppercase tracking-widest text-pramana-gold/80 font-bold">
+                                            Category C Payment Link
+                                        </label>
+                                        <input
+                                            type="url"
+                                            value={links["food-stall-c-payment"]}
+                                            onChange={(e) => setLinks({ ...links, "food-stall-c-payment": e.target.value })}
+                                            placeholder="https://g-events.com/pay/..."
+                                            className="w-full bg-white/5 border border-white/10 rounded-lg p-4 text-white focus:border-pramana-gold focus:outline-none focus:ring-1 focus:ring-pramana-gold transition-all"
+                                        />
+                                    </div>
+                                </div>
+
+                                <div className="space-y-4 border-t border-white/10 pt-6">
                                     <h3 className="text-lg text-pramana-gold font-bold">WhatsApp Group Links</h3>
                                     <div className="space-y-2">
                                         <label className="text-sm uppercase tracking-widest text-pramana-gold/80 font-bold">

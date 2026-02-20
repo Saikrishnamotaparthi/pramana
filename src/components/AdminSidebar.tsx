@@ -31,6 +31,7 @@ const links = [
     { href: "/admin/manage-admins", label: "Admins", icon: Shield },
     { href: "/admin/scan-pass", label: "Scan Pass", icon: ScanLine },
     { href: "/admin/culturals", label: "Cultural Events", icon: Music },
+    { href: "/admin/foodstalls", label: "Food Stalls", icon: ClipboardList },
     { href: "/issue-pass", label: "Physical Issue", icon: Printer },
     { href: "/admin/bulk-passes", label: "Bulk Passes", icon: Users },
     { href: "/admin/settings", label: "Settings", icon: ClipboardList },

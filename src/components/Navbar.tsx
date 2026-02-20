@@ -9,7 +9,7 @@ export default function Navbar() {
     const pathname = usePathname();
 
     // Hide Navbar on specific routes
-    if (pathname === '/' || pathname === '/culturals' || pathname === '/team') return null;
+    if (pathname === '/' || pathname === '/culturals' || pathname === '/team' || pathname.startsWith('/foodstalls')) return null;
 
     return (
         <nav className="border-b border-white/10 bg-black/50 backdrop-blur-md px-6 py-4 sticky top-0 z-50">

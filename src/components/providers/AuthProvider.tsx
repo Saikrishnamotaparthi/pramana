@@ -44,8 +44,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
                     if (dbUser.role === 'superadmin' && !pathname.startsWith('/admin') && pathname !== '/entry') {
                         router.push("/admin");
-                    } else if (!dbUser.isRegistered && pathname !== "/register") {
-                        router.push(pathname !== "/" ? `/register?returnUrl=${encodeURIComponent(pathname)}` : "/register");
+                    } else if (!dbUser.isRegistered) {
+                        const allowedPaths = ['/register', '/foodstalls'];
+                        const isAllowed = allowedPaths.some(p => pathname === p || pathname.startsWith(`${p}/`));
+                        if (!isAllowed) {
+                            router.push(pathname !== "/" ? `/register?returnUrl=${encodeURIComponent(pathname)}` : "/register");
+                        }
                     }
                 } else {
                     // New user
@@ -68,8 +72,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
                     setUser(newUser);
                     if (isSuperAdmin) {
                         router.push("/admin");
-                    } else if (pathname !== "/register") {
-                        router.push(pathname !== "/" ? `/register?returnUrl=${encodeURIComponent(pathname)}` : "/register");
+                    } else {
+                        const allowedPaths = ['/register', '/foodstalls'];
+                        const isAllowed = allowedPaths.some(p => pathname === p || pathname.startsWith(`${p}/`));
+                        if (!isAllowed) {
+                            router.push(pathname !== "/" ? `/register?returnUrl=${encodeURIComponent(pathname)}` : "/register");
+                        }
                     }
                 }
             } else {
@@ -89,9 +97,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             document.cookie = "auth_status=true; path=/; max-age=86400; SameSite=Lax";
 
             // 1. Unregistered Users -> Restriction
-            if (!user.isRegistered && pathname !== "/register") {
-                router.replace(pathname !== "/" ? `/register?returnUrl=${encodeURIComponent(pathname)}` : "/register");
-                return;
+            if (!user.isRegistered) {
+                const allowedPaths = ['/register', '/foodstalls'];
+                const isAllowed = allowedPaths.some(p => pathname === p || pathname.startsWith(`${p}/`));
+                if (!isAllowed) {
+                    router.replace(pathname !== "/" ? `/register?returnUrl=${encodeURIComponent(pathname)}` : "/register");
+                    return;
+                }
             }
 
             // 2. Registered Users trying to access Register -> Restriction

@@ -110,5 +110,17 @@ service cloud.firestore {
       );
       allow update: if isAdminOrSuper();
     }
+
+    // Food Stalls
+    match /foodStalls/{stallId} {
+      allow read: if true;
+      allow write: if isAdminOrSuper();
+    }
+
+    // Food Stall Bookings
+    match /foodStallBookings/{bookingId} {
+      allow read: if isViewAdmin() || (request.auth != null && resource.data.userId == request.auth.uid);
+      allow write: if isAdminOrSuper();
+    }
   }
 }
