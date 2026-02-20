@@ -42,15 +42,22 @@ export async function GET(req: NextRequest) {
         }
 
         const data = docSnap.data();
-        const filePath = data?.paymentScreenshotPath;
+        let filePath = data?.paymentScreenshotPath;
 
         if (!filePath) {
             return NextResponse.json({ error: "File path not found in record" }, { status: 404 });
         }
 
-        // 3. Serve File
+        // Handle absolute paths from different environments (e.g., Windows to Linux)
         if (!existsSync(filePath)) {
-            return NextResponse.json({ error: "File missing on server storage" }, { status: 404 });
+            const fileName = filePath.split(/[/\\]/).pop();
+            const fallbackPath = require('path').join(process.cwd(), "secure_uploads", "culturals", fileName || "");
+
+            if (fileName && existsSync(fallbackPath)) {
+                filePath = fallbackPath;
+            } else {
+                return NextResponse.json({ error: "File missing on server storage" }, { status: 404 });
+            }
         }
 
         const fileBuffer = await readFile(filePath);

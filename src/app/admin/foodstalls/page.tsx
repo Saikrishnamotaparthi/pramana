@@ -44,7 +44,7 @@ export default function AdminFoodStallsPage() {
     const [viewImageObj, setViewImageObj] = useState<{ url: string, name: string } | null>(null);
 
     useEffect(() => {
-        if (!authLoading && (!user || (user.role !== 'admin' && user.role !== 'superadmin'))) {
+        if (!authLoading && (!user || (user.role !== 'admin' && user.role !== 'superadmin' && user.role !== 'food_admin'))) {
             router.replace("/admin");
             return;
         }
@@ -75,7 +75,7 @@ export default function AdminFoodStallsPage() {
     };
 
     useEffect(() => {
-        if (user && (user.role === 'admin' || user.role === 'superadmin')) {
+        if (user && (user.role === 'admin' || user.role === 'superadmin' || user.role === 'food_admin')) {
             fetchData();
         }
     }, [user]);

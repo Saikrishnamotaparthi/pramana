@@ -118,7 +118,8 @@ export default function ManageAdmins() {
                                                         u.role === 'admin' ? 'bg-blue-900/40 text-blue-400 border-blue-500/30' :
                                                             u.role === 'view_admin' ? 'bg-yellow-900/40 text-yellow-400 border-yellow-500/30' :
                                                                 u.role === 'marketing_admin' ? 'bg-orange-900/40 text-orange-400 border-orange-500/30' :
-                                                                    u.role === 'cul_admin' ? 'bg-pink-900/40 text-pink-400 border-pink-500/30' : 'bg-gray-800 text-gray-400 border-gray-600'}`}>
+                                                                    u.role === 'cul_admin' ? 'bg-pink-900/40 text-pink-400 border-pink-500/30' :
+                                                                        u.role === 'food_admin' ? 'bg-emerald-900/40 text-emerald-400 border-emerald-500/30' : 'bg-gray-800 text-gray-400 border-gray-600'}`}>
                                                     {u.role.replace('_', ' ')}
                                                 </span>
                                             </td>
@@ -148,6 +149,10 @@ export default function ManageAdmins() {
                                                         <button onClick={() => handleRoleUpdate(u.uid, 'cul_admin')}
                                                             className={`px-3 py-1.5 text-xs font-bold rounded-lg transition ${u.role === 'cul_admin' ? 'bg-white/5 text-gray-500 cursor-not-allowed' : 'bg-pink-900/30 text-pink-400 hover:bg-pink-900/50 border border-pink-500/30'}`}>
                                                             Cultural Admin
+                                                        </button>
+                                                        <button onClick={() => handleRoleUpdate(u.uid, 'food_admin')}
+                                                            className={`px-3 py-1.5 text-xs font-bold rounded-lg transition ${u.role === 'food_admin' ? 'bg-white/5 text-gray-500 cursor-not-allowed' : 'bg-emerald-900/30 text-emerald-400 hover:bg-emerald-900/50 border border-emerald-500/30'}`}>
+                                                            Food Admin
                                                         </button>
                                                         <button onClick={() => handleRoleUpdate(u.uid, 'user')}
                                                             className="px-3 py-1.5 text-xs font-bold rounded-lg bg-red-900/30 text-red-400 hover:bg-red-900/50 border border-red-500/30 transition">
@@ -220,6 +225,12 @@ export default function ManageAdmins() {
                                                 className="bg-pink-600/20 text-pink-400 border border-pink-500/30 hover:bg-pink-600/30 px-3 py-1 rounded text-sm font-bold transition"
                                             >
                                                 Cultural Admin
+                                            </button>
+                                            <button
+                                                onClick={() => { handleRoleUpdate(foundUser.uid, 'food_admin'); setShowAddModal(false); }}
+                                                className="bg-emerald-600/20 text-emerald-400 border border-emerald-500/30 hover:bg-emerald-600/30 px-3 py-1 rounded text-sm font-bold transition"
+                                            >
+                                                Food Admin
                                             </button>
                                         </div>
                                     </div>

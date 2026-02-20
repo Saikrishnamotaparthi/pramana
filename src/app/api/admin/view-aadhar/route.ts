@@ -49,18 +49,17 @@ export async function GET(req: NextRequest) {
             return NextResponse.json({ error: "Aadhar file not found for this user" }, { status: 404 });
         }
 
-        // Path Normalization for Linux
-        if (process.platform !== 'win32') {
-            filePath = filePath.replace(/\\/g, '/');
-            if (filePath.includes(':')) {
-                filePath = filePath.split(':').pop();
-            }
-        }
-
-        // 3. Check if file exists on server
+        // 3. Check if file exists on server, fallback to dynamic path reconstruction
         if (!existsSync(filePath)) {
-            console.error(`[View Aadhar] File missing at: ${filePath}`);
-            return NextResponse.json({ error: `File missing on server storage: ${filePath}` }, { status: 404 });
+            const fileName = filePath.split(/[/\\]/).pop();
+            const fallbackPath = require('path').join(process.cwd(), "secure_uploads", "aadhar", fileName || "");
+
+            if (fileName && existsSync(fallbackPath)) {
+                filePath = fallbackPath;
+            } else {
+                console.error(`[View Aadhar] File missing at both direct and fallback paths: ${filePath}`);
+                return NextResponse.json({ error: `File missing on server storage.` }, { status: 404 });
+            }
         }
 
         // 4. Read and Serve File

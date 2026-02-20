@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { adminDb } from "@/lib/firebase-admin";
 import { readFile } from "fs/promises";
 import { existsSync } from "fs";
+import { join } from "path";
 
 export async function GET(req: NextRequest) {
     try {
@@ -21,10 +22,22 @@ export async function GET(req: NextRequest) {
         }
 
         const data = bookingDoc.data();
-        const screenshotPath = data?.screenshotPath;
+        let screenshotPath = data?.screenshotPath;
 
-        if (!screenshotPath || !existsSync(screenshotPath)) {
-            return new NextResponse("Screenshot not found on server", { status: 404 });
+        if (!screenshotPath) {
+            return new NextResponse("Screenshot not found in database record", { status: 404 });
+        }
+
+        // If direct absolute path fails (common between dev/prod environments), reconstruct it
+        if (!existsSync(screenshotPath)) {
+            const fileName = screenshotPath.split(/[/\\]/).pop();
+            const fallbackPath = join(process.cwd(), "secure_uploads", "foodstalls", fileName || "");
+
+            if (fileName && existsSync(fallbackPath)) {
+                screenshotPath = fallbackPath;
+            } else {
+                return new NextResponse("Screenshot not found on server storage", { status: 404 });
+            }
         }
 
         // 2. Serve Image

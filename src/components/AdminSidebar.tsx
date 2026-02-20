@@ -18,7 +18,7 @@ import {
 } from "lucide-react";
 import { useState } from "react";
 import { useAuth } from "@/hooks/useAuth";
-import { canAccessBulkIssue, canManageAdmins, isMarketingAdmin, isPpassAdmin, isCulturalAdmin } from "@/utils/rbac";
+import { canAccessBulkIssue, canManageAdmins, isMarketingAdmin, isPpassAdmin, isCulturalAdmin, isFoodAdmin } from "@/utils/rbac";
 
 const links = [
     { href: "/admin", label: "Dashboard", icon: LayoutDashboard },
@@ -92,6 +92,11 @@ export default function AdminSidebar() {
                         // Cultural Admin Restrictions - ONLY Culturals
                         if (isCulturalAdmin(user)) {
                             return link.href === '/admin/culturals';
+                        }
+
+                        // Food Admin Restrictions - ONLY Foodstalls
+                        if (isFoodAdmin(user)) {
+                            return link.href === '/admin/foodstalls';
                         }
 
                         // PPASS Admin Restrictions

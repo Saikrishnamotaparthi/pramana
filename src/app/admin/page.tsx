@@ -62,6 +62,11 @@ export default function AdminDashboard() {
             return;
         }
 
+        if (user?.role === 'food_admin') {
+            router.replace("/admin/foodstalls");
+            return;
+        }
+
         // Only fetch config initially (lightweight)
         const fetchConfig = async () => {
             if (user && (user.role === 'admin' || user.role === 'superadmin' || user.role === 'view_admin' || user.role === 'marketing_admin')) {

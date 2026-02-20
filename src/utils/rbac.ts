@@ -16,6 +16,10 @@ export const isCulturalAdmin = (user: UserProfile | null) => {
     return user?.role === 'cul_admin';
 };
 
+export const isFoodAdmin = (user: UserProfile | null) => {
+    return user?.role === 'food_admin';
+};
+
 export const canIssuePasses = (user: UserProfile | null) => {
     if (!user) return false;
     // View Admin and Marketing Admin cannot issue passes

@@ -18,7 +18,14 @@ service cloud.firestore {
       let role = getUserRole();
       return role == 'admin' || role == 'superadmin';
     }
-    
+    function isPpassAdmin() {
+      return getUserRole() == 'ppass_admin';
+    }
+
+    function isFoodAdmin() {
+      return getUserRole() == 'food_admin';
+    }
+
     function isOwner(userId) {
       return request.auth != null && request.auth.uid == userId;
     }
@@ -45,10 +52,6 @@ service cloud.firestore {
     match /coupons/{couponId} {
       allow read: if true;
       allow write: if isAdminOrSuper();
-    }
-    
-    function isPpassAdmin() {
-      return getUserRole() == 'ppass_admin';
     }
 
     // Passes Issued
@@ -114,13 +117,13 @@ service cloud.firestore {
     // Food Stalls
     match /foodStalls/{stallId} {
       allow read: if true;
-      allow write: if isAdminOrSuper();
+      allow write: if isAdminOrSuper() || isFoodAdmin();
     }
 
     // Food Stall Bookings
     match /foodStallBookings/{bookingId} {
-      allow read: if isViewAdmin() || (request.auth != null && resource.data.userId == request.auth.uid);
-      allow write: if isAdminOrSuper();
+      allow read: if isViewAdmin() || isFoodAdmin() || (request.auth != null && resource.data.userId == request.auth.uid);
+      allow write: if isAdminOrSuper() || isFoodAdmin();
     }
   }
 }
