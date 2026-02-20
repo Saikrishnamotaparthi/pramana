@@ -128,7 +128,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
                 if (!pathname.startsWith('/issue-pass')) {
                     router.replace("/issue-pass");
                 }
-            } else if (user.role === 'superadmin' || user.role === 'admin' || user.role === 'view_admin' || user.role === 'marketing_admin') {
+            } else if (user.role === 'superadmin' || user.role === 'admin' || user.role === 'view_admin' || user.role === 'marketing_admin' || user.role === 'cul_admin' || user.role === 'food_admin') {
                 // Admins Logic
                 // If landing on root, guide to admin. Otherwise allow freedom.
                 if (pathname === "/") {

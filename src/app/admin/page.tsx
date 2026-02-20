@@ -47,7 +47,7 @@ export default function AdminDashboard() {
     });
 
     useEffect(() => {
-        if (!loading && (!user || (user.role !== 'admin' && user.role !== 'superadmin' && user.role !== 'view_admin' && user.role !== 'marketing_admin' && user.role !== 'ppass_admin' && user.role !== 'cul_admin'))) {
+        if (!loading && (!user || (user.role !== 'admin' && user.role !== 'superadmin' && user.role !== 'view_admin' && user.role !== 'marketing_admin' && user.role !== 'ppass_admin' && user.role !== 'cul_admin' && user.role !== 'food_admin'))) {
             router.push("/");
             return;
         }
