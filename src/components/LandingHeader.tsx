@@ -11,14 +11,25 @@ const LandingHeader = () => {
     const [isLoggingIn, setIsLoggingIn] = useState(false);
 
     const handleEntry = async () => {
-        if (loading || isLoggingIn) return; // Prevent double clicks or conflicts
+        if (loading || isLoggingIn) return;
+
         if (user) {
-            router.push("/tickets");
+            const adminRoles = ['superadmin', 'admin', 'view_admin', 'marketing_admin', 'cul_admin', 'food_admin'];
+            if (adminRoles.includes(user.role)) {
+                router.push("/admin");
+            } else if (user.role === 'ppass_admin') {
+                router.push("/issue-pass");
+            } else {
+                router.push("/tickets");
+            }
         } else {
             setIsLoggingIn(true);
             try {
                 await signInWithGoogle();
-                router.push("/tickets");
+                // AuthProvider will detect the login and handle redirection 
+                // for admins based on the changes we just made.
+                // For regular users, we can wait a bit or let it happen.
+                // To be safe, we allow the provider to settle.
             } catch (error) {
                 console.error("Login failed", error);
             } finally {

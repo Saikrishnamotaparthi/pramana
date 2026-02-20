@@ -16,7 +16,7 @@ export default function Navbar() {
             <div className="mx-auto flex max-w-7xl items-center justify-between">
                 <div className="flex items-center gap-8">
                     <Link
-                        href={pathname.startsWith("/culturals") ? "/culturals" : user && (user.role === 'admin' || user.role === 'superadmin' || user.role === 'view_admin' || user.role === 'cul_admin') ? "/admin" : user?.role === 'ppass_admin' ? "/issue-pass" : "/dashboard"}
+                        href={pathname.startsWith("/culturals") ? "/culturals" : user && (user.role === 'admin' || user.role === 'superadmin' || user.role === 'view_admin' || user.role === 'cul_admin' || user.role === 'food_admin') ? "/admin" : user?.role === 'ppass_admin' ? "/issue-pass" : "/dashboard"}
                         className="text-xl font-primary font-bold tracking-widest text-pramana-gold"
                     >
                         PRAMANA26
@@ -33,7 +33,7 @@ export default function Navbar() {
                             </Link>
                         )}
                         {/* Link removed as per user request */}
-                        {user && (user.role === 'admin' || user.role === 'superadmin' || user.role === 'view_admin' || user.role === 'cul_admin') && (
+                        {user && (user.role === 'admin' || user.role === 'superadmin' || user.role === 'view_admin' || user.role === 'cul_admin' || user.role === 'food_admin') && (
                             <Link href="/admin" className="text-sm font-medium text-pramana-cream/80 hover:text-pramana-gold transition">
                                 Admin Portal
                             </Link>

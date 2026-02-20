@@ -42,8 +42,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
                     setUser(dbUser);
 
-                    if (dbUser.role === 'superadmin' && !pathname.startsWith('/admin') && pathname !== '/entry') {
+                    const adminRoles = ['superadmin', 'admin', 'view_admin', 'marketing_admin', 'cul_admin', 'food_admin'];
+                    if (adminRoles.includes(dbUser.role) && !pathname.startsWith('/admin') && pathname !== '/entry' && pathname !== '/issue-pass') {
                         router.push("/admin");
+                    } else if (dbUser.role === 'entry_admin' && !pathname.startsWith('/entry')) {
+                        router.push("/entry");
+                    } else if (dbUser.role === 'ppass_admin' && !pathname.startsWith('/issue-pass')) {
+                        router.push("/issue-pass");
                     } else if (!dbUser.isRegistered) {
                         const allowedPaths = ['/register', '/foodstalls'];
                         const isAllowed = allowedPaths.some(p => pathname === p || pathname.startsWith(`${p}/`));
@@ -70,8 +75,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
                     await setDoc(userRef, newUser);
                     setUser(newUser);
-                    if (isSuperAdmin) {
+                    const adminRoles = ['superadmin', 'admin', 'view_admin', 'marketing_admin', 'cul_admin', 'food_admin'];
+                    if (adminRoles.includes(newUser.role)) {
                         router.push("/admin");
+                    } else if (newUser.role === 'entry_admin') {
+                        router.push("/entry");
+                    } else if (newUser.role === 'ppass_admin') {
+                        router.push("/issue-pass");
                     } else {
                         const allowedPaths = ['/register', '/foodstalls'];
                         const isAllowed = allowedPaths.some(p => pathname === p || pathname.startsWith(`${p}/`));
