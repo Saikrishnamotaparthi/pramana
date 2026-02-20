@@ -339,7 +339,7 @@ export default function FoodStallsPage() {
                                     <span className="text-lg text-pramana-gold font-mono tracking-widest">₹25,000</span>
                                 </h3>
 
-                                {(selectedCategory === "B" ? availableStallsB.filter(s => s.status === "available") : availableStallsC.filter(s => s.status === "available")).length === 0 ? (
+                                {availableStallsB.length === 0 ? (
                                     <p className="text-white/50 italic text-center py-8">No Category B stalls currently available.</p>
                                 ) : (
                                     <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
@@ -372,7 +372,7 @@ export default function FoodStallsPage() {
                                     <span className="text-lg text-blue-400 font-mono tracking-widest">₹20,000</span>
                                 </h3>
 
-                                {(selectedCategory === "C" ? availableStallsC.filter(s => s.status === "available") : availableStallsC.filter(s => s.status === "available")).length === 0 ? (
+                                {availableStallsC.length === 0 ? (
                                     <p className="text-white/50 italic text-center py-8">No Category C stalls currently available.</p>
                                 ) : (
                                     <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
