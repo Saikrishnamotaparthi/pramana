@@ -342,23 +342,36 @@ export default function FoodStallsPage() {
                                 {availableStallsB.length === 0 ? (
                                     <p className="text-white/50 italic text-center py-8">No Category B stalls currently available.</p>
                                 ) : (
-                                    <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
+                                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
                                         {availableStallsB.map(stall => (
-                                            <button
+                                            <div
                                                 key={stall.id}
-                                                disabled={stall.status !== "available"}
-                                                onClick={() => stall.status === "available" && openBookingModal("B", stall.id)}
-                                                className={`border rounded-xl p-6 text-center transition-all flex flex-col items-center justify-center gap-3 ${stall.status === "available"
-                                                    ? "bg-black/50 border-white/10 group hover:bg-white/10 hover:border-pramana-gold/50 cursor-pointer"
-                                                    : "bg-red-900/10 border-red-900/30 opacity-60 cursor-not-allowed"
-                                                    }`}
+                                                className="bg-[#222222] rounded-2xl p-6 flex flex-col justify-between border border-white/5 hover:border-white/10 transition-colors"
                                             >
-                                                <span className={`text-3xl font-bold font-mono transition-transform ${stall.status === "available" ? "text-pramana-gold group-hover:scale-110" : "text-white/30"}`}>{stall.name}</span>
-                                                <span className={`text-xs uppercase tracking-widest px-3 py-1.5 rounded-full font-bold w-full mx-auto ${stall.status === "available"
-                                                    ? "bg-pramana-gold text-black shadow-[0_0_10px_rgba(212,175,55,0.3)]"
-                                                    : "bg-red-900/50 text-white shadow-none"
-                                                    }`}>{stall.status === "available" ? "Book" : "Sold Out"}</span>
-                                            </button>
+                                                <div>
+                                                    <div className="flex justify-between items-start mb-6">
+                                                        <h4 className="text-2xl font-bold font-cinzel text-white break-words pr-2">{stall.name}</h4>
+                                                        <span className="bg-yellow-900/40 text-yellow-500 text-[10px] sm:text-xs font-bold px-3 py-1.5 rounded uppercase tracking-wider whitespace-nowrap">
+                                                            CATEGORY B
+                                                        </span>
+                                                    </div>
+
+                                                    <div className="flex items-baseline mb-6">
+                                                        <span className="text-3xl font-bold text-white tracking-tight">₹25,000</span>
+                                                    </div>
+                                                </div>
+
+                                                <button
+                                                    disabled={stall.status !== "available"}
+                                                    onClick={() => stall.status === "available" && openBookingModal("B", stall.id)}
+                                                    className={`w-full py-3.5 rounded-xl font-bold transition-all ${stall.status === "available"
+                                                        ? "bg-[#C68925] hover:bg-[#d9982a] text-white shadow-lg"
+                                                        : "bg-white/10 text-white/30 cursor-not-allowed"
+                                                        }`}
+                                                >
+                                                    {stall.status === "available" ? "BOOK NOW" : "Sold Out"}
+                                                </button>
+                                            </div>
                                         ))}
                                     </div>
                                 )}
@@ -375,23 +388,36 @@ export default function FoodStallsPage() {
                                 {availableStallsC.length === 0 ? (
                                     <p className="text-white/50 italic text-center py-8">No Category C stalls currently available.</p>
                                 ) : (
-                                    <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
+                                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
                                         {availableStallsC.map(stall => (
-                                            <button
+                                            <div
                                                 key={stall.id}
-                                                disabled={stall.status !== "available"}
-                                                onClick={() => stall.status === "available" && openBookingModal("C", stall.id)}
-                                                className={`border rounded-xl p-6 text-center transition-all flex flex-col items-center justify-center gap-3 ${stall.status === "available"
-                                                    ? "bg-black/50 border-white/10 group hover:bg-white/10 hover:border-blue-500/50 cursor-pointer"
-                                                    : "bg-red-900/10 border-red-900/30 opacity-60 cursor-not-allowed"
-                                                    }`}
+                                                className="bg-[#222222] rounded-2xl p-6 flex flex-col justify-between border border-white/5 hover:border-white/10 transition-colors"
                                             >
-                                                <span className={`text-3xl font-bold font-mono transition-transform ${stall.status === "available" ? "text-blue-400 group-hover:scale-110" : "text-white/30"}`}>{stall.name}</span>
-                                                <span className={`text-xs uppercase tracking-widest px-3 py-1.5 rounded-full font-bold w-full mx-auto ${stall.status === "available"
-                                                    ? "bg-blue-400 text-black shadow-[0_0_10px_rgba(96,165,250,0.3)]"
-                                                    : "bg-red-900/50 text-white shadow-none"
-                                                    }`}>{stall.status === "available" ? "Book" : "Sold Out"}</span>
-                                            </button>
+                                                <div>
+                                                    <div className="flex justify-between items-start mb-6">
+                                                        <h4 className="text-2xl font-bold font-cinzel text-white break-words pr-2">{stall.name}</h4>
+                                                        <span className="bg-yellow-900/40 text-yellow-500 text-[10px] sm:text-xs font-bold px-3 py-1.5 rounded uppercase tracking-wider whitespace-nowrap">
+                                                            CATEGORY C
+                                                        </span>
+                                                    </div>
+
+                                                    <div className="flex items-baseline mb-6">
+                                                        <span className="text-3xl font-bold text-white tracking-tight">₹20,000</span>
+                                                    </div>
+                                                </div>
+
+                                                <button
+                                                    disabled={stall.status !== "available"}
+                                                    onClick={() => stall.status === "available" && openBookingModal("C", stall.id)}
+                                                    className={`w-full py-3.5 rounded-xl font-bold transition-all ${stall.status === "available"
+                                                        ? "bg-[#C68925] hover:bg-[#d9982a] text-white shadow-lg"
+                                                        : "bg-white/10 text-white/30 cursor-not-allowed"
+                                                        }`}
+                                                >
+                                                    {stall.status === "available" ? "BOOK NOW" : "Sold Out"}
+                                                </button>
+                                            </div>
                                         ))}
                                     </div>
                                 )}
