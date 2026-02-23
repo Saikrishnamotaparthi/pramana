@@ -14,7 +14,8 @@ import {
     Menu,
     X,
     ScanLine,
-    Music
+    Music,
+    Bus
 } from "lucide-react";
 import { useState } from "react";
 import { useAuth } from "@/hooks/useAuth";
@@ -32,6 +33,7 @@ const links = [
     { href: "/admin/scan-pass", label: "Scan Pass", icon: ScanLine },
     { href: "/admin/culturals", label: "Cultural Events", icon: Music },
     { href: "/admin/foodstalls", label: "Food Stalls", icon: ClipboardList },
+    { href: "/admin/transport", label: "Transport", icon: Bus },
     { href: "/issue-pass", label: "Physical Issue", icon: Printer },
     { href: "/admin/bulk-passes", label: "Bulk Passes", icon: Users },
     { href: "/admin/settings", label: "Settings", icon: ClipboardList },

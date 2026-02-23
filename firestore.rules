@@ -125,5 +125,11 @@ service cloud.firestore {
       allow read: if isViewAdmin() || isFoodAdmin() || (request.auth != null && resource.data.userId == request.auth.uid);
       allow write: if isAdminOrSuper() || isFoodAdmin();
     }
+
+    // Transport Requests
+    match /transport_requests/{userId} {
+      allow read: if isOwner(userId) || isViewAdmin();
+      allow write: if isOwner(userId) || isAdminOrSuper();
+    }
   }
 }

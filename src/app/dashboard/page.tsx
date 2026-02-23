@@ -24,76 +24,6 @@ interface IssuedPass {
     passConfig?: any; // To store full config including dates
 }
 
-const PassDeadlineDisplay = ({ target }: { target: string }) => {
-    const [timeLeft, setTimeLeft] = useState<{ d: number, h: number, m: number, s: number } | null>(null);
-    const [isExpired, setIsExpired] = useState(false);
-
-    useEffect(() => {
-        const calculateTimeLeft = () => {
-            const difference = +new Date(target) - +new Date();
-            if (difference > 0) {
-                return {
-                    d: Math.floor(difference / (1000 * 60 * 60 * 24)),
-                    h: Math.floor((difference / (1000 * 60 * 60)) % 24),
-                    m: Math.floor((difference / 1000 / 60) % 60),
-                    s: Math.floor((difference / 1000) % 60),
-                };
-            }
-            return null;
-        };
-
-        const updateStatus = () => {
-            const t = calculateTimeLeft();
-            if (t) {
-                setTimeLeft(t);
-                setIsExpired(false);
-            } else {
-                setTimeLeft(null);
-                setIsExpired(+new Date(target) <= +new Date());
-            }
-        };
-
-        updateStatus();
-        const timer = setInterval(updateStatus, 1000);
-
-        return () => clearInterval(timer);
-    }, [target]);
-
-    const TimeBox = ({ val, label }: { val: number, label: string }) => (
-        <div className="flex flex-col items-center bg-black/80 border border-pramana-gold/30 px-2 py-1 rounded min-w-[2.5rem]">
-            <span className="text-xs font-cinzel font-bold text-pramana-gold">{val.toString().padStart(2, '0')}</span>
-            <span className="text-[8px] text-pramana-gold/50 uppercase tracking-wider">{label}</span>
-        </div>
-    );
-
-    if (isExpired) {
-        return (
-            <div className="mb-4 text-center">
-                <span className="text-[10px] font-bold uppercase tracking-widest text-red-500/70 block mb-1">Pass Closed</span>
-                <div className="flex gap-1.5 mt-2 justify-center">
-                    <TimeBox val={0} label="D" />
-                    <TimeBox val={0} label="H" />
-                    <TimeBox val={0} label="M" />
-                    <TimeBox val={0} label="S" />
-                </div>
-            </div>
-        );
-    }
-
-    if (!timeLeft) return null;
-
-    return (
-        <div className="mb-4 text-center">
-            <span className="text-[10px] font-bold uppercase tracking-widest text-red-500 block mb-1">Ends In</span>
-            <div className="flex gap-1.5 mt-2 justify-center">
-                <TimeBox val={timeLeft.d} label="D" />
-                <TimeBox val={timeLeft.h} label="H" />
-                <TimeBox val={timeLeft.m} label="M" />
-                <TimeBox val={timeLeft.s} label="S" />
-            </div>
-        </div>
-    );
-};
 
 interface UserProfile {
     phone?: string;
@@ -112,6 +42,7 @@ export default function DashboardPage() {
     const [qrUrls, setQrUrls] = useState<Record<string, string>>({});
     const [bannerBase64, setBannerBase64] = useState<string | null>(null);
     const [showQR, setShowQR] = useState(false);
+    const [hasSubmittedTransport, setHasSubmittedTransport] = useState(false);
 
     // Ticket Downloading Logic
     const [downloadingPassId, setDownloadingPassId] = useState<string | null>(null);
@@ -158,6 +89,11 @@ export default function DashboardPage() {
                     if (configSnap.exists()) {
                         setShowQR(configSnap.data().showQR || false);
                     }
+
+                    // 1.7 Check Transport Submission
+                    const transportRef = doc(db, "transport_requests", user.uid);
+                    const transportSnap = await getDoc(transportRef);
+                    setHasSubmittedTransport(transportSnap.exists());
 
                     // 2. Fetch Passes
                     const email = user.email?.toLowerCase().trim();
@@ -323,6 +259,36 @@ export default function DashboardPage() {
                     </div>
                 )}
 
+                {/* Transport Banner - Only for Pass Holders who HAVEN'T submitted */}
+                {myPasses.length > 0 && !hasSubmittedTransport && (
+                    <div className="relative group overflow-hidden bg-gradient-to-r from-pramana-gold/20 via-pramana-gold/5 to-transparent border border-pramana-gold/30 p-6 md:p-8 rounded-2xl flex flex-col md:flex-row justify-between items-center gap-6 animate-fade-in-up shadow-[0_0_30px_-5px_rgba(184,134,11,0.1)] transition-all duration-500 hover:border-pramana-gold/50">
+                        {/* Animated background glow */}
+                        <div className="absolute top-0 left-0 w-full h-[1px] bg-gradient-to-r from-transparent via-pramana-gold/50 to-transparent opacity-50"></div>
+
+                        <div className="flex items-center gap-5 relative z-10">
+                            <div className="h-14 w-14 rounded-full bg-pramana-gold/10 flex items-center justify-center text-pramana-gold border border-pramana-gold/20 shadow-[0_0_15px_rgba(184,134,11,0.2)]">
+                                <span className="text-2xl">🚌</span>
+                            </div>
+                            <div>
+                                <h3 className="font-bold text-pramana-gold font-cinzel text-xl md:text-2xl tracking-wide uppercase">Transport Arrangements</h3>
+                                <p className="text-sm md:text-base text-pramana-cream/80 mt-1 max-w-md">
+                                    Since you've secured your pass, let us know if you need pick-up or drop-off services for the event.
+                                </p>
+                            </div>
+                        </div>
+
+                        <Link
+                            href="/transport"
+                            className="relative z-10 w-full md:w-auto px-8 py-3.5 bg-pramana-gold text-black font-bold rounded-lg hover:bg-white transition-all duration-300 font-cinzel text-sm uppercase tracking-widest shadow-[0_0_20px_rgba(184,134,11,0.3)] hover:shadow-[0_0_30px_rgba(184,134,11,0.5)] text-center"
+                        >
+                            Submit Transport Details
+                        </Link>
+
+                        {/* Decorative elements */}
+                        <div className="absolute -bottom-6 -right-6 w-24 h-24 bg-pramana-gold/5 rounded-full blur-2xl"></div>
+                    </div>
+                )}
+
                 {/* Bulk Requests Section */}
                 {bulkRequests.length > 0 && (
                     <div className="animate-fade-in-up">
@@ -420,10 +386,7 @@ export default function DashboardPage() {
                                             )}
                                         </div>
 
-                                        {/* Countdown Timer */}
-                                        {pass.passConfig?.scheduleEnabled && pass.passConfig?.endDate && (
-                                            <PassDeadlineDisplay target={pass.passConfig.endDate} />
-                                        )}
+                                        {/* Countdown Timer Removed */}
 
                                         <button
                                             onClick={() => handleDownloadTicket(pass.id)}

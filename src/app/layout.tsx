@@ -4,6 +4,7 @@ import localFont from "next/font/local";
 import "./globals.css";
 import { AuthProvider } from "@/components/providers/AuthProvider";
 import Navbar from "@/components/Navbar";
+import ScrollingTransportBar from "@/components/ScrollingTransportBar";
 
 // Primary Font
 const arinza = localFont({
@@ -60,9 +61,10 @@ export default function RootLayout({
       <body className={`${arinza.variable} ${higuen.variable} ${garamond.variable} font-tertiary bg-pramana-black text-pramana-cream antialiased selection:bg-pramana-gold selection:text-black`}>
         <AuthProvider>
           <Navbar />
-          <main className="min-h-screen bg-pramana-black bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-gray-900 via-black to-black text-pramana-cream">
+          <main className="min-h-screen bg-pramana-black bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-gray-900 via-black to-black text-pramana-cream pb-12">
             {children}
           </main>
+          <ScrollingTransportBar />
         </AuthProvider>
       </body>
     </html>

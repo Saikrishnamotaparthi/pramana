@@ -50,7 +50,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
                     } else if (dbUser.role === 'ppass_admin' && !pathname.startsWith('/issue-pass')) {
                         router.push("/issue-pass");
                     } else if (!dbUser.isRegistered) {
-                        const allowedPaths = ['/register', '/foodstalls'];
+                        const allowedPaths = ['/register', '/foodstalls', '/transport'];
                         const isAllowed = allowedPaths.some(p => pathname === p || pathname.startsWith(`${p}/`));
                         if (!isAllowed) {
                             router.push(pathname !== "/" ? `/register?returnUrl=${encodeURIComponent(pathname)}` : "/register");
@@ -83,7 +83,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
                     } else if (newUser.role === 'ppass_admin') {
                         router.push("/issue-pass");
                     } else {
-                        const allowedPaths = ['/register', '/foodstalls'];
+                        const allowedPaths = ['/register', '/foodstalls', '/transport'];
                         const isAllowed = allowedPaths.some(p => pathname === p || pathname.startsWith(`${p}/`));
                         if (!isAllowed) {
                             router.push(pathname !== "/" ? `/register?returnUrl=${encodeURIComponent(pathname)}` : "/register");
@@ -108,7 +108,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
             // 1. Unregistered Users -> Restriction
             if (!user.isRegistered) {
-                const allowedPaths = ['/register', '/foodstalls'];
+                const allowedPaths = ['/register', '/foodstalls', '/transport'];
                 const isAllowed = allowedPaths.some(p => pathname === p || pathname.startsWith(`${p}/`));
                 if (!isAllowed) {
                     router.replace(pathname !== "/" ? `/register?returnUrl=${encodeURIComponent(pathname)}` : "/register");
