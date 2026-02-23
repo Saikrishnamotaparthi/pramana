@@ -45,7 +45,7 @@ const teamData = [
         category: "Food & Stalls",
         members: [
             { name: "Riteesh Reddy", image: "/team/10.JPG" },
-            { name: "Rahul Reddy", image: "/team/11.JPG" },
+            { name: "Ram", image: "/team/11.JPG" },
             { name: "Rahul", image: "/team/12.JPG" },
         ]
     },
@@ -113,7 +113,7 @@ const teamData = [
         category: "Operations",
         members: [
             { name: "Bhanu teja", image: "/team/27.JPG" },
-            { name: "Sharmistha", image: "/team/28.jpeg" },
+            { name: "Sharmishta", image: "/team/28.jpeg" },
         ]
     },
     {
