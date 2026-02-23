@@ -246,7 +246,7 @@ export default function LandingPage() {
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ delay: 1.5, duration: 1 }}
-          className="absolute bottom-12 left-1/2 -translate-x-1/2 z-20 flex flex-col items-center gap-2 group cursor-pointer"
+          className="absolute bottom-28 md:bottom-12 left-1/2 -translate-x-1/2 z-20 flex flex-col items-center gap-2 group cursor-pointer"
         >
           <span className="text-[10px] font-mono tracking-[0.2em] text-white/70 uppercase group-hover:text-pramana-gold transition-colors shadow-black drop-shadow-md">Scroll to Explore</span>
           <ChevronDown className="w-6 h-6 text-pramana-gold animate-bounce opacity-80 group-hover:opacity-100 transition-opacity drop-shadow-lg" />
