@@ -416,7 +416,7 @@ export default function LandingPage() {
                 <span className="text-pramana-gold font-primary text-3xl">28</span>
               </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-8">
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-8">
                 {/* Kasyap */}
                 <motion.div
                   initial={{ opacity: 0, y: 20 }}
@@ -433,9 +433,38 @@ export default function LandingPage() {
                   <div className="absolute inset-0 bg-gradient-to-t from-black via-black/20 to-transparent opacity-80 group-hover:opacity-60 transition-opacity"></div>
 
                   <div className="absolute bottom-0 left-0 p-6 md:p-8 w-full">
-                    <h4 className="text-3xl md:text-4xl font-primary text-white mb-2">Kasyap</h4>
-                    <p className="text-pramana-gold font-secondary italic text-base md:text-lg opacity-80">
+                    <h4 className="text-3xl md:text-3xl font-primary text-white mb-2">Kasyap</h4>
+                    <p className="text-pramana-gold font-secondary italic text-sm md:text-base opacity-80">
                       The Musical Sensation
+                    </p>
+                  </div>
+
+                  {/* Vertical Text Decoration */}
+                  <div className="absolute top-6 right-6 writing-mode-vertical text-white/20 font-mono text-[10px] tracking-[0.3em] uppercase hidden md:block">
+                    Live In Concert
+                  </div>
+                </motion.div>
+
+                {/* Nawabgang */}
+                <motion.div
+                  initial={{ opacity: 0, y: 20 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true }}
+                  transition={{ delay: 0.1 }}
+                  className="h-[350px] md:h-[450px] relative group overflow-hidden rounded-sm cursor-pointer mt-0 md:mt-6"
+                >
+                  <Image
+                    src="/uploads/nawabgang.png"
+                    alt="Nawabgang"
+                    fill
+                    className="object-cover grayscale group-hover:grayscale-0 transition-all duration-700 ease-out group-hover:scale-105"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black via-black/20 to-transparent opacity-80 group-hover:opacity-60 transition-opacity"></div>
+
+                  <div className="absolute bottom-0 left-0 p-6 md:p-8 w-full">
+                    <h4 className="text-3xl md:text-3xl font-primary text-white mb-2">Nawabgang</h4>
+                    <p className="text-pramana-gold font-secondary italic text-sm md:text-base opacity-80">
+                      Katcheri
                     </p>
                   </div>
 
@@ -462,8 +491,8 @@ export default function LandingPage() {
                   <div className="absolute inset-0 bg-gradient-to-t from-black via-black/20 to-transparent opacity-80 group-hover:opacity-60 transition-opacity"></div>
 
                   <div className="absolute bottom-0 left-0 p-6 md:p-8 w-full">
-                    <h4 className="text-3xl md:text-4xl font-primary text-white mb-2">DJ Swattrex</h4>
-                    <p className="text-pramana-gold font-secondary italic text-base md:text-lg opacity-80">
+                    <h4 className="text-3xl md:text-3xl font-primary text-white mb-2">DJ Swattrex</h4>
+                    <p className="text-pramana-gold font-secondary italic text-sm md:text-base opacity-80">
                       EDM Powerhouse
                     </p>
                   </div>
