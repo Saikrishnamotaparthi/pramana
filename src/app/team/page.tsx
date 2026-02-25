@@ -113,7 +113,7 @@ const teamData = [
         category: "Operations",
         members: [
             { name: "Bhanu teja", image: "/team/27.JPG" },
-            { name: "Sharmishta", image: "/team/28.jpeg" },
+            { name: "Sharmishta", image: "/team/28.1.jpeg" },
         ]
     },
     {

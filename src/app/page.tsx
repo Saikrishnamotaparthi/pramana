@@ -716,43 +716,46 @@ export default function LandingPage() {
         {/* Subtle Background Glow */}
         <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[60vw] h-[20vw] bg-pramana-gold/5 rounded-full blur-[120px] pointer-events-none"></div>
 
-        <div className="max-w-4xl mx-auto px-6 relative z-10 text-center">
+        <div className="w-full relative z-10 text-center">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
-            className="mb-10"
+            className="mb-16 px-6"
           >
             <div className="flex items-center justify-center gap-4 mb-4">
               <div className="h-[1px] w-12 bg-gradient-to-r from-transparent to-pramana-gold/50"></div>
               <span className="text-pramana-gold text-xs font-bold tracking-[0.3em] uppercase font-primary">Strategic Alliance</span>
               <div className="h-[1px] w-12 bg-gradient-to-l from-transparent to-pramana-gold/50"></div>
             </div>
+            <h2 className="text-3xl md:text-5xl font-primary font-bold text-white tracking-widest uppercase">
+              Our Esteemed Partners
+            </h2>
           </motion.div>
 
           <motion.div
-            initial={{ opacity: 0, scale: 0.95 }}
-            whileInView={{ opacity: 1, scale: 1 }}
+            initial={{ opacity: 0 }}
+            whileInView={{ opacity: 1 }}
             viewport={{ once: true }}
             transition={{ duration: 0.8 }}
-            className="relative p-[1px] rounded-2xl bg-gradient-to-b from-white/10 to-transparent overflow-hidden"
+            className="w-full overflow-hidden relative"
           >
-            <div className="absolute inset-0 bg-white/5 backdrop-blur-md"></div>
+            {/* Left and Right Fade Masks for better Marquee look */}
+            <div className="absolute top-0 left-0 w-24 md:w-48 h-full bg-gradient-to-r from-black to-transparent z-20 pointer-events-none"></div>
+            <div className="absolute top-0 right-0 w-24 md:w-48 h-full bg-gradient-to-l from-black to-transparent z-20 pointer-events-none"></div>
 
-            <div className="relative bg-[#050505]/90 rounded-2xl px-12 py-20 flex flex-col items-center justify-center gap-6 group hover:bg-black/80 transition-colors duration-500">
-              <div className="w-16 h-16 rounded-full border border-white/10 flex items-center justify-center bg-white/5 group-hover:border-pramana-gold/50 group-hover:bg-pramana-gold/10 transition-all duration-500">
-                <div className="w-2 h-2 rounded-full bg-pramana-gold animate-pulse"></div>
-              </div>
-
-              <div className="space-y-2">
-                <h2 className="text-4xl md:text-5xl font-primary font-bold text-white tracking-widest group-hover:text-pramana-gold transition-colors duration-500">
-                  UNVEILING SOON
-                </h2>
-                <p className="text-pramana-cream/40 font-secondary italic">
-                  Collaborating with industry leaders
-                </p>
-              </div>
-            </div>
+            <Marquee speed={40}>
+              {[1, 2, 3, 4, 5, 6, 7, 8].map((num) => (
+                <div key={num} className="relative w-48 h-32 md:w-64 md:h-40 mx-4 grayscale hover:grayscale-0 transition-all duration-500 opacity-60 hover:opacity-100 flex items-center justify-center bg-white/5 rounded-2xl border border-white/10 hover:border-pramana-gold/40 hover:bg-white/10 group cursor-pointer">
+                  <Image
+                    src={`/sponsers/0${num}.png`}
+                    alt={`Partner 0${num}`}
+                    fill
+                    className="object-contain p-6 md:p-8 drop-shadow-xl group-hover:scale-110 transition-transform duration-500"
+                  />
+                </div>
+              ))}
+            </Marquee>
           </motion.div>
         </div>
       </section>

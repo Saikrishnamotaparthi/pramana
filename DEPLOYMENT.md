@@ -360,3 +360,9 @@ pm2 restart payment-web
 
 Saikrishnamotaparthi
 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
+
+shg
+mob_hero
+desk_hero
+
+http://localhost:3000/api/admin/cleanup-duplicates
