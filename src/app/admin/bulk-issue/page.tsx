@@ -112,12 +112,12 @@ export default function BulkIssuePage() {
 
                     if (result.success) {
                         // Aggregate Stats
-                        cumulativeStats.processed += result.stats.processed || 0;
-                        cumulativeStats.issued += result.stats.issued || 0;
-                        cumulativeStats.usersCreated += result.stats.usersCreated || 0;
-                        cumulativeStats.duplicatesSkipped += result.stats.duplicatesSkipped || 0;
-                        cumulativeStats.issuedToRegistered += result.stats.issuedToRegistered || 0;
-                        cumulativeStats.issuedToUnregistered += result.stats.issuedToUnregistered || 0;
+                        cumulativeStats.processed += result.stats?.processed || 0;
+                        cumulativeStats.issued += result.stats?.issued || 0;
+                        cumulativeStats.usersCreated += result.stats?.usersCreated || 0;
+                        cumulativeStats.duplicatesSkipped += result.stats?.duplicatesSkipped || 0;
+                        cumulativeStats.issuedToRegistered += result.stats?.issuedToRegistered || 0;
+                        cumulativeStats.issuedToUnregistered += result.stats?.issuedToUnregistered || 0;
 
                         setStats({ ...cumulativeStats }); // Update UI with running total
 

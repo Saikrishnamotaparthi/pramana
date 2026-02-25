@@ -24,16 +24,8 @@ export async function POST(req: Request) {
         }
         const passData = passSnap.data()!;
 
-        // 3. Capacity Check
-        if (passData.limit > 0) {
-            const remaining = passData.limit - (passData.sold || 0);
-            if (emails.length > remaining) {
-                return NextResponse.json({
-                    success: false,
-                    message: `Insufficient capacity. Remaining: ${remaining}, Requested: ${emails.length}`
-                }, { status: 400 });
-            }
-        }
+        // 3. Capacity Check (REMOVED)
+        // Admins can over-issue passes via bulk
 
         // 4. Setup Processing Stats & Batch
         let processedCount = 0;
@@ -51,13 +43,12 @@ export async function POST(req: Request) {
 
         const referralUpdates: Record<string, number> = {};
 
-        // 4. Iterate through Emails
-        for (let i = 0; i < emails.length; i++) {
-            const rawEmail = emails[i];
-            if (!rawEmail || typeof rawEmail !== 'string') continue;
+        // Deduplicate the emails array first to prevent same-batch duplicate passes
+        const uniqueEmails = [...new Set(emails.map(e => typeof e === 'string' ? e.trim().toLowerCase() : '').filter(Boolean))];
 
-            const email = rawEmail.trim().toLowerCase();
-            if (!email) continue;
+        // 4. Iterate through Emails
+        for (let i = 0; i < uniqueEmails.length; i++) {
+            const email = uniqueEmails[i];
 
             processedCount++;
 
@@ -102,6 +93,7 @@ export async function POST(req: Request) {
                 // --- B. Pass Issuance Handling (Duplicate Check) ---
                 const existingPassQuery = await adminDb.collection("passes_issued")
                     .where("issuedToEmail", "==", email)
+                    .where("passId", "==", passId) // Ensure they don't have THIS specific pass already
                     .limit(1)
                     .get();
 
@@ -128,7 +120,8 @@ export async function POST(req: Request) {
                         status: 'active',
                         admitted: false,
                         purchaseDate: new Date().toISOString(),
-                        isPhysicalIssued: false
+                        isPhysicalIssued: false,
+                        excludeFromStats: true
                     });
 
                     batchOpCount++;
@@ -178,11 +171,12 @@ export async function POST(req: Request) {
         }
 
         // 6. Update Pass Sold Count (Only for NEWLY issued passes)
-        if (issuedCount > 0) {
-            await passRef.update({
-                sold: FieldValue.increment(issuedCount)
-            });
-        }
+        // SKIP incrementing capacity sold counter for ALREADY excluded passes
+        // if (issuedCount > 0) {
+        //     await passRef.update({
+        //         sold: FieldValue.increment(issuedCount)
+        //     });
+        // }
 
         return NextResponse.json({
             success: true,
