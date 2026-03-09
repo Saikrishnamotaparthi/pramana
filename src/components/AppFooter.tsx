@@ -30,29 +30,12 @@ const AppFooter = () => {
                 </div>
 
                 <div>
-                    <h4 className="font-primary text-white font-bold mb-6 text-sm uppercase tracking-widest">Navigate</h4>
-                    <ul className="space-y-4 text-sm text-pramana-cream/50 font-mono">
-                        <li>
-                            <Link href="/tickets" className="hover:text-pramana-gold transition-colors text-left">
-                                Buy Passes
-                            </Link>
-                        </li>
-                        <li>
-                            <Link href="/login" className="hover:text-pramana-gold transition-colors text-left">
-                                Login
-                            </Link>
-                        </li>
-                        <li>
-                            <Link href="/schedule" className="hover:text-pramana-gold transition-colors text-left">
-                                Schedule
-                            </Link>
-                        </li>
-                        <li>
-                            <Link href="/sponsors" className="hover:text-pramana-gold transition-colors text-left">
-                                Sponsors
-                            </Link>
-                        </li>
-                    </ul>
+                    <h4 className="font-primary text-white font-bold mb-6 text-sm uppercase tracking-widest text-left">Navigate</h4>
+                    <div className="flex items-center h-full pb-16">
+                        <p className="font-primary text-2xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-pramana-gold to-white tracking-widest uppercase">
+                            See you back in 2027
+                        </p>
+                    </div>
                 </div>
 
                 <div>

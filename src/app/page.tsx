@@ -144,105 +144,38 @@ export default function LandingPage() {
 
       {/* --- HERO SECTION --- */}
       {/* --- HERO SECTION --- */}
-      <section className="relative h-screen w-full overflow-hidden">
+      <section className="relative h-screen w-full overflow-hidden bg-black">
         {/* Desktop Hero Image */}
         <div className="absolute inset-0 hidden md:block">
           <Image
-            src="/desk_hero1.png"
-            alt="Hero Background Desktop"
+            src="/hero_desk1.png"
+            alt="Hero Desktop"
             fill
-            className="object-cover"
             priority
             quality={100}
+            unoptimized
+            className="object-cover"
           />
         </div>
 
         {/* Mobile Hero Image */}
         <div className="absolute inset-0 block md:hidden">
           <Image
-            src="/mob_hero1.png"
-            alt="Hero Background Mobile"
+            src="/hero_mob.png"
+            alt="Hero Mobile"
             fill
-            className="object-cover"
             priority
             quality={100}
+            unoptimized
+            className="object-cover"
           />
-        </div>
-
-        {/* Overlay Content */}
-        <div className="relative z-10 h-full flex flex-col items-center justify-center text-center px-4 pt-20">
-          <motion.div
-            initial={{ opacity: 0, y: 30 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 1, delay: 0.2 }}
-            className="space-y-6"
-          >
-            {/* Title & Mascots Container - Flex Layout for Desktop */}
-            <div className="flex flex-col lg:flex-row items-center justify-center w-full max-w-[95vw] lg:max-w-7xl mx-auto gap-0">
-
-              {/* Left Mascot - Desktop */}
-              <motion.div
-                initial={{ opacity: 0, x: -30 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ duration: 1, delay: 0.5 }}
-                className="hidden lg:block relative w-48 h-48 xl:w-72 xl:h-72 flex-shrink-0 z-0 -mr-4 lg:-mr-8"
-              >
-                <Image src="/uploads/mascot-left1.png" alt="Mascot Left" fill className="object-contain drop-shadow-[0_0_20px_rgba(212,175,55,0.2)]" sizes="(max-width: 1200px) 192px, 288px" />
-              </motion.div>
-
-              {/* Center Content: Title & Date */}
-              <div className="relative z-10 flex flex-col items-center justify-center text-center mx-auto">
-                <div className="relative z-20 -mb-2 lg:-mb-4">
-                  <Image
-                    src="/pramana-text.png"
-                    alt="PRAMANA '26"
-                    width={1200}
-                    height={400}
-                    className="w-[85vw] max-w-[1000px] h-auto object-contain drop-shadow-2xl mx-auto"
-                    priority
-                  />
-                </div>
-
-                {/* Decorative Line */}
-                <div className="h-[1px] w-24 bg-gradient-to-r from-transparent via-pramana-gold to-transparent my-3 lg:my-5 opacity-70"></div>
-
-                {/* Date & Location */}
-                <div className="flex flex-col items-center gap-2">
-                  <div className="flex items-center gap-3 font-primary text-xl md:text-2xl text-white tracking-widest">
-                    <span>FEB</span>
-                    <span className="text-pramana-gold font-bold text-2xl md:text-3xl">27</span>
-                    <span className="text-white/30">•</span>
-                    <span className="text-pramana-gold font-bold text-2xl md:text-3xl">28</span>
-                  </div>
-
-                  <div className="flex items-center gap-2 text-pramana-cream/60 font-secondary italic text-sm md:text-base tracking-wider mt-1 px-4 text-center">
-                    <MapPin className="w-3 h-3 text-pramana-gold hidden md:inline-block" />
-                    <span>GITAM(Deemed to be)University, Hyderabad</span>
-                  </div>
-                </div>
-              </div>
-
-              {/* Right Mascot - Desktop */}
-              <motion.div
-                initial={{ opacity: 0, x: 30 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ duration: 1, delay: 0.5 }}
-                className="hidden lg:block relative w-48 h-48 xl:w-72 xl:h-72 flex-shrink-0 z-0 -ml-4 lg:-ml-8"
-              >
-                <Image src="/uploads/mascot-right1.png" alt="Mascot Right" fill className="object-contain drop-shadow-[0_0_20px_rgba(212,175,55,0.2)]" sizes="(max-width: 1200px) 192px, 288px" />
-              </motion.div>
-            </div>
-
-            {/* Mobile Mascot (Below Date) */}
-            <motion.div variants={fadeUp} className="lg:hidden mt-12 relative w-86 h-80 mx-auto z-10">
-              <Image src="/uploads/mascot-mobile1.png" alt="Mascot Mobile" fill className="object-contain drop-shadow-[0_0_15px_rgba(212,175,55,0.2)]" sizes="(max-width: 768px) 288px, 100vw" priority />
-            </motion.div>
-          </motion.div>
         </div>
 
         {/* Cinematic Scroll Indicator */}
         <motion.button
-          onClick={scrollToInfo}
+          onClick={() => {
+            document.getElementById('alliance-section')?.scrollIntoView({ behavior: 'smooth' });
+          }}
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ delay: 1.5, duration: 1 }}
@@ -253,495 +186,84 @@ export default function LandingPage() {
         </motion.button>
       </section>
 
-      {/* --- ARTIST LINEUP SECTION ("THE SPOTLIGHT" - SLEEK ASSEMBLE) --- */}
-      <section id="info-section" className="relative py-16 px-4 md:px-6 bg-[#0a0a0a] z-10 overflow-hidden">
 
-        {/* Ambient Background */}
-        <div className="absolute top-0 left-0 w-full h-[300px] bg-gradient-to-b from-black to-transparent z-0"></div>
-        <div className="absolute bottom-0 w-full h-[300px] bg-gradient-to-t from-black to-transparent z-0"></div>
 
-        <div className="max-w-[1400px] mx-auto relative z-10 space-y-20 md:space-y-24">
-          <SectionHeading title="Where Legends Take The Stage" subtitle="The Lineup" />
+      {/* --- SHOW MAKERS SECTION (Redesigned) --- */}
+      <section className="py-24 bg-[#050505] relative overflow-hidden flex flex-col items-center justify-center">
+        {/* Animated Background Layers */}
+        <div className="absolute inset-0 bg-[url('/noise.png')] opacity-[0.05] mix-blend-overlay"></div>
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-pramana-gold/5 rounded-full blur-[150px] animate-pulse"></div>
 
-          {/* DAY 0: The Grand Opening */}
-          <div className="relative group/day0">
-            {/* Background Watermark */}
-            <h3 className="absolute -top-10 -right-4 text-[80px] md:text-[150px] font-primary font-bold text-white/[0.03] select-none leading-none z-0 pointer-events-none text-right">
-              DAY 0
-            </h3>
-
-            <div className="relative z-10 grid grid-cols-1 md:grid-cols-12 gap-4 md:gap-5 items-start">
-              {/* Date Tag */}
-              <div className="md:col-span-12 flex items-center justify-end gap-3 mb-2 pr-1">
-                <span className="text-white/50 text-xs uppercase tracking-widest font-mono">February</span>
-                <span className="text-pramana-gold font-primary text-3xl">26</span>
-              </div>
-
-              {/* Auto Expo Card */}
-              <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                className="md:col-start-3 md:col-span-8 h-[300px] md:h-[400px] relative group overflow-hidden rounded-sm cursor-pointer"
-              >
-                <Image
-                  src="/uploads/gallery-9.jpg"
-                  alt="Auto Expo"
-                  fill
-                  className="object-cover grayscale group-hover:grayscale-0 transition-all duration-700 ease-out group-hover:scale-105"
-                />
-                <div className="absolute inset-0 bg-gradient-to-t from-black via-black/30 to-transparent opacity-80 group-hover:opacity-60 transition-opacity duration-500"></div>
-
-                <div className="absolute bottom-0 left-0 p-6 md:p-10 w-full">
-                  <div className="overflow-hidden">
-                    <h4 className="text-3xl md:text-5xl font-primary text-white mb-2 transform translate-y-0 transition-transform duration-500">
-                      Auto Expo
-                    </h4>
-                  </div>
-                  <p className="text-pramana-gold text-base md:text-lg font-secondary italic tracking-wider opacity-80 group-hover:opacity-100 transition-opacity">
-                    The Grand Opening
-                  </p>
-                </div>
-
-                {/* Gold Border Highlight */}
-                <div className="absolute inset-0 border border-pramana-gold/0 group-hover:border-pramana-gold/50 transition-colors duration-500 pointer-events-none"></div>
-              </motion.div>
+        <div className="w-full relative z-10 text-center">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            className="mb-16 px-6"
+          >
+            <div className="flex items-center justify-center gap-4 mb-4">
+              <div className="h-[1px] w-12 bg-gradient-to-r from-transparent to-pramana-gold/50"></div>
+              <span className="text-pramana-gold text-xs font-bold tracking-[0.3em] uppercase font-primary">Thank You</span>
+              <div className="h-[1px] w-12 bg-gradient-to-l from-transparent to-pramana-gold/50"></div>
             </div>
-          </div>
+            <h2 className="text-3xl md:text-5xl font-primary font-bold text-white tracking-widest uppercase mb-4">
+              Show Makers
+            </h2>
+            <p className="max-w-xl mx-auto text-white/40 font-tertiary text-lg">
+              For making us memorable.
+            </p>
+          </motion.div>
 
-          {/* DAY 1: Asymmetrical "Headliner" Layout */}
-          <div className="relative group/day1">
-            {/* Background Watermark */}
-            <h3 className="absolute -top-10 -left-4 text-[80px] md:text-[150px] font-primary font-bold text-white/[0.03] select-none leading-none z-0 pointer-events-none">
-              DAY 1
-            </h3>
+          <motion.div
+            initial={{ opacity: 0 }}
+            whileInView={{ opacity: 1 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.8 }}
+            className="w-full overflow-hidden relative"
+          >
+            {/* Left and Right Fade Masks */}
+            <div className="absolute top-0 left-0 w-12 md:w-32 h-full bg-gradient-to-r from-[#050505] to-transparent z-20 pointer-events-none"></div>
+            <div className="absolute top-0 right-0 w-12 md:w-32 h-full bg-gradient-to-l from-[#050505] to-transparent z-20 pointer-events-none"></div>
 
-            <div className="relative z-10 grid grid-cols-1 md:grid-cols-12 gap-4 md:gap-5 items-start">
-              {/* Date Tag */}
-              <div className="md:col-span-12 flex items-center gap-3 mb-2 pl-1">
-                <span className="text-pramana-gold font-primary text-3xl">27</span>
-                <span className="text-white/50 text-xs uppercase tracking-widest font-mono">February</span>
-              </div>
-
-              {/* HEADLINER: The Deccan Project */}
-              <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                className="md:col-span-8 h-[300px] md:h-[450px] relative group overflow-hidden rounded-sm cursor-pointer"
-              >
-                <Image
-                  src="/uploads/artist-deccan-project.jpg"
-                  alt="The Deccan Project"
-                  fill
-                  className="object-cover grayscale group-hover:grayscale-0 transition-all duration-700 ease-out group-hover:scale-105"
-                />
-                <div className="absolute inset-0 bg-gradient-to-t from-black via-black/30 to-transparent opacity-80 group-hover:opacity-60 transition-opacity duration-500"></div>
-
-                <div className="absolute bottom-0 left-0 p-6 md:p-10 w-full">
-                  <div className="overflow-hidden">
-                    <h4 className="text-3xl md:text-5xl font-primary text-white mb-2 transform translate-y-0 transition-transform duration-500">
-                      The Deccan Project
-                    </h4>
-                  </div>
-                  <p className="text-pramana-gold text-base md:text-lg font-secondary italic tracking-wider opacity-80 group-hover:opacity-100 transition-opacity">
-                    The Headliner Band
-                  </p>
-                </div>
-
-                {/* Gold Border Highlight */}
-                <div className="absolute inset-0 border border-pramana-gold/0 group-hover:border-pramana-gold/50 transition-colors duration-500 pointer-events-none"></div>
-              </motion.div>
-
-              {/* SUPPORTING ARTISTS: Stacked on Desktop */}
-              <div className="md:col-span-4 flex flex-col gap-4 md:gap-5 w-full h-auto md:h-full mt-4 md:mt-0">
-
-                {/* Geetha Madhuri */}
-                <motion.div
-                  initial={{ opacity: 0, x: 20 }}
-                  whileInView={{ opacity: 1, x: 0 }}
-                  viewport={{ once: true }}
-                  transition={{ delay: 0.1 }}
-                  className="relative h-[200px] md:h-auto md:flex-1 w-full group overflow-hidden rounded-sm cursor-pointer"
-                >
-                  <Image
-                    src="/uploads/artist-geetha-madhuri.jpg"
-                    alt="Geetha Madhuri"
-                    fill
-                    className="object-cover grayscale group-hover:grayscale-0 transition-all duration-700 ease-out group-hover:scale-110"
-                  />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black via-transparent to-transparent opacity-90 group-hover:opacity-70 transition-opacity"></div>
-
-                  <div className="absolute bottom-4 left-4 md:bottom-6 md:left-6">
-                    <h4 className="text-xl md:text-2xl font-primary text-white">Geetha Madhuri</h4>
-                    <p className="text-pramana-gold/70 text-[10px] md:text-xs font-bold tracking-widest uppercase mt-1">Playback Singer</p>
-                  </div>
-                </motion.div>
-
-                {/* DJ NANDZY */}
-                <motion.div
-                  initial={{ opacity: 0, x: 20 }}
-                  whileInView={{ opacity: 1, x: 0 }}
-                  viewport={{ once: true }}
-                  transition={{ delay: 0.2 }}
-                  className="relative h-[200px] md:h-auto md:flex-1 w-full group overflow-hidden rounded-sm cursor-pointer"
-                >
-                  <Image
-                    src="/uploads/artist-dj-nandzy2.jpg"
-                    alt="DJ NANDZY"
-                    fill
-                    className="object-cover grayscale group-hover:grayscale-0 transition-all duration-700 ease-out group-hover:scale-110"
-                  />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black via-transparent to-transparent opacity-90 group-hover:opacity-70 transition-opacity"></div>
-
-                  <div className="absolute bottom-4 left-4 md:bottom-6 md:left-6">
-                    <h4 className="text-xl md:text-2xl font-primary text-white">DJ NANDZY</h4>
-                    <p className="text-pramana-gold/70 text-[10px] md:text-xs font-bold tracking-widest uppercase mt-1">Live SET</p>
-                  </div>
-                </motion.div>
-              </div>
-            </div>
-          </div>
-
-          {/* DAY 2: Symmetrical "Power Duo" Layout */}
-          <div className="relative group/day2 pt-4 md:pt-10">
-            {/* Background Watermark Right */}
-            <h3 className="absolute -top-6 -right-4 text-[80px] md:text-[150px] font-primary font-bold text-white/[0.03] select-none leading-none z-0 pointer-events-none text-right">
-              DAY 2
-            </h3>
-
-            <div className="relative z-10">
-              <div className="flex items-center justify-end gap-3 mb-4 pr-1">
-                <span className="text-white/50 text-xs uppercase tracking-widest font-mono">February</span>
-                <span className="text-pramana-gold font-primary text-3xl">28</span>
-              </div>
-
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-8">
-                {/* Kasyap */}
-                <motion.div
-                  initial={{ opacity: 0, y: 20 }}
-                  whileInView={{ opacity: 1, y: 0 }}
-                  viewport={{ once: true }}
-                  className="h-[350px] md:h-[450px] relative group overflow-hidden rounded-sm cursor-pointer"
-                >
-                  <Image
-                    src="/uploads/artist-kasyap1.jpg"
-                    alt="Kasyap"
-                    fill
-                    className="object-cover grayscale group-hover:grayscale-0 transition-all duration-700 ease-out group-hover:scale-105"
-                  />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black via-black/20 to-transparent opacity-80 group-hover:opacity-60 transition-opacity"></div>
-
-                  <div className="absolute bottom-0 left-0 p-6 md:p-8 w-full">
-                    <h4 className="text-3xl md:text-3xl font-primary text-white mb-2">Kasyap</h4>
-                    <p className="text-pramana-gold font-secondary italic text-sm md:text-base opacity-80">
-                      The Musical Sensation
-                    </p>
-                  </div>
-
-                  {/* Vertical Text Decoration */}
-                  <div className="absolute top-6 right-6 writing-mode-vertical text-white/20 font-mono text-[10px] tracking-[0.3em] uppercase hidden md:block">
-                    Live In Concert
-                  </div>
-                </motion.div>
-
-                {/* Nawabgang */}
-                <motion.div
-                  initial={{ opacity: 0, y: 20 }}
-                  whileInView={{ opacity: 1, y: 0 }}
-                  viewport={{ once: true }}
-                  transition={{ delay: 0.1 }}
-                  className="h-[350px] md:h-[450px] relative group overflow-hidden rounded-sm cursor-pointer mt-0 md:mt-6"
-                >
-                  <Image
-                    src="/uploads/nawabgang.png"
-                    alt="Nawabgang"
-                    fill
-                    className="object-cover grayscale group-hover:grayscale-0 transition-all duration-700 ease-out group-hover:scale-105"
-                  />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black via-black/20 to-transparent opacity-80 group-hover:opacity-60 transition-opacity"></div>
-
-                  <div className="absolute bottom-0 left-0 p-6 md:p-8 w-full">
-                    <h4 className="text-3xl md:text-3xl font-primary text-white mb-2">Nawabgang</h4>
-                    <p className="text-pramana-gold font-secondary italic text-sm md:text-base opacity-80">
-                      Katcheri
-                    </p>
-                  </div>
-
-                  {/* Vertical Text Decoration */}
-                  <div className="absolute top-6 right-6 writing-mode-vertical text-white/20 font-mono text-[10px] tracking-[0.3em] uppercase hidden md:block">
-                    Live In Concert
-                  </div>
-                </motion.div>
-
-                {/* DJ Swattrex */}
-                <motion.div
-                  initial={{ opacity: 0, y: 20 }}
-                  whileInView={{ opacity: 1, y: 0 }}
-                  viewport={{ once: true }}
-                  transition={{ delay: 0.2 }}
-                  className="h-[350px] md:h-[450px] relative group overflow-hidden rounded-sm cursor-pointer mt-0 md:mt-12"
-                >
-                  <Image
-                    src="/uploads/artist-dj-swattrex.jpg"
-                    alt="DJ Swattrex"
-                    fill
-                    className="object-cover grayscale group-hover:grayscale-0 transition-all duration-700 ease-out group-hover:scale-105"
-                  />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black via-black/20 to-transparent opacity-80 group-hover:opacity-60 transition-opacity"></div>
-
-                  <div className="absolute bottom-0 left-0 p-6 md:p-8 w-full">
-                    <h4 className="text-3xl md:text-3xl font-primary text-white mb-2">DJ Swattrex</h4>
-                    <p className="text-pramana-gold font-secondary italic text-sm md:text-base opacity-80">
-                      EDM Powerhouse
-                    </p>
-                  </div>
-
-                  {/* Vertical Text Decoration */}
-                  <div className="absolute top-6 right-6 writing-mode-vertical text-white/20 font-mono text-[10px] tracking-[0.3em] uppercase hidden md:block">
-                    Official DJ
-                  </div>
-                </motion.div>
-              </div>
-            </div>
-          </div>
-
-        </div>
-      </section>
-
-      {/* --- LIVE PASSES SECTION --- */}
-      {livePasses.length > 0 && (
-        <section className="py-24 px-6 bg-[#080808]">
-          <div className="max-w-7xl mx-auto">
-            <SectionHeading title="Secure Your Spot" subtitle="Live Passes" />
-
-            <div className="relative group/passes">
-              {/* Navigation Buttons */}
-              <button onClick={() => scroll('left')} className="absolute -left-4 top-1/2 -translate-y-1/2 z-20 w-12 h-12 bg-black/80 backdrop-blur-md border border-pramana-gold/30 rounded-full flex items-center justify-center text-pramana-gold opacity-0 group-hover/passes:opacity-100 transition-all hover:bg-pramana-gold hover:text-black hidden md:flex hover:scale-110">
-                <ArrowRight className="w-5 h-5 rotate-180" />
-              </button>
-              <button onClick={() => scroll('right')} className="absolute -right-4 top-1/2 -translate-y-1/2 z-20 w-12 h-12 bg-black/80 backdrop-blur-md border border-pramana-gold/30 rounded-full flex items-center justify-center text-pramana-gold opacity-0 group-hover/passes:opacity-100 transition-all hover:bg-pramana-gold hover:text-black hidden md:flex hover:scale-110">
-                <ArrowRight className="w-5 h-5" />
-              </button>
-
-              {/* Mascot Decoration - Peeking Overlay */}
-              <div className="absolute -bottom-10 -right-10 z-10 w-48 h-48 md:-bottom-20 md:-right-20 md:w-[500px] md:h-[500px] pointer-events-none">
-                <Image src="/royal_mascot_v5.png" alt="Mascot" fill className="object-contain drop-shadow-2xl" />
-              </div>
-
-              <div
-                ref={scrollContainerRef}
-                className="flex items-stretch overflow-x-auto gap-6 pb-8 snap-x snap-mandatory -mx-6 px-6 md:mx-0 md:px-0 md:w-fit md:mx-auto md:max-w-7xl [&::-webkit-scrollbar]:hidden [-ms-overflow-style:'none'] [scrollbar-width:'none']"
-              >
-                {livePasses.map((pass, i) => (
-                  <motion.div
-                    key={pass.id}
-                    initial={{ opacity: 0, y: 30 }}
-                    whileInView={{ opacity: 1, y: 0 }}
-                    viewport={{ once: true }}
-                    transition={{ delay: i * 0.1 }}
-                    className="group relative min-w-[260px] w-[80vw] max-w-[300px] md:w-[320px] md:min-w-[320px] snap-center flex-shrink-0 bg-black/40 backdrop-blur-md border border-white/10 group-hover:border-pramana-gold/50 rounded-xl overflow-hidden transition-all duration-500 hover:-translate-y-2 hover:shadow-[0_10px_40px_rgba(184,134,11,0.2)] flex flex-col"
-                  >
-                    {/* Header */}
-                    <div className="bg-white/5 p-6 border-b border-white/10 relative overflow-hidden group-hover:bg-white/10 transition-colors duration-500">
-                      <div className="absolute top-0 right-0 w-24 h-24 border border-pramana-gold/5 rounded-full -translate-y-1/2 translate-x-1/2"></div>
-                      <div className="relative z-10">
-                        <div className="flex justify-between items-start mb-3">
-                          <span className={`inline-block px-2 py-1 rounded text-[10px] font-bold uppercase tracking-widest border ${(pass as any).isBulk
-                            ? 'bg-purple-500/10 text-purple-400 border-purple-500/20'
-                            : 'bg-pramana-gold/10 text-pramana-gold border-pramana-gold/20'
-                            }`}>
-                            {(pass as any).isBulk ? 'Group Bundle' : 'Standard Pass'}
-                          </span>
-                          {(pass as any).isBulk && (pass as any).costPrice > pass.price && (
-                            <span className="text-[10px] font-bold text-green-400 bg-green-900/20 px-2 py-1 rounded border border-green-500/20">
-                              {Math.round((((pass as any).costPrice - pass.price) / (pass as any).costPrice) * 100)}% OFF
-                            </span>
-                          )}
-                        </div>
-
-                        {/* Title & Price */}
-                        <div className="mb-6">
-                          <h3 className="text-xl font-cinzel font-bold text-white leading-tight mb-2">{pass.name}</h3>
-                          <div className="flex items-baseline gap-2">
-                            <span className="text-lg font-bold text-pramana-cream">₹{pass.price}</span>
-                            {(pass as any).isBulk && (pass as any).costPrice > pass.price && (
-                              <span className="text-sm text-white/30 line-through">₹{(pass as any).costPrice}</span>
-                            )}
-                          </div>
-                        </div>
-
-                        {/* Description */}
-                      </div>
+            {/* Combined Day 1 & Day 2 Marquee */}
+            <div className="mb-8">
+              <Marquee speed={45} direction="left">
+                {Array(4).fill([
+                  { name: "Deccan Project", img: "/uploads/artist-deccan-project.jpg", date: "Feb 27", day: "Day 1" },
+                  { name: "Geetha Madhuri", img: "/uploads/artist-geetha-madhuri.jpg", date: "Feb 27", day: "Day 1" },
+                  { name: "DJ Nandzy", img: "/uploads/artist-dj-nandzy.jpeg", date: "Feb 27", day: "Day 1" },
+                  { name: "Kasyap", img: "/uploads/artist-kasyap.JPG", date: "Feb 28", day: "Day 2" },
+                  { name: "Nawabgang", img: "/uploads/nawabgang.png", date: "Feb 28", day: "Day 2" },
+                  { name: "DJ Swattrex", img: "/uploads/artist-dj-swattrex.jpg", date: "Feb 28", day: "Day 2" }
+                ]).flat().map((artist, idx) => (
+                  <div key={`artist-${idx}`} className="relative w-64 h-80 mx-4 rounded-2xl overflow-hidden border border-white/10 group cursor-pointer">
+                    <div className="absolute top-4 left-4 z-20 px-3 py-1 bg-black/50 backdrop-blur-md rounded-full border border-white/10">
+                      <span className="text-[10px] font-bold text-pramana-gold tracking-widest uppercase">{artist.day} &bull; {artist.date}</span>
                     </div>
-
-                    {/* Body */}
-                    <div className="p-6 flex flex-col flex-1 bg-transparent relative">
-                      {/* Decorative gradient overlay */}
-                      <div className="absolute inset-0 bg-gradient-to-b from-transparent to-black/20 pointer-events-none"></div>
-                      {/* Description */}
-                      <div className="mb-8 flex-1">
-                        <p className="text-pramana-cream/60 font-tertiary leading-relaxed text-sm line-clamp-4">
-                          {(pass as PassConfig).description || ((pass as any).isBulk ? `Group access for ${(pass as any).memberCount} members. Perfect for squads.` : "Access to all event zones and pro-shows.")}
-                        </p>
-                      </div>
-
-                      {/* Action Area */}
-                      <div className="mt-auto pt-6 border-t border-white/5">
-                        <button
-                          onClick={handleEntry}
-                          className="w-full py-3 border border-pramana-gold text-pramana-gold font-bold uppercase tracking-widest text-xs rounded hover:bg-pramana-gold hover:text-black transition-colors flex items-center justify-center gap-2"
-                        >
-                          <span>Buy Now</span>
-                          <ArrowRight className="w-3 h-3" />
-                        </button>
-                      </div>
+                    <Image
+                      src={artist.img}
+                      alt={artist.name}
+                      fill
+                      sizes="256px"
+                      quality={100}
+                      unoptimized
+                      priority
+                      className="object-cover transition-transform duration-700 group-hover:scale-110"
+                    />
+                    <div className="absolute inset-0 bg-gradient-to-t from-black via-black/40 to-transparent opacity-80 group-hover:opacity-100 transition-opacity duration-500"></div>
+                    <div className="absolute bottom-0 left-0 w-full p-6 translate-y-2 group-hover:translate-y-0 transition-transform duration-500 text-left">
+                      <h3 className="text-xl md:text-2xl font-primary font-bold text-white drop-shadow-lg">{artist.name}</h3>
                     </div>
-                  </motion.div>
+                  </div>
                 ))}
-              </div>
+              </Marquee>
             </div>
-
-            <div className="mt-16 text-center">
-              <button onClick={handleEntry} className="inline-flex flex-col items-center gap-2 group">
-                <span className="text-5xl font-primary font-bold text-transparent bg-clip-text bg-gradient-to-r from-pramana-gold to-white group-hover:scale-105 transition-transform">Get Your Passes</span>
-                <span className="text-pramana-cream/50 font-tertiary italic group-hover:text-pramana-gold transition-colors">Hurry up! Grab them before they sell out.</span>
-              </button>
-            </div>
-          </div>
-        </section>
-      )}
-
-      {/* --- ELITE COMPETITIONS SECTION --- */}
-      <section className="py-24 px-6 bg-[#050505] relative overflow-hidden">
-        {/* Background Gradients */}
-        <div className="absolute top-0 right-0 w-[400px] h-[400px] bg-purple-900/10 rounded-full blur-[120px] pointer-events-none"></div>
-        <div className="absolute bottom-0 left-0 w-[400px] h-[400px] bg-pramana-gold/5 rounded-full blur-[120px] pointer-events-none"></div>
-
-        <div className="max-w-7xl mx-auto relative z-10">
-          <SectionHeading title="Unleash Your Potential" subtitle="Elite Competitions" />
-
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mt-16">
-
-            {/* Cultural Battles Card */}
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              className="group relative h-[400px] rounded-2xl overflow-hidden border border-white/10 bg-white/5 hover:border-pramana-gold/50 transition-all duration-500"
-            >
-              {/* Background Image / Gradient */}
-              <div className="absolute inset-0 bg-gradient-to-b from-transparent via-black/60 to-black z-10"></div>
-              <div className="absolute inset-0 bg-[url('/uploads/cultural-poster.jpg')] bg-cover bg-center opacity-50 group-hover:scale-110 transition-transform duration-700"></div>
-
-              {/* Hover Glow */}
-              <div className="absolute inset-0 bg-pramana-gold/0 group-hover:bg-pramana-gold/10 transition-colors duration-500 z-10"></div>
-
-              {/* Content */}
-              <div className="absolute inset-0 p-8 flex flex-col justify-end z-20">
-                <div className="transform translate-y-4 group-hover:translate-y-0 transition-transform duration-500">
-                  <h3 className="text-3xl font-primary font-bold text-white mb-2">Cultural Battles</h3>
-                  <p className="text-pramana-cream/70 font-tertiary text-sm mb-6 line-clamp-3 group-hover:text-white transition-colors">
-                    Dance, Music, Drama, and more. Step into the spotlight and compete with the best.
-                  </p>
-
-                  <Link href="/culturals" className="inline-flex items-center gap-3 text-pramana-gold font-bold uppercase tracking-widest text-xs group-hover:text-white transition-colors">
-                    <span>View Details</span>
-                    <ArrowRight className="w-4 h-4 transform group-hover:translate-x-1 transition-transform" />
-                  </Link>
-                </div>
-              </div>
-            </motion.div>
-
-            {/* Placeholder for future competitions */}
-            {/* <div className="h-[400px] flex items-center justify-center border border-white/5 rounded-2xl bg-white/[0.02]">
-              <span className="text-white/20 font-mono uppercase tracking-widest text-xs">Coming Soon</span>
-            </div> */}
-
-          </div>
-
-        </div>
-      </section>
-
-      {/* --- THREE DAYS. THREE VIBES. SECTION (Static Grid) --- */}
-      <section className="py-24 px-6 relative overflow-hidden">
-        {/* Background Elements */}
-        <div className="absolute top-0 left-0 w-full h-full bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-pramana-gold/5 via-black to-black -z-10"></div>
-
-        <div className="max-w-7xl mx-auto">
-          <SectionHeading title="Experience The Magic" subtitle="Three Days. Three Vibes." />
-
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-16">
-            {/* Day 0: Motorsports */}
-            <div className="relative h-[320px] md:h-[500px] rounded-3xl overflow-hidden border border-white/10 bg-white/5">
-              {/* Background Image/Gradient */}
-              <div className="absolute inset-0 bg-gradient-to-b from-transparent via-black/60 to-black z-10"></div>
-              <div className="absolute inset-0 bg-[url('/noise.png')] opacity-20 mix-blend-overlay"></div>
-
-              {/* Mascot */}
-              <div className="absolute bottom-0 right-[-50px] w-[300px] h-[300px] md:w-[450px] md:h-[450px] z-10">
-                <Image src="/day0_mascot.png" alt="Motorsports Mascot" fill className="object-contain drop-shadow-2xl" />
-              </div>
-
-              {/* Content */}
-              <div className="absolute bottom-0 left-0 w-full p-8 z-20 flex flex-col justify-end h-full">
-                <div className="mb-4">
-                  <div className="inline-block px-3 py-1 mb-4 rounded-full bg-pramana-gold/20 border border-pramana-gold/30 backdrop-blur-md">
-                    <span className="text-pramana-gold text-xs font-bold tracking-widest uppercase">Day 0 • Feb 26</span>
-                  </div>
-                  <h3 className="text-3xl md:text-5xl font-cinzel font-bold text-white mb-2 leading-tight">Motorsports</h3>
-
-                </div>
-              </div>
-            </div>
-
-            {/* Day 1: Glam/Gala */}
-            <div className="relative h-[320px] md:h-[500px] rounded-3xl overflow-hidden border border-white/10 bg-white/5">
-              <div className="absolute inset-0 bg-gradient-to-b from-transparent via-black/60 to-black z-10"></div>
-
-              {/* Mascot */}
-              <div className="absolute bottom-0 right-[-50px] w-[300px] h-[300px] md:w-[450px] md:h-[450px] z-10">
-                <Image src="/day1_mascot.png" alt="Glam Mascot" fill className="object-contain drop-shadow-2xl" />
-              </div>
-
-              {/* Content */}
-              <div className="absolute bottom-0 left-0 w-full p-8 z-20 flex flex-col justify-end h-full">
-                <div className="mb-4">
-                  <div className="inline-block px-3 py-1 mb-4 rounded-full bg-purple-500/20 border border-purple-500/30 backdrop-blur-md">
-                    <span className="text-purple-300 text-xs font-bold tracking-widest uppercase">Day 1 • Feb 27</span>
-                  </div>
-                  <h3 className="text-3xl md:text-5xl font-cinzel font-bold text-white mb-2 leading-tight">Glam & Gala</h3>
-
-                </div>
-              </div>
-            </div>
-
-            {/* Day 2: Main Character Energy */}
-            <div className="relative h-[320px] md:h-[500px] rounded-3xl overflow-hidden border border-white/10 bg-white/5">
-              <div className="absolute inset-0 bg-gradient-to-b from-transparent via-black/60 to-black z-10"></div>
-
-              {/* Mascot */}
-              <div className="absolute bottom-0 right-[-50px] w-[300px] h-[300px] md:w-[450px] md:h-[450px] z-10">
-                <Image src="/day2_mascot.png" alt="Main Character Mascot" fill className="object-contain drop-shadow-2xl" />
-              </div>
-
-              {/* Content */}
-              <div className="absolute bottom-0 left-0 w-full p-8 z-20 flex flex-col justify-end h-full">
-                <div className="mb-4">
-                  <div className="inline-block px-3 py-1 mb-4 rounded-full bg-red-500/20 border border-red-500/30 backdrop-blur-md">
-                    <span className="text-red-300 text-xs font-bold tracking-widest uppercase">Day 2 • Feb 28</span>
-                  </div>
-                  <h3 className="text-3xl md:text-5xl font-cinzel font-bold text-white mb-2 leading-tight">Main Character</h3>
-
-                </div>
-              </div>
-            </div>
-          </div>
+          </motion.div>
         </div>
       </section>
 
       {/* --- PARTNERS SLIDER (Premium Reveal) --- */}
-      <section className="py-24 bg-black relative overflow-hidden">
+      <section id="alliance-section" className="py-24 bg-black relative overflow-hidden">
         {/* Subtle Background Glow */}
         <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[60vw] h-[20vw] bg-pramana-gold/5 rounded-full blur-[120px] pointer-events-none"></div>
 
@@ -754,7 +276,7 @@ export default function LandingPage() {
           >
             <div className="flex items-center justify-center gap-4 mb-4">
               <div className="h-[1px] w-12 bg-gradient-to-r from-transparent to-pramana-gold/50"></div>
-              <span className="text-pramana-gold text-xs font-bold tracking-[0.3em] uppercase font-primary">Strategic Alliance</span>
+              <span className="text-pramana-gold text-xs font-bold tracking-[0.3em] uppercase font-primary">Thank You</span>
               <div className="h-[1px] w-12 bg-gradient-to-l from-transparent to-pramana-gold/50"></div>
             </div>
             <h2 className="text-3xl md:text-5xl font-primary font-bold text-white tracking-widest uppercase">
@@ -820,15 +342,86 @@ export default function LandingPage() {
             </p>
           </motion.div>
 
+          {/* Team Marquee */}
+          <motion.div
+            initial={{ opacity: 0, scale: 0.95 }}
+            whileInView={{ opacity: 1, scale: 1 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.8, delay: 0.2 }}
+            className="w-full overflow-hidden relative mb-12"
+          >
+            {/* Left and Right Fade Masks */}
+            <div className="absolute top-0 left-0 w-12 md:w-32 h-full bg-gradient-to-r from-black to-transparent z-20 pointer-events-none"></div>
+            <div className="absolute top-0 right-0 w-12 md:w-32 h-full bg-gradient-to-l from-black to-transparent z-20 pointer-events-none"></div>
+
+            <Marquee speed={50} direction="left">
+              {[
+                { name: "Adepu Suraj", image: "/team/1.JPG", role: "Leadership Panel" },
+                { name: "Praneeth", image: "/team/4.JPG", role: "Leadership Panel" },
+                { name: "Pradyumna", image: "/team/2.JPG", role: "Leadership Panel" },
+                { name: "Sharan", image: "/team/3.JPG", role: "Leadership Panel" },
+                { name: "Sai Krishna", image: "/team/5.1.JPG", role: "Tech" },
+                { name: "Teja", image: "/team/6.JPG", role: "Tech" },
+                { name: "Siddharth Goud", image: "/team/7.JPG", role: "Sponsorship" },
+                { name: "Arvind", image: "/team/8.JPG", role: "Sponsorship" },
+                { name: "Anshul Rai", image: "/team/9.JPG", role: "Finance" },
+                { name: "Riteesh Reddy", image: "/team/10.JPG", role: "Food & Stalls" },
+                { name: "Ram", image: "/team/11.JPG", role: "Food & Stalls" },
+                { name: "Rahul", image: "/team/12.JPG", role: "Food & Stalls" },
+                { name: "Sahithi cholleti", image: "/team/13.JPG", role: "Culturals" },
+                { name: "Jashwanth Thota", image: "/team/14.JPG", role: "Production" },
+                { name: "Ridhima Mamgain", image: "/team/15.JPG", role: "Backstage Operations" },
+                { name: "Sanjana", image: "/team/16.jpeg", role: "Backstage Operations" },
+                { name: "Varshith Reddy", image: "/team/17.jpeg", role: "Marketing" },
+                { name: "Nihal Agarwal", image: "/team/18.1.png", role: "Marketing" },
+                { name: "Fareed", image: "/team/19.JPG", role: "Artist Management" },
+                { name: "Sharaa Shaaz", image: "/team/20.JPG", role: "Artist Management" },
+                { name: "Rishitha", image: "/team/21.JPG", role: "Hospitality" },
+                { name: "Rohan Sai", image: "/team/22.JPG", role: "Media" },
+                { name: "Vishal", image: "/team/23.png", role: "Safety & Security" },
+                { name: "Kamal", image: "/team/24.png", role: "Safety & Security" },
+                { name: "Sravan", image: "/team/25.jpeg", role: "Crowd Control" },
+                { name: "Manikanta", image: "/team/26.JPG", role: "Crowd Control" },
+                { name: "Bhanu teja", image: "/team/27.JPG", role: "Operations" },
+                { name: "Sharmishta", image: "/team/28.1.jpeg", role: "Operations" },
+                { name: "Bollapally koushik", image: "/team/29.jpeg", role: "Emergency Response" },
+                { name: "Moksha chowdary", image: "/team/30.JPG", role: "Sustainability" },
+                { name: "Sathvik", image: "/team/31.JPG", role: "Documentation" },
+                { name: "Diya Goyal", image: "/team/32.JPG", role: "Documentation" },
+                { name: "Justin Joy", image: "/team/33.JPG", role: "Documentation" },
+                { name: "Shreya Kondur", image: "/team/34.JPG", role: "Graphic Design" },
+                { name: "Nitish", image: "/team/35.JPG", role: "Graphic Design" },
+                { name: "Arshiya", image: "/team/36.JPG", role: "Liaisoning" }
+              ].map((member, idx) => (
+                <div key={`team-${idx}`} className="relative w-48 h-64 md:w-56 md:h-72 mx-4 rounded-xl overflow-hidden border border-white/10 group cursor-pointer bg-white/5">
+                  <Image
+                    src={member.image}
+                    alt={member.name}
+                    fill
+                    sizes="224px"
+                    quality={100}
+                    unoptimized
+                    className="object-cover transition-transform duration-700 group-hover:scale-110 grayscale hover:grayscale-0"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black via-black/50 to-transparent opacity-90 group-hover:opacity-100 transition-opacity duration-500"></div>
+                  <div className="absolute bottom-0 left-0 w-full p-4 md:p-5 translate-y-2 group-hover:translate-y-0 transition-transform duration-500 text-left">
+                    <p className="text-pramana-gold text-[10px] md:text-xs font-bold uppercase tracking-widest mb-1 opacity-80 group-hover:opacity-100">{member.role}</p>
+                    <h3 className="text-lg md:text-xl font-primary font-bold text-white drop-shadow-md">{member.name}</h3>
+                  </div>
+                </div>
+              ))}
+            </Marquee>
+          </motion.div>
+
           <motion.div
             initial={{ opacity: 0, scale: 0.9 }}
             whileInView={{ opacity: 1, scale: 1 }}
             viewport={{ once: true }}
-            transition={{ duration: 0.5, delay: 0.2 }}
+            transition={{ duration: 0.5, delay: 0.4 }}
           >
             <Link href="/team" className="group relative inline-flex items-center gap-4 px-8 py-4 bg-white/5 border border-white/10 rounded-full overflow-hidden hover:border-pramana-gold/50 hover:bg-white/10 transition-all duration-500">
               <span className="relative z-10 text-white font-bold tracking-widest uppercase text-sm group-hover:text-pramana-gold transition-colors">
-                Reveal The Team
+                Explore Full Team
               </span>
               <div className="w-8 h-8 rounded-full bg-pramana-gold/20 flex items-center justify-center group-hover:bg-pramana-gold group-hover:text-black transition-all duration-500">
                 <ArrowRight className="w-4 h-4 -rotate-45 group-hover:rotate-0 transition-transform duration-500" />
@@ -841,66 +434,58 @@ export default function LandingPage() {
 
       {/* --- GALLERY SLIDER --- */}
       <section className="py-24 bg-[#050505] overflow-hidden">
-        <div className="max-w-7xl mx-auto px-6 mb-12">
-          <SectionHeading title="Moments In Time" subtitle="Gallery" />
+        <div className="w-full relative z-10 text-center mb-16">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            className="px-6"
+          >
+            <div className="flex items-center justify-center gap-4 mb-4">
+              <div className="h-[1px] w-12 bg-gradient-to-r from-transparent to-pramana-gold/50"></div>
+              <span className="text-pramana-gold text-xs font-bold tracking-[0.3em] uppercase font-primary">Gallery</span>
+              <div className="h-[1px] w-12 bg-gradient-to-l from-transparent to-pramana-gold/50"></div>
+            </div>
+            <h2 className="text-4xl md:text-6xl font-primary font-bold text-transparent bg-clip-text bg-gradient-to-b from-white to-white/60 tracking-widest uppercase mb-4 drop-shadow-lg">
+              Through The Lens
+            </h2>
+            <p className="max-w-xl mx-auto text-white/40 font-tertiary text-lg">
+              Witness the chaos, the art, and the history.
+            </p>
+          </motion.div>
         </div>
 
         <div className="rotate-1 scale-105 transform opacity-80 hover:opacity-100 transition-opacity duration-700">
           <Marquee speed={30} direction="right">
-            {[...Array(8)].map((_, i) => (
+            {[
+              "DSC00024.JPG", "DSC00142.JPG", "DSC00762.JPG", "DSC05197.JPG",
+              "DSC07917.jpg", "DSCF2115.JPG", "DSCF2203.JPG", "DSCF2802.JPG",
+              "DSCF3193.JPG", "DSCF3335.JPG", "DSCF3507.JPG", "DSCF3859.JPG", "DSCF3902.JPG"
+            ].map((imgName, i) => (
               <div key={i} className="mx-4 relative w-[320px] h-[200px] bg-[#111] rounded overflow-hidden border border-white/10 group">
                 <div className="absolute inset-0 flex items-center justify-center text-white/10 font-primary font-bold text-4xl group-hover:text-white/20 transition-colors">2026</div>
-                <div className={`absolute inset-0 bg-cover bg-center opacity-60 hover:opacity-100 transition-all duration-700 scale-100 group-hover:scale-110`} style={{ backgroundImage: `url('/uploads/gallery-${i + 1}.jpg')` }}></div>
+                <div className={`absolute inset-0 bg-cover bg-center opacity-60 hover:opacity-100 transition-all duration-700 scale-100 group-hover:scale-110`} style={{ backgroundImage: `url('/Gallery/${imgName}')` }}></div>
                 <div className="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
               </div>
             ))}
           </Marquee>
           <div className="h-4"></div>
           <Marquee speed={35} direction="left">
-            {[...Array(8)].map((_, i) => (
-              <div key={i + 8} className="mx-4 relative w-[320px] h-[200px] bg-[#111] rounded overflow-hidden border border-white/10 group">
+            {[
+              "DSCF3955.JPG", "DSCF4601.JPG", "DSC_0961.JPG", "DSC_7371.JPG",
+              "DSC_7595.JPG", "DSC_9550.JPG", "DSC_9985.JPG", "IMG_2670.CR3",
+              "IMG_6656.JPG", "gallery-1.JPG", "gallery-2.JPG", "gallery-3.JPG", "gallery-4.JPG"
+            ].map((imgName, i) => (
+              <div key={i + 13} className="mx-4 relative w-[320px] h-[200px] bg-[#111] rounded overflow-hidden border border-white/10 group">
                 <div className="absolute inset-0 flex items-center justify-center text-white/10 font-primary font-bold text-4xl group-hover:text-white/20 transition-colors">VIBES</div>
-                <div className={`absolute inset-0 bg-cover bg-center opacity-60 hover:opacity-100 transition-all duration-700 scale-100 group-hover:scale-110`} style={{ backgroundImage: `url('/uploads/gallery-${i + 8}.jpg')` }}></div>
+                <div className={`absolute inset-0 bg-cover bg-center opacity-60 hover:opacity-100 transition-all duration-700 scale-100 group-hover:scale-110`} style={{ backgroundImage: `url('/Gallery/${imgName}')` }}></div>
               </div>
             ))}
           </Marquee>
         </div>
       </section>
 
-      {/* --- FAQ SECTION (Coming Soon) --- */}
-      <section className="py-32 px-6 bg-black">
-        <div className="max-w-4xl mx-auto text-center">
-          <SectionHeading title="Frequently Asked Questions" subtitle="Support" />
 
-          <div className="grid grid-cols-1 gap-4 text-left">
-            {faqs.map((faq, i) => (
-              <div
-                key={i}
-                className="group border border-white/10 rounded-lg bg-white/5 overflow-hidden transition-all duration-300 hover:border-pramana-gold/30"
-              >
-                <button
-                  onClick={() => setOpenFaq(openFaq === i ? null : i)}
-                  className="w-full p-6 flex items-center justify-between gap-4 text-left"
-                >
-                  <span className={`font-primary text-lg font-bold transition-colors ${openFaq === i ? 'text-pramana-gold' : 'text-white'}`}>
-                    {faq.q}
-                  </span>
-                  <div className={`w-8 h-8 rounded-full border flex items-center justify-center transition-all duration-300 ${openFaq === i ? 'bg-pramana-gold text-black border-pramana-gold rotate-45' : 'border-white/20 text-white/50 group-hover:border-white/50 group-hover:text-white'}`}>
-                    <Plus className="w-4 h-4" />
-                  </div>
-                </button>
-                <div
-                  className={`overflow-hidden transition-all duration-500 ease-in-out ${openFaq === i ? 'max-h-40 opacity-100' : 'max-h-0 opacity-0'}`}
-                >
-                  <p className="p-6 pt-0 text-pramana-cream/60 font-tertiary leading-relaxed">
-                    {faq.a}
-                  </p>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
 
       {/* --- FOOTER --- */}
 
